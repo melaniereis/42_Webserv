@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
+#    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/02 13:21:30 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/03 16:39:16 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,9 +28,9 @@ MKDIR       = mkdir -p
 BUILD_PATH  = .build
 # SERVER_PATH = src/server
 
-SRCS        = main.cpp
+SRCS        = main.cpp src/server/Server.cpp
 
-INCLUDES    = -I.
+INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)
 
 #==============================================================================#
