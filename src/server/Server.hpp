@@ -1,24 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/03 20:01:38 by jmeirele         ###   ########.fr       */
+/*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/06/03 19:59:24 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "inc/webserv.hpp"
-#include "src/server/Server.hpp"
-#include "src/server/ServerConfig.hpp"
+#pragma once
+#include "ServerConfig.hpp"
 
-int main() {
-	ServerConfig config;
-	
-	Server server(config);
-	server.run();
+class Server
+{
+	public:
+		Server(const ServerConfig &config);
+		void run();
 
-	return 0;
-}
+	private:
+		ServerConfig _config;
+		int _serverFd;
+
+		bool setupSocket();
+		void acceptLoop();
+		void handleClient(int client_fd);
+};

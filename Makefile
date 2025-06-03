@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/02 13:21:30 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/03 19:49:12 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,9 +26,12 @@ MKDIR       = mkdir -p
 #==============================================================================#
 
 BUILD_PATH  = .build
-# SERVER_PATH = src/server
+SRC_PATH    = src
+SERVER_PATH = $(SRC_PATH)/server
 
-SRCS        = main.cpp
+SRCS        = $(SRC_PATH)/main.cpp \
+              $(SERVER_PATH)/Server.cpp \
+              $(SERVER_PATH)/ServerConfig.cpp
 
 INCLUDES    = -I.
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)
