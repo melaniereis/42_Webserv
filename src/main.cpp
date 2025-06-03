@@ -6,13 +6,12 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/02 14:15:59 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/03 17:47:40 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "inc/webserv.hpp"
 
-int main(void)
+int main()
 {
-	std::cout << "Hello from webserv" << std::endl;
 }
