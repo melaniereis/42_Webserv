@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/03 19:58:23 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/03 20:04:33 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class ServerConfig
 		std::string getServerIndex();
 		std::string getServerNotFound();
 
-	protected:
+	private:
 		int _port;
 		std::string _host;
 		std::string _name;
