@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:18:32 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/02 14:15:57 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/04 20:06:32 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <poll.h>
 
 // Filesystem & CGI
 #include <sys/stat.h>
