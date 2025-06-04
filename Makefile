@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/04 15:29:52 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/04 21:28:25 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,11 +28,14 @@ MKDIR       = mkdir -p
 BUILD_PATH  = .build
 SRC_PATH    = src
 SERVER_PATH = $(SRC_PATH)/server
+CLIENT_PATH = $(SRC_PATH)/client
 UTILS_PATH  = $(SRC_PATH)/utils
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(SERVER_PATH)/Server.cpp \
               $(SERVER_PATH)/ServerConfig.cpp \
+              $(CLIENT_PATH)/Client.cpp \
+              $(CLIENT_PATH)/ClientManager.cpp \
               $(UTILS_PATH)/Logger.cpp \
 
 INCLUDES    = -I.

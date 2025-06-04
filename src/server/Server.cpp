@@ -6,19 +6,17 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 20:11:39 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/04 22:19:52 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "Server.hpp"
+#include "../client/ClientManager.hpp"
+#include "../client/Client.hpp"
 #include "../utils/Logger.hpp"
 
-// ==========
-// Constructor & Destructor
-// ==========
-
-Server::Server(const ServerConfig& config) : _config(config), _serverFd(-1) {}
+Server::Server(const ServerConfig &config) : _serverFd(-1), _config(config) {}
 
 Server::~Server(){}
 
@@ -32,24 +30,32 @@ void Server::runServer()
 		return ;
 	
 	struct pollfd pfd;
+	
 	pfd.fd = _serverFd;
 	pfd.events = POLLIN;
 	pfd.revents = 0;
-	_pollFds.push_back(pfd);
-
+	_clientManager.getPollFds().push_back(pfd);
+	
 	while(true)
 	{
-		if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
+		std::vector<struct pollfd> &pollFds = _clientManager.getPollFds();
+		
+		int pollResult = poll(pollFds.data(), pollFds.size(), -1);
+		if (pollResult < 0)
 		{
 			std::perror("poll");
 			break;
 		}
+		for (size_t i = 0; i < pollFds.size(); i++)
+		{
+			int fd = pollFds[i].fd;
+			if (fd == _serverFd && (pollFds[i].revents &POLLIN))
+				_clientManager.acceptNewClient(_serverFd);
+			else if (pollFds[i].revents & (POLLIN | POLLOUT))
+				_clientManager.handleClientIO(fd);
+		}
 	}
 }
-
-// ==========
-// Private member functions
-// ==========
 
 bool Server::setupSocket()
 {
