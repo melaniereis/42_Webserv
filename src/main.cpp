@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 15:29:16 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/04 18:41:33 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ int main() {
 	
 	Server server(config);
 	server.run();
-	
 	
 	return 0;
 }

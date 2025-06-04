@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Logger.hpp                                         :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/04 15:05:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 15:29:50 by jmeirele         ###   ########.fr       */
+/*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/06/04 18:32:55 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,26 @@
 
 #include "inc/webserv.hpp"
 
-class Logger
+class Client
 {
 	public:
-		static void info(const std::string &msg);
-		static void warn(const std::string &msg);
-		static void error(const std::string &msg);
-		static void debug(const std::string &msg);
+		Client(int fd);
+		~Client();
 
+		int getClientFd() const;
+		bool isClientClosed() const;
+
+		std::string getClientRead();
+		std::string getClientWrite();
+
+		bool handleClientRead();
+		bool handleClientWrite();
+		
 	private:
+		int _fd;
+		bool _closed;
+		std::string _readBuffer;
+		std::string _writeBuffer;
+		
+		void closeClient();
 };

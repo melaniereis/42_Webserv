@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/03 20:00:43 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/04 17:06:55 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@ ServerConfig::ServerConfig()
 	_notFound = "./pages/404.html";
 }
 
-int ServerConfig::getServerPort() { return _port; }
-std::string ServerConfig::getServerHost() { return _host; }
-std::string ServerConfig::getServerName() { return _name; }
-std::string ServerConfig::getServerRoot() { return _root; }
-std::string ServerConfig::getServerIndex() { return _index; }
-std::string ServerConfig::getServerNotFound() { return _notFound; }
+int ServerConfig::getServerPort() const { return _port; }
+std::string ServerConfig::getServerHost() const { return _host; }
+std::string ServerConfig::getServerName() const { return _name; }
+std::string ServerConfig::getServerRoot() const { return _root; }
+std::string ServerConfig::getServerIndex() const { return _index; }
+std::string ServerConfig::getServerNotFound() const { return _notFound; }

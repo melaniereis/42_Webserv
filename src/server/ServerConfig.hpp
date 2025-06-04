@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/03 20:04:33 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/04 17:06:58 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,12 @@ class ServerConfig
 		ServerConfig();
 		~ServerConfig();
 
-		int getServerPort();
-		std::string getServerHost();
-		std::string getServerName();
-		std::string getServerRoot();
-		std::string getServerIndex();
-		std::string getServerNotFound();
+		int getServerPort() const;
+		std::string getServerHost() const;
+		std::string getServerName() const;
+		std::string getServerRoot() const;
+		std::string getServerIndex() const;
+		std::string getServerNotFound() const;
 
 	private:
 		int _port;
