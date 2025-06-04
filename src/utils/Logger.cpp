@@ -1,29 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Logger.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 15:21:06 by jmeirele         ###   ########.fr       */
+/*   Created: 2025/06/04 15:05:28 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/06/04 15:27:19 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
-#include "ServerConfig.hpp"
+#include "Logger.hpp"
 
-class Server
+void Logger::info(const std::string &msg)
 {
-	public:
-		Server(const ServerConfig &config);
-		void run();
+	std::cout << "[INFO] " << msg << std::endl;
+}
 
-	private:
-		ServerConfig _config;
-		int _serverFd;
+void Logger::warn(const std::string &msg)
+{
+	std::cout << "[WARN] " << msg << std::endl;
+}
 
-		bool setupSocket();
-		void acceptLoop();
-		void handleClient(int client_fd);
-};
+void Logger::error(const std::string &msg)
+{
+	std::cout << "[ERROR] " << msg << std::endl;
+}
+
+void Logger::debug(const std::string &msg)
+{
+	std::cout << "[DEBUG] " << msg << std::endl;
+}

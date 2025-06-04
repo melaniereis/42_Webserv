@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/03 19:49:12 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/04 15:17:28 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,10 +28,12 @@ MKDIR       = mkdir -p
 BUILD_PATH  = .build
 SRC_PATH    = src
 SERVER_PATH = $(SRC_PATH)/server
+UTILS_PATH  = $(SRC_PATH)/utils
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(SERVER_PATH)/Server.cpp \
-              $(SERVER_PATH)/ServerConfig.cpp
+              $(SERVER_PATH)/ServerConfig.cpp \
+              $(UTILS_PATH)/Logger.cpp \
 
 INCLUDES    = -I.
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)
