@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "../response/Response.hpp"
 
 Client::Client(int fd)
 {
@@ -21,13 +22,17 @@ Client::Client(int fd)
 
 Client::~Client(){}
 
-bool Client::handleClientRead() {
+bool Client::handleClientRead()
+{
 	char buffer[1024];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
 
 	if (bytesRead < 0)
 	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return true;
 		perror("recv failed");
+		_closed = true;
 		return false;
 	}
 	else if (bytesRead == 0)
@@ -39,32 +44,42 @@ bool Client::handleClientRead() {
 	buffer[bytesRead] = '\0';
 	_readBuffer += buffer;
 
+	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
+	{
+		std::ifstream file("pages/index.html");
+		std::ostringstream ss;
+		ss << file.rdbuf();
+	
+		Response res;
+		res.setStatus(200, "OK");
+		res.setHeader("Content-Type", "text/html");
+		res.setBody(ss.str());
+	
+		_writeBuffer = res.toString();
+	}
+	
 	std::cout << "Client Request:\n" << _readBuffer << std::endl;
 	return true;
 }
 
+
 bool Client::handleClientWrite()
 {
-	if (_writeBuffer.empty())
-	{
-		// Send index.html as first response
-		std::ifstream file(_index.c_str());
-		if (!file)
-		{
-			_writeBuffer = "HTTP/1.1 404 Not Found\r\n\r\nFile not found";
-		}
-		else
-		{
-			std::ostringstream ss;
-			ss << file.rdbuf();
-			_writeBuffer = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + ss.str();
-		}
-	}
+	if (_writeBuffer.empty()) return true;
 
 	ssize_t bytesSent = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
 	if (bytesSent <= 0)
+	{
+		perror("send failed");
+		_closed = true;
 		return false;
+	}
 
 	_writeBuffer.erase(0, bytesSent);
+
+	if (_writeBuffer.empty())
+		_readBuffer.clear();
+
 	return true;
 }
+

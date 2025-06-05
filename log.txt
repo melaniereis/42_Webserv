@@ -1,0 +1,9 @@
+[INFO] 🟢 Server is listening on port 4000
+Client connected
+Client Request:
+GET / HTTP/1.1
+Host: localhost:4000
+User-Agent: curl/8.5.0
+Accept: */*
+
+
