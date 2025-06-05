@@ -4,7 +4,7 @@
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                +#+#+#+#z+#+   +#+           */
 /*   Created: 2025/06/04 21:19:42 by jmeirele          #+#    #+#             */
 /*   Updated: 2025/06/04 22:19:26 by jmeirele         ###   ########.fr       */
 /*                                                                            */
@@ -40,10 +40,8 @@ bool Client::handleClientRead() {
 	_readBuffer += buffer;
 
 	std::cout << "Client Request:\n" << _readBuffer << std::endl;
-
 	return true;
 }
-
 
 bool Client::handleClientWrite()
 {

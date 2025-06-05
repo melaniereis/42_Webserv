@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 21:55:51 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/05 16:48:38 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ void ClientManager::handleClientIO(int fd)
 
 void ClientManager::acceptNewClient(int serverFd)
 {
-	(void)serverFd;
 	int clientFd = accept(serverFd, NULL, NULL);
 	if (clientFd < 0)
 	{

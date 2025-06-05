@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 22:19:52 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/05 15:56:05 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void Server::runServer()
 	{
 		std::vector<struct pollfd> &pollFds = _clientManager.getPollFds();
 		
-		int pollResult = poll(pollFds.data(), pollFds.size(), -1);
+		int pollResult = poll(pollFds.data(), pollFds.size(), 10);
 		if (pollResult < 0)
 		{
 			std::perror("poll");
