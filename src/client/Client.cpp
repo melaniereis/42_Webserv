@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
-#include "../response/Response.hpp"
 
 Client::Client(int fd)
 {
@@ -27,16 +26,14 @@ bool Client::handleClientRequest()
 	char buffer[1024];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
 
-	if (bytesRead < 0)
-	{
+	if (bytesRead < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return true;
 		perror("recv failed");
 		_closed = true;
 		return false;
 	}
-	else if (bytesRead == 0)
-	{
+	else if (bytesRead == 0) {
 		_closed = true;
 		return false;
 	}
@@ -46,18 +43,9 @@ bool Client::handleClientRequest()
 
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
-		std::ifstream file("pages/index.html");
-		std::ostringstream ss;
-		ss << file.rdbuf();
-	
-		Response res;
-		res.setStatus(200, "OK");
-		res.setHeader("Content-Type", "text/html");
-		res.setBody(ss.str());
-	
-		_writeBuffer = res.toString();
+		_request = new Request(_readBuffer);
 	}
-	
+
 	std::cout << "Client Request:\n" << _readBuffer << std::endl;
 	return true;
 }
@@ -78,8 +66,13 @@ bool Client::handleClientResponse()
 	_writeBuffer.erase(0, bytesSent);
 
 	if (_writeBuffer.empty())
+	{
 		_readBuffer.clear();
+		delete _request;
+		_request = NULL;
+	}
 
 	return true;
 }
+
 

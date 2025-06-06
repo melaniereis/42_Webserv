@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:56:17 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/06 16:31:53 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ void ClientManager::handleClientIO(int fd)
 	Client* client = _clients[fd];
 	if (!client) return;
 
-	if (!client->handleClientRead()){}
-	if (!client->handleClientWrite()){}
+	if (!client->handleClientRequest()){}
+	if (!client->handleClientResponse()){}
 }
 
 

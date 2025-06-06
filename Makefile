@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/05 17:40:29 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/06 16:34:17 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,14 +30,15 @@ SRC_PATH    = src
 SERVER_PATH = $(SRC_PATH)/server
 CLIENT_PATH = $(SRC_PATH)/client
 UTILS_PATH  = $(SRC_PATH)/utils
-RESPONSE_PATH = $(SRC_PATH)/response
+HTTP_PATH   = $(SRC_PATH)/http
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(SERVER_PATH)/Server.cpp \
               $(SERVER_PATH)/ServerConfig.cpp \
               $(CLIENT_PATH)/Client.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
-              $(RESPONSE_PATH)/Response.cpp \
+              $(HTTP_PATH)/Request.cpp \
+              $(HTTP_PATH)/Response.cpp \
               $(UTILS_PATH)/Logger.cpp 
 
 INCLUDES    = -I.
