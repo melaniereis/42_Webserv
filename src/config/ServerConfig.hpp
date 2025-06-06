@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/06 15:58:09 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/06 16:47:15 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@ class ServerConfig
 		~ServerConfig();
 
 		int getServerPort() const;
-		const std::string getServerHost() const;
-		const std::string getServerName() const;
-		const std::string getServerRoot() const;
-		const std::string getServerIndex() const;
-		const std::string getServerNotFound() const;
+		std::string getServerHost() const;
+		std::string getServerName() const;
+		std::string getServerRoot() const;
+		std::string getServerIndex() const;
+		std::string getServerNotFound() const;
 
 		void setPort(int port);
 		void setHost(const std::string& host);
@@ -37,9 +37,9 @@ class ServerConfig
 
 	private:
 		int _port;
-		const std::string _host;
-		const std::string _name;
-		const std::string _root;
-		const std::string _index;
-		const std::string _notFound;
+		std::string _host;
+		std::string _name;
+		std::string _root;
+		std::string _index;
+		std::string _notFound;
 };
