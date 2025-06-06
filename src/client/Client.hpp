@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 22:16:36 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:27:07 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ class Client
 		std::string getClientRead();
 		std::string getClientWrite();
 
-		bool handleClientRead();
-		bool handleClientWrite();
+		bool handleClientRequest();
+		bool handleClientResponse();
 		
 	private:
 		int _fd;

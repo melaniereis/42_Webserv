@@ -22,7 +22,7 @@ Client::Client(int fd)
 
 Client::~Client(){}
 
-bool Client::handleClientRead()
+bool Client::handleClientRequest()
 {
 	char buffer[1024];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
@@ -63,7 +63,7 @@ bool Client::handleClientRead()
 }
 
 
-bool Client::handleClientWrite()
+bool Client::handleClientResponse()
 {
 	if (_writeBuffer.empty()) return true;
 
