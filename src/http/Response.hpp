@@ -6,9 +6,11 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 17:34:46 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:37:07 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/06 19:06:42 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#pragma once
 
 #include "../../inc/webserv.hpp"
 
