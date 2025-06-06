@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/06 17:06:58 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/06 17:32:29 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,4 +59,48 @@ std::string ConfigParser::trim(const std::string &s)
 	if (first == std::string::npos || last == std::string::npos)
 		return "";
 	return s.substr(first, last - first + 1);
+}
+
+std::string ConfigParser::intToString(int v)
+{
+	std::ostringstream oss;
+	oss << v;
+	return oss.str();
+}
+
+std::vector<ServerConfig> ConfigParser::_parseConfig(const std::string& content)
+{
+	std::vector<ServerConfig> servers;
+	size_t pos = 0;
+	int lineNum = 0;
+
+	while (pos < content.size())
+	{
+		size_t nextLine = content.find('\n', pos);
+		std::string line = content.substr(pos, nextLine - pos);
+		line = trim(line);
+
+		if (line.empty() || line[0] == '#') {
+			pos = nextLine + 1;
+			lineNum++;
+			continue;
+		}
+
+		if (line.find("server") == 0) {
+			_parseServerBlock(line, lineNum, content, pos, servers);
+		} else if (line.find("location") == 0) {
+			if (!servers.empty()) {
+				_parseLocationBlock(line, lineNum, content, pos, servers.back());
+			} else {
+				throw std::runtime_error("Location block found without a server block at line " + intToString(lineNum));
+			}
+		} else {
+			throw std::runtime_error("Unknown directive at line " + intToString(lineNum));
+		}
+
+		pos = nextLine == std::string::npos ? content.size() : nextLine + 1;
+		lineNum++;
+	}
+
+	return servers;
 }
