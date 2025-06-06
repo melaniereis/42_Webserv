@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 16:48:38 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:44:46 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

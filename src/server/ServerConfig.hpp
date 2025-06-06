@@ -6,13 +6,13 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:14:14 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:45:32 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "../../inc/webserv.hpp"
+#include "inc/webserv.hpp"
 
 class ServerConfig
 {

@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:17:34 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:45:06 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,8 @@ void Server::runServer()
 				_clientManager.acceptNewClient(_serverFd);
 			else if (pollFds[i].revents & (POLLIN | POLLOUT))
 				_clientManager.handleClientIO(fd);
-		}
+			}
+		// std::cout << "Num|ber of sockets" << _clientManager.getPollFds().size() << std::endl;
 	}
 }
 

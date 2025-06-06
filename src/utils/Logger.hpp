@@ -6,13 +6,13 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 15:05:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:14:45 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:45:40 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "../../inc/webserv.hpp"
+#include "inc/webserv.hpp"
 
 class Logger
 {
