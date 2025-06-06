@@ -33,23 +33,19 @@ BUILD_PATH  = .build
 SRC_PATH    = src
 SERVER_PATH = $(SRC_PATH)/server
 CLIENT_PATH = $(SRC_PATH)/client
+CONFIG_PATH  = $(SRC_PATH)/config
 UTILS_PATH  = $(SRC_PATH)/utils
-<<<<<<< HEAD
-=======
 RESPONSE_PATH = $(SRC_PATH)/response
->>>>>>> 67bfcd04716ebe35ec69a6b3ff92227defe2b8b9
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(SERVER_PATH)/Server.cpp \
-              $(SERVER_PATH)/ServerConfig.cpp \
               $(CLIENT_PATH)/Client.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
-<<<<<<< HEAD
-              $(UTILS_PATH)/Logger.cpp \
-=======
               $(RESPONSE_PATH)/Response.cpp \
-              $(UTILS_PATH)/Logger.cpp 
->>>>>>> 67bfcd04716ebe35ec69a6b3ff92227defe2b8b9
+              $(UTILS_PATH)/Logger.cpp \
+              $(CONFIG_PATH)/ServerConfig.cpp \
+			  $(CONFIG_PATH)/LocationConfig.cpp \
+			  $(CONFIG_PATH)/ConfigParser.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)

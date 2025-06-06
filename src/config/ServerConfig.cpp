@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 21:59:55 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/06 15:58:35 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,3 +30,11 @@ std::string ServerConfig::getServerName() const { return _name; }
 std::string ServerConfig::getServerRoot() const { return _root; }
 std::string ServerConfig::getServerIndex() const { return _index; }
 std::string ServerConfig::getServerNotFound() const { return _notFound; }
+
+void ServerConfig::setPort(int port) { _port = port; }
+void ServerConfig::setHost(const std::string& host) { _host = host; }
+void ServerConfig::setName(const std::string& name) { _name = name; }
+void ServerConfig::setRoot(const std::string& root) { _root = root; }
+void ServerConfig::setIndex(const std::string& index) { _index = index; }
+void ServerConfig::setNotFound(const std::string& path) { _notFound = path; }
+
