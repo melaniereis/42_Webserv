@@ -1,40 +1,44 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:11:29 by meferraz         ###   ########.fr       */
+/*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/06/05 17:14:32 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "ServerConfig.hpp"
-#include "../client/Client.hpp"
-#include "../client/ClientManager.hpp"
 
+#include "../../inc/webserv.hpp"
+#include "../server/ServerConfig.hpp"
 
-class Server
+class Client
 {
 	public:
-		Server(const ServerConfig &config);
-		~Server();
+		Client(int fd);
+		~Client();
 
-		void runServer();
+		int getClientFd() const;
+		bool isClientClosed() const;
+
+		std::string getClientRead();
+		std::string getClientWrite();
+
+		bool handleClientRead();
+		bool handleClientWrite();
 
 	private:
-		int _serverFd;
+		int _fd;
+		bool _closed;
+		std::string _readBuffer;
+		std::string _writeBuffer;
 
-		bool setupSocket();
-		bool createSocket();
-		bool setSocketOptions();
-		bool bindSocket();
-		bool makeSocketNonBlocking();
-		bool startListening();
-		void logListeningMessage();
+		std::string _index;
 
 		ServerConfig _config;
-		ClientManager _clientManager;
+
+		void closeClient();
 };

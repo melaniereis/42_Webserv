@@ -1,40 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Logger.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:11:29 by meferraz         ###   ########.fr       */
+/*   Created: 2025/06/04 15:05:37 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/06/05 17:14:45 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "ServerConfig.hpp"
-#include "../client/Client.hpp"
-#include "../client/ClientManager.hpp"
 
+#include "../../inc/webserv.hpp"
 
-class Server
+class Logger
 {
 	public:
-		Server(const ServerConfig &config);
-		~Server();
-
-		void runServer();
+		static void info(const std::string &msg);
+		static void warn(const std::string &msg);
+		static void error(const std::string &msg);
+		static void debug(const std::string &msg);
 
 	private:
-		int _serverFd;
-
-		bool setupSocket();
-		bool createSocket();
-		bool setSocketOptions();
-		bool bindSocket();
-		bool makeSocketNonBlocking();
-		bool startListening();
-		void logListeningMessage();
-
-		ServerConfig _config;
-		ClientManager _clientManager;
 };

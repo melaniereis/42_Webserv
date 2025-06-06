@@ -6,7 +6,7 @@
 #    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/03 16:39:16 by meferraz         ###   ########.fr        #
+#    Updated: 2025/06/05 17:10:53 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,9 +26,17 @@ MKDIR       = mkdir -p
 #==============================================================================#
 
 BUILD_PATH  = .build
-# SERVER_PATH = src/server
+SRC_PATH    = src
+SERVER_PATH = $(SRC_PATH)/server
+CLIENT_PATH = $(SRC_PATH)/client
+UTILS_PATH  = $(SRC_PATH)/utils
 
-SRCS        = main.cpp src/server/Server.cpp
+SRCS        = $(SRC_PATH)/main.cpp \
+              $(SERVER_PATH)/Server.cpp \
+              $(SERVER_PATH)/ServerConfig.cpp \
+              $(CLIENT_PATH)/Client.cpp \
+              $(CLIENT_PATH)/ClientManager.cpp \
+              $(UTILS_PATH)/Logger.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)

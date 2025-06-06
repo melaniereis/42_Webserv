@@ -1,40 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/05 17:11:29 by meferraz         ###   ########.fr       */
+/*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/06/05 17:14:14 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-#include "ServerConfig.hpp"
-#include "../client/Client.hpp"
-#include "../client/ClientManager.hpp"
 
+#include "../../inc/webserv.hpp"
 
-class Server
+class ServerConfig
 {
 	public:
-		Server(const ServerConfig &config);
-		~Server();
+		ServerConfig();
+		~ServerConfig();
 
-		void runServer();
+		int getServerPort() const;
+		std::string getServerHost() const;
+		std::string getServerName() const;
+		std::string getServerRoot() const;
+		std::string getServerIndex() const;
+		std::string getServerNotFound() const;
 
 	private:
-		int _serverFd;
-
-		bool setupSocket();
-		bool createSocket();
-		bool setSocketOptions();
-		bool bindSocket();
-		bool makeSocketNonBlocking();
-		bool startListening();
-		void logListeningMessage();
-
-		ServerConfig _config;
-		ClientManager _clientManager;
+		int _port;
+		std::string _host;
+		std::string _name;
+		std::string _root;
+		std::string _index;
+		std::string _notFound;
 };
