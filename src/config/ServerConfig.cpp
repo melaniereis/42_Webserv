@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/06 16:47:19 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/07 18:21:12 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,3 +39,11 @@ void ServerConfig::setIndex(const std::vector<std::string>& index) { _indexes = 
 void ServerConfig::setNotFound(const std::string& path) { _notFound = path; }
 // void ServerConfig::setMaxClients(size_t maxClients) { _maxClients = maxClients; }
 // void ServerConfig::setClientTimeout(size_t timeout) { _clientTimeout = timeout; }
+
+void ServerConfig::addLocation(const LocationConfig& loc) {
+	_locations.push_back(loc);
+}
+
+const std::vector<LocationConfig>& ServerConfig::getLocations() const {
+	return _locations;
+}

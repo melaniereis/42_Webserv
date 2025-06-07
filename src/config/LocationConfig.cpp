@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:28:01 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/06 16:32:31 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/07 18:20:12 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,3 +49,5 @@ const std::vector<std::string>& LocationConfig::getAllowedMethods() const { retu
 const std::string& LocationConfig::getUploadDir() const { return _upload_dir; }
 const std::map<int, std::string>& LocationConfig::getRedirects() const { return _redirects; }
 const std::map<std::string, std::string>& LocationConfig::getCgis() const { return _cgis; }
+
+void LocationConfig::setParentConfig(ServerConfig* config) {(void)config;}

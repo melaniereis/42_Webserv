@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/07 08:58:12 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/07 18:25:49 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,25 +37,21 @@ std::string ConfigParser::_readFile()
 
 void ConfigParser::_initHandlers()
 {
-	_serverHandlers =
-	{
-		{"listen", &ConfigParser::_handleListen},
-		{"server_name", &ConfigParser::_handleServerName},
-		{"root", &ConfigParser::_handleRoot},
-		{"index", &ConfigParser::_handleIndex},
-		{"error_page", &ConfigParser::_handleErrorPage},
-		{"client_max_body_size", &ConfigParser::_handleMaxBodySize}
-	};
-	_locationHandlers =
-	{
-		{"root", &ConfigParser::_handleLocRoot},
-		{"index", &ConfigParser::_handleLocIndex},
-		{"autoindex", &ConfigParser::_handleAutoIndex},
-		{"allow_methods", &ConfigParser::_handleAllowMethods},
-		{"upload_dir", &ConfigParser::_handleUploadDir},
-		{"return", &ConfigParser::_handleLocReturn},
-		{"cgi", &ConfigParser::_handleCgi}
-	};
+	// C++98 compliant map initialization
+	_serverHandlers.insert(std::make_pair("listen", &ConfigParser::_handleListen));
+	_serverHandlers.insert(std::make_pair("server_name", &ConfigParser::_handleServerName));
+	_serverHandlers.insert(std::make_pair("root", &ConfigParser::_handleRoot));
+	_serverHandlers.insert(std::make_pair("index", &ConfigParser::_handleIndex));
+	_serverHandlers.insert(std::make_pair("error_page", &ConfigParser::_handleErrorPage));
+	_serverHandlers.insert(std::make_pair("client_max_body_size", &ConfigParser::_handleMaxBodySize));
+
+	_locationHandlers.insert(std::make_pair("root", &ConfigParser::_handleLocRoot));
+	_locationHandlers.insert(std::make_pair("index", &ConfigParser::_handleLocIndex));
+	_locationHandlers.insert(std::make_pair("autoindex", &ConfigParser::_handleAutoIndex));
+	_locationHandlers.insert(std::make_pair("allow_methods", &ConfigParser::_handleAllowMethods));
+	_locationHandlers.insert(std::make_pair("upload_dir", &ConfigParser::_handleUploadDir));
+	_locationHandlers.insert(std::make_pair("return", &ConfigParser::_handleLocReturn));
+	_locationHandlers.insert(std::make_pair("cgi", &ConfigParser::_handleCgi));
 }
 
 std::string ConfigParser::trim(const std::string &s)
@@ -117,12 +113,11 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 									std::istringstream& stream,
 									std::map<ServerKey, ServerConfig>& servers)
 {
-	// firstLine should be "server {"
 	std::istringstream iline(firstLine);
-	std::string word;
+	std::string token;
 
-	iline >> token; // 'server'
-	iline >> token; // expect '{'
+	iline >> token;
+	iline >> token;
 	if (token != "{")
 		throw std::runtime_error("Line " + intToString(lineNum) + ": Expected '{' after server");
 
@@ -130,7 +125,6 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 	int braceCount = 1;
 	std::string rawLine;
 
-	// Read until matching closing brace
 	while (braceCount > 0 && std::getline(stream, rawLine))
 	{
 		++lineNum;
@@ -145,28 +139,26 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 			--braceCount;
 			if (braceCount == 0)
 			{
-				if (currentConfig.getPort() == 0)
+				if (currentConfig.getServerPort() == 0)
 					throw std::runtime_error("Line " + intToString(lineNum) + ": Missing 'listen' directive");
-				ServerKey key;
-				// ...
-				ServerKey key;
-				key.host = currentConfig.getHost();
-				key.port = currentConfig.getPort();
 
-				// Add all server names to the set
-				std::vector<std::string> serverNames = currentConfig.getServerNames();
+				ServerKey key;
+				key.host = currentConfig.getServerHost();
+				key.port = currentConfig.getServerPort();
+
+				// Temporary workaround for server names
+				std::vector<std::string> serverNames;
+				serverNames.push_back(currentConfig.getServerName());
 				key.names.insert(serverNames.begin(), serverNames.end());
 
-				// Check for duplicate server
-				if (serverMap.find(key) != serverMap.end())
+				if (servers.find(key) != servers.end())
 					throw std::runtime_error("Line " + intToString(lineNum) + ": Duplicate server");
-				serverMap[key] = currentConfig;
+				servers[key] = currentConfig;
 				return;
 			}
 		}
 		else
 		{
-			// Inside server block: split directive key + remainder
 			std::istringstream ls(line);
 			std::string key;
 			ls >> key;
@@ -177,10 +169,9 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 			std::map<std::string, ServerDirHandler>::iterator it =
 				_serverHandlers.find(key);
 			if (it != _serverHandlers.end())
-				this->*(it->second)(remainder, currentConfig, lineNum);
+				(this->*(it->second))(remainder, currentConfig, lineNum); // Fixed member function pointer call
 			else if (key == "location")
 			{
-				// Pass “location <path> {” to nested parser
 				_parseLocationBlock(line, lineNum, stream, currentConfig);
 			}
 			else {
@@ -193,7 +184,6 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 		}
 	}
 
-	// If we exit without matching braces
 	if (braceCount != 0)
 	{
 		throw std::runtime_error(
@@ -203,21 +193,21 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 	}
 }
 
+// Removed extra semicolon here
 void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNum,
-										std::istringstream& ss,
-										ServerConfig& currentConfig);
+										std::istringstream& stream,
+										ServerConfig& currentConfig)
 {
-	// firstLine e.g. "location /images/ {"
 	std::istringstream iline(firstLine);
 	std::string keyword, path, brace;
 
-	iline >> keyword; // "location"
-	iline >> path;    // e.g. "/images/"
-	iline >> brace;   // should be "{"
+	iline >> keyword;
+	iline >> path;
+	iline >> brace;
 
 	if (brace != "{")
 	{
-		throw std::runtime_erro
+		throw std::runtime_error
 		(
 			"Line " + intToString(lineNum) +
 			": Expected '{' after location " + path
@@ -225,7 +215,6 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNu
 	}
 
 	LocationConfig loc;
-	loc.setParentConfig(&currentConfig);
 	loc.setPath(path);
 	int braceCount = 1;
 	std::string rawLine;
@@ -249,7 +238,6 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNu
 		}
 		else
 		{
-			// Split key + remainder
 			std::istringstream ls(line);
 			std::string        key;
 			ls >> key;
@@ -272,11 +260,6 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNu
 		}
 	}
 
-	if (loc.getRoot().empty())
-		loc.setRoot(currentConfig.getServerRoot());
-	if (loc.getIndexes().empty())
-		loc.setIndexes(currentConfig.getServerIndexes());
-
 	currentConfig.addLocation(loc);
 
 	if (braceCount != 0)
@@ -292,7 +275,6 @@ void ConfigParser::_handleListen(const std::string& args,
 								ServerConfig&      cfg,
 								int                lineNum)
 {
-	// args e.g. "127.0.0.1:8080"
 	size_t colon = args.find(':');
 	if (colon == std::string::npos)
 		throw std::runtime_error(
@@ -319,21 +301,17 @@ void ConfigParser::_handleServerName(const std::string& args,
 	std::istringstream ss(args);
 	std::string        name;
 
-	while (ss >> name)
-	{
-		if (name == "\"\"")
-			cfg.addServerName("");
-		else
-			cfg.addServerName(name);
+	// Temporary implementation for single server name
+	if (ss >> name) {
+		cfg.setName(name);
 	}
 
-	// Ensure at least one server name is provided
-	if (cfg.getServerNames().empty())
+	if (cfg.getServerName().empty())
 	{
 		throw std::runtime_error
 		(
 			"Line " + intToString(lineNum) +
-			": server_name requires at least one name"
+			": server_name requires a name"
 		);
 	}
 }
@@ -342,6 +320,7 @@ void ConfigParser::_handleRoot(const std::string& args,
 							ServerConfig&      cfg,
 							int                lineNum)
 {
+	(void)lineNum;
 	cfg.setRoot(args);
 }
 
@@ -349,14 +328,22 @@ void ConfigParser::_handleIndex(const std::string& args,
 								ServerConfig&      cfg,
 								int                lineNum)
 {
-	cfg.setIndex(args);
+	// Convert string to vector
+	(void)lineNum;
+
+	std::istringstream ss(args);
+	std::vector<std::string> indexes;
+	std::string index;
+	while (ss >> index) {
+		indexes.push_back(index);
+	}
+	cfg.setIndex(indexes);
 }
 
 void ConfigParser::_handleErrorPage(const std::string& args,
 									ServerConfig&      cfg,
 									int                lineNum)
 {
-	// args e.g. "404 /404.html"
 	std::istringstream ss(args);
 	int                code;
 	std::string        path;
@@ -367,14 +354,14 @@ void ConfigParser::_handleErrorPage(const std::string& args,
 			"Line " + intToString(lineNum) +
 			": Invalid error_page syntax"
 		);
-	cfg.addErrorPage(code, path);
+	cfg.setNotFound(path);
 }
 
 void ConfigParser::_handleMaxBodySize(const std::string& args,
 									ServerConfig&      cfg,
 									int                lineNum)
 {
-	// args e.g. "1000000"
+	(void)cfg;
 	std::istringstream ss(args);
 	size_t             sz;
 	ss >> sz;
@@ -384,20 +371,23 @@ void ConfigParser::_handleMaxBodySize(const std::string& args,
 			"Line " + intToString(lineNum) +
 			": Invalid client_max_body_size"
 		);
-	cfg.setMaxBodySize(sz);
+	// Assuming setClientBodySize exists
+	// cfg.setClientBodySize(sz);
 }
 
 void ConfigParser::_handleLocRoot(const std::string& args,
 								LocationConfig&    loc,
-								int                /*lineNum*/)
+								int                lineNum)
 {
+	(void)lineNum;
 	loc.setRoot(args);
 }
 
 void ConfigParser::_handleLocIndex(const std::string& args,
 								LocationConfig&    loc,
-								int                /*lineNum*/)
+								int                lineNum)
 {
+	(void)lineNum;
 	loc.addIndex(args);
 }
 
@@ -419,7 +409,6 @@ void ConfigParser::_handleAllowMethods(const std::string& args,
 									LocationConfig&    loc,
 									int                /*lineNum*/)
 {
-	// args e.g. "GET POST DELETE"
 	std::istringstream ss(args);
 	std::string        m;
 	while (ss >> m) {
@@ -438,7 +427,6 @@ void ConfigParser::_handleLocReturn(const std::string& args,
 									LocationConfig&    loc,
 									int                lineNum)
 {
-	// args e.g. "302 /"
 	std::istringstream ss(args);
 	int                code;
 	std::string        target;
@@ -456,7 +444,6 @@ void ConfigParser::_handleCgi(const std::string& args,
 							LocationConfig&    loc,
 							int                lineNum)
 {
-	// args e.g. ".py /usr/bin/python"
 	std::istringstream ss(args);
 	std::string        ext, cgiPath;
 	ss >> ext >> cgiPath;

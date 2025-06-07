@@ -6,17 +6,15 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:51:54 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/06 16:48:51 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/07 18:16:23 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "../../inc/webserv.hpp"
-
-class ServerConfig;
-class LocationConfig;
-
+#include "LocationConfig.hpp"
+#include "ServerConfig.hpp"
 
 class ConfigParser
 {

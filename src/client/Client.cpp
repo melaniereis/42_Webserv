@@ -17,7 +17,6 @@ Client::Client(int fd)
 {
 	_fd = fd;
 	_closed = false;
-	_index = _config.getServerIndex();
 }
 
 Client::~Client(){}
@@ -46,7 +45,12 @@ bool Client::handleClientRequest()
 
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
-		std::ifstream file("pages/index.html");
+		// Use configured root and index
+		std::string root = _config.getServerRoot();
+		std::vector<std::string> indexes = _config.getServerIndexes();
+		std::string index_file = indexes.empty() ? "index.html" : indexes[0];
+
+		std::ifstream file((root + "/" + index_file).c_str());
 		std::ostringstream ss;
 		ss << file.rdbuf();
 

@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:21:53 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/06 16:26:48 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/07 18:23:17 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 #include "../../inc/webserv.hpp"
 #include "ServerConfig.hpp"
+
+class ServerConfig;
 
 class LocationConfig
 {
@@ -31,6 +33,7 @@ class LocationConfig
 		void addRedirect(int code, const std::string& target);
 		void addCgi(const std::string& ext, const std::string& cgi_path);
 		void setIndexes(const std::vector<std::string>& indexes);
+		void setParentConfig(ServerConfig* config); // NEW METHOD
 
 		// Getters
 		const std::string& getPath() const;
