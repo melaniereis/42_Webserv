@@ -6,7 +6,7 @@
 #    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/05 17:40:29 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/07 22:19:01 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,13 +31,14 @@ SERVER_PATH = $(SRC_PATH)/server
 CLIENT_PATH = $(SRC_PATH)/client
 CONFIG_PATH  = $(SRC_PATH)/config
 UTILS_PATH  = $(SRC_PATH)/utils
-RESPONSE_PATH = $(SRC_PATH)/response
+HTTP_PATH   = $(SRC_PATH)/http
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(SERVER_PATH)/Server.cpp \
               $(CLIENT_PATH)/Client.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
-              $(RESPONSE_PATH)/Response.cpp \
+              $(HTTP_PATH)/Request.cpp \
+              $(HTTP_PATH)/Response.cpp \
               $(UTILS_PATH)/Logger.cpp \
               $(CONFIG_PATH)/ServerConfig.cpp \
 			  $(CONFIG_PATH)/LocationConfig.cpp \

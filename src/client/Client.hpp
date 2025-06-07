@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/07 18:03:08 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/07 22:17:36 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 #include "../../inc/webserv.hpp"
 #include "../config/ServerConfig.hpp"
+#include "../http/Request.hpp"
+#include "../http/Response.hpp"
 
 class Client
 {
@@ -35,6 +37,11 @@ class Client
 		bool _closed;
 		std::string _readBuffer;
 		std::string _writeBuffer;
+
+		std::string _index;
+
+		Request *_request;
+		Response _response;
 
 		ServerConfig _config;
 
