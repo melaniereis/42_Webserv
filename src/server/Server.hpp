@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #pragma once
-#include "ServerConfig.hpp"
+#include "../config/ServerConfig.hpp"
 #include "../client/Client.hpp"
 #include "../client/ClientManager.hpp"
 

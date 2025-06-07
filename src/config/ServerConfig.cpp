@@ -20,7 +20,7 @@ ServerConfig::ServerConfig()
 	_host = "0.0.0.0";
 	_name = "local";
 	_root = "./pages";
-	_index = "./pages/index.html";
+	_indexes.push_back("./pages/index.html");
 	_notFound = "./pages/404.html";
 }
 
@@ -28,13 +28,14 @@ int ServerConfig::getServerPort() const { return _port; }
 std::string ServerConfig::getServerHost() const { return _host; }
 std::string ServerConfig::getServerName() const { return _name; }
 std::string ServerConfig::getServerRoot() const { return _root; }
-std::string ServerConfig::getServerIndex() const { return _index; }
+std::vector<std::string> ServerConfig::getServerIndexes() const { return _indexes; }
 std::string ServerConfig::getServerNotFound() const { return _notFound; }
 
 void ServerConfig::setPort(int port) { _port = port; }
 void ServerConfig::setHost(const std::string& host) { _host = host; }
 void ServerConfig::setName(const std::string& name) { _name = name; }
 void ServerConfig::setRoot(const std::string& root) { _root = root; }
-void ServerConfig::setIndex(const std::string& index) { _index = index; }
+void ServerConfig::setIndex(const std::vector<std::string>& index) { _indexes = index; }
 void ServerConfig::setNotFound(const std::string& path) { _notFound = path; }
-
+// void ServerConfig::setMaxClients(size_t maxClients) { _maxClients = maxClients; }
+// void ServerConfig::setClientTimeout(size_t timeout) { _clientTimeout = timeout; }

@@ -23,8 +23,8 @@ void ClientManager::handleClientIO(int fd)
 	Client* client = _clients[fd];
 	if (!client) return;
 
-	if (!client->handleClientRead()){}
-	if (!client->handleClientWrite()){}
+	if (!client->handleClientRequest()){}
+	if (!client->handleClientResponse()){}
 }
 
 

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "inc/webserv.hpp"
+#include "../../inc/webserv.hpp"
 
 class ServerConfig
 {
@@ -24,15 +24,17 @@ class ServerConfig
 		std::string getServerHost() const;
 		std::string getServerName() const;
 		std::string getServerRoot() const;
-		std::string getServerIndex() const;
+		std::vector<std::string> getServerIndexes() const;
 		std::string getServerNotFound() const;
 
 		void setPort(int port);
 		void setHost(const std::string& host);
 		void setName(const std::string& name);
 		void setRoot(const std::string& root);
-		void setIndex(const std::string& index);
+		void setIndex(const std::vector<std::string>& index);
 		void setNotFound(const std::string& path);
+		// void setMaxClients(size_t maxClients);
+		// void setClientTimeout(size_t timeout);
 
 
 	private:
@@ -40,6 +42,8 @@ class ServerConfig
 		std::string _host;
 		std::string _name;
 		std::string _root;
-		std::string _index;
+		std::vector<std::string> _indexes;
 		std::string _notFound;
+		// size_t _maxClients;
+		// size_t _clientTimeout;
 };

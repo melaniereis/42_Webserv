@@ -39,8 +39,20 @@ void LocationConfig::addCgi(const std::string& ext, const std::string& cgi_path)
 
 // Getters
 const std::string& LocationConfig::getPath() const { return _path; }
-const std::string& LocationConfig::getRoot() const { return _root; }
-const std::vector<std::string>& LocationConfig::getIndexes() const { return _indexes; }
+
+const std::string& LocationConfig::getRoot() const
+{
+	if (!_root.empty())
+		return _root;
+	return _parent->getServerRoot();
+}
+
+const std::vector<std::string>& LocationConfig::getIndexes() const
+{
+	if (!_indexes.empty())
+		return _indexes;
+	return _parent->getServerIndexes();
+}
 bool LocationConfig::isAutoIndex() const { return _autoindex; }
 const std::vector<std::string>& LocationConfig::getAllowedMethods() const { return _allowed_methods; }
 const std::string& LocationConfig::getUploadDir() const { return _upload_dir; }

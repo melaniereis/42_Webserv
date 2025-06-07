@@ -37,20 +37,25 @@ std::string ConfigParser::_readFile()
 
 void ConfigParser::_initHandlers()
 {
-	_serverHandlers["listen"] = &ConfigParser::_handleListen;
-	_serverHandlers["server_name"] = &ConfigParser::_handleServerName;
-	_serverHandlers["root"] = &ConfigParser::_handleRoot;
-	_serverHandlers["index"] = &ConfigParser::_handleIndex;
-	_serverHandlers["error_page"] = &ConfigParser::_handleErrorPage;
-	_serverHandlers["client_max_body_size"] = &ConfigParser::_handleMaxBodySize;
-
-	_locationHandlers["root"] = &ConfigParser::_handleLocRoot;
-	_locationHandlers["index"] = &ConfigParser::_handleLocIndex;
-	_locationHandlers["autoindex"] = &ConfigParser::_handleAutoIndex;
-	_locationHandlers["allow_methods"] = &ConfigParser::_handleAllowMethods;
-	_locationHandlers["upload_dir"] = &ConfigParser::_handleUploadDir;
-	_locationHandlers["return"] = &ConfigParser::_handleLocReturn;
-	_locationHandlers["cgi"] = &ConfigParser::_handleCgi;
+	_serverHandlers =
+	{
+		{"listen", &ConfigParser::_handleListen},
+		{"server_name", &ConfigParser::_handleServerName},
+		{"root", &ConfigParser::_handleRoot},
+		{"index", &ConfigParser::_handleIndex},
+		{"error_page", &ConfigParser::_handleErrorPage},
+		{"client_max_body_size", &ConfigParser::_handleMaxBodySize}
+	};
+	_locationHandlers =
+	{
+		{"root", &ConfigParser::_handleLocRoot},
+		{"index", &ConfigParser::_handleLocIndex},
+		{"autoindex", &ConfigParser::_handleAutoIndex},
+		{"allow_methods", &ConfigParser::_handleAllowMethods},
+		{"upload_dir", &ConfigParser::_handleUploadDir},
+		{"return", &ConfigParser::_handleLocReturn},
+		{"cgi", &ConfigParser::_handleCgi}
+	};
 }
 
 std::string ConfigParser::trim(const std::string &s)
@@ -69,116 +74,112 @@ std::string ConfigParser::intToString(int v)
 	return oss.str();
 }
 
-std::vector<ServerConfig> ConfigParser::_parseConfig(std::istringstream& stream) {
-	std::vector<ServerConfig> servers;
-	std::string               rawLine;
-	int                       lineNum = 0;
+std::vector<ServerConfig> ConfigParser::_parseConfig(std::istringstream& stream)
+{
+	std::map<ServerKey, ServerConfig> serverMap;
+	std::string line;
+	int lineNum = 0;
 
-	while (std::getline(stream, rawLine))
+	while (std::getline(stream, line))
+	{
+		++lineNum;
+		std::string trimmed = trim(line);
+		if (trimmed.empty() || trimmed[0] == '#')
+			continue;
+
+		std::istringstream iss(trimmed);
+		std::string token;
+		iss >> token;
+		if (token == "server")
+			_parseServerBlock(trimmed, lineNum, stream, serverMap);
+		else
+		{
+			throw std::runtime_error
+			(
+				"Line " + intToString(lineNum)
+				+ ": Unexpected token '"
+				+ token + "'"
+			);
+		}
+	}
+
+	std::vector <ServerConfig> servers;
+	std::map<ServerKey, ServerConfig>::iterator it = serverMap.begin();
+	while (it != serverMap.end())
+	{
+		servers.push_back(it->second);
+		++it;
+	}
+	return servers;
+}
+
+void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
+									std::istringstream& stream,
+									std::map<ServerKey, ServerConfig>& servers)
+{
+	// firstLine should be "server {"
+	std::istringstream iline(firstLine);
+	std::string word;
+
+	iline >> token; // 'server'
+	iline >> token; // expect '{'
+	if (token != "{")
+		throw std::runtime_error("Line " + intToString(lineNum) + ": Expected '{' after server");
+
+	ServerConfig currentConfig;
+	int braceCount = 1;
+	std::string rawLine;
+
+	// Read until matching closing brace
+	while (braceCount > 0 && std::getline(stream, rawLine))
 	{
 		++lineNum;
 		std::string line = trim(rawLine);
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		std::istringstream iss(line);
-		std::string        token;
-		iss >> token;
-
-		if (token == "server")
-		{
-			// Pass entire line ("server {") to parseServerBlock
-			_parseServerBlock(line, lineNum, stream, servers);
-		}
-		else
-		{
-			throw std::runtime_error
-			(
-				"Line " + intToString(lineNum) +
-				": Unexpected token '" + token + "'"
-			);
-		}
-	}
-
-	return servers;
-}
-
-void ConfigParser::_parseServerBlock(const std::string&       firstLine,
-									int&                     lineNum,
-									std::istringstream&      stream,
-									std::vector<ServerConfig>& servers)
-{
-	// firstLine should be "server {"
-	std::istringstream iline(firstLine);
-	std::string        word;
-	iline >> word; // "server"
-	iline >> word; // should be "{"
-	if (word != "{")
-		throw std::runtime_error(
-			"Line " + intToString(lineNum) +
-			": Expected '{' after 'server'"
-		);
-
-	ServerConfig               currentConfig;
-	std::vector<LocationConfig> locations;
-	int                        braceCount = 1;
-	std::string                rawLine;
-
-	// Read until matching closing brace
-	while (braceCount > 0 && std::getline(stream, rawLine)) {
-		++lineNum;
-		std::string line = trim(rawLine);
-		if (line.empty() || line[0] == '#')
-			continue;
-
-		if (line == "{") {
+		if (line == "{")
 			++braceCount;
-		}
-		else if (line == "}") {
+		else if (line == "}")
+		{
 			--braceCount;
-			if (braceCount == 0) {
-				// Attach any collected locations
-				for (size_t i = 0; i < locations.size(); ++i) {
-					currentConfig.addLocation(locations[i]);
-				}
-				// Merge or append this server config
-				bool merged = false;
-				for (size_t i = 0; i < servers.size(); ++i) {
-					if (servers[i].getServerPort() ==
-						currentConfig.getServerPort()) {
-						if (servers[i].getServerName() ==
-							currentConfig.getServerName()) {
-							throw std::runtime_error(
-								"Line " + intToString(lineNum) +
-								": Duplicate server_name on same port"
-							);
-						}
-						servers[i] = currentConfig;
-						merged = true;
-						break;
-					}
-				}
-				if (!merged)
-					servers.push_back(currentConfig);
+			if (braceCount == 0)
+			{
+				if (currentConfig.getPort() == 0)
+					throw std::runtime_error("Line " + intToString(lineNum) + ": Missing 'listen' directive");
+				ServerKey key;
+				// ...
+				ServerKey key;
+				key.host = currentConfig.getHost();
+				key.port = currentConfig.getPort();
+
+				// Add all server names to the set
+				std::vector<std::string> serverNames = currentConfig.getServerNames();
+				key.names.insert(serverNames.begin(), serverNames.end());
+
+				// Check for duplicate server
+				if (serverMap.find(key) != serverMap.end())
+					throw std::runtime_error("Line " + intToString(lineNum) + ": Duplicate server");
+				serverMap[key] = currentConfig;
 				return;
 			}
 		}
-		else {
+		else
+		{
 			// Inside server block: split directive key + remainder
 			std::istringstream ls(line);
-			std::string        key;
+			std::string key;
 			ls >> key;
-			std::string        remainder;
+			std::string remainder;
 			std::getline(ls, remainder);
 			remainder = trim(remainder);
 
 			std::map<std::string, ServerDirHandler>::iterator it =
 				_serverHandlers.find(key);
-			if (it != _serverHandlers.end()) {
-				ServerDirHandler handler = it->second;
-				(this->*handler)(remainder, currentConfig, lineNum);
-			}
-			else if (key == "location") {
+			if (it != _serverHandlers.end())
+				this->*(it->second)(remainder, currentConfig, lineNum);
+			else if (key == "location")
+			{
 				// Pass “location <path> {” to nested parser
 				_parseLocationBlock(line, lineNum, stream, currentConfig);
 			}
@@ -193,7 +194,8 @@ void ConfigParser::_parseServerBlock(const std::string&       firstLine,
 	}
 
 	// If we exit without matching braces
-	if (braceCount != 0) {
+	if (braceCount != 0)
+	{
 		throw std::runtime_error(
 			"Line " + intToString(lineNum) +
 			": Unexpected end of server block"
@@ -201,45 +203,52 @@ void ConfigParser::_parseServerBlock(const std::string&       firstLine,
 	}
 }
 
-void ConfigParser::_parseLocationBlock(const std::string& firstLine,
-									int&               lineNum,
-									std::istringstream& stream,
-									ServerConfig&       currentConfig)
+void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNum,
+										std::istringstream& ss,
+										ServerConfig& currentConfig);
 {
 	// firstLine e.g. "location /images/ {"
 	std::istringstream iline(firstLine);
-	std::string        keyword, path, brace;
+	std::string keyword, path, brace;
+
 	iline >> keyword; // "location"
 	iline >> path;    // e.g. "/images/"
 	iline >> brace;   // should be "{"
+
 	if (brace != "{")
-		throw std::runtime_error(
+	{
+		throw std::runtime_erro
+		(
 			"Line " + intToString(lineNum) +
 			": Expected '{' after location " + path
 		);
+	}
 
 	LocationConfig loc;
+	loc.setParentConfig(&currentConfig);
 	loc.setPath(path);
-	int            braceCount = 1;
-	std::string    rawLine;
+	int braceCount = 1;
+	std::string rawLine;
 
-	while (braceCount > 0 && std::getline(stream, rawLine)) {
+	while (braceCount > 0 && std::getline(stream, rawLine))
+	{
 		++lineNum;
 		std::string line = trim(rawLine);
 		if (line.empty() || line[0] == '#')
 			continue;
 
-		if (line == "{") {
+		if (line == "{")
 			++braceCount;
-		}
 		else if (line == "}") {
 			--braceCount;
-			if (braceCount == 0) {
+			if (braceCount == 0)
+			{
 				currentConfig.addLocation(loc);
 				return;
 			}
 		}
-		else {
+		else
+		{
 			// Split key + remainder
 			std::istringstream ls(line);
 			std::string        key;
@@ -250,11 +259,10 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine,
 
 			std::map<std::string, LocationDirHandler>::iterator it =
 				_locationHandlers.find(key);
-			if (it != _locationHandlers.end()) {
-				LocationDirHandler handler = it->second;
-				(this->*handler)(remainder, loc, lineNum);
-			}
-			else {
+			if (it != _locationHandlers.end())
+				(this->*(it->second))(remainder, loc, lineNum);
+			else
+			{
 				throw std::runtime_error(
 					"Line " + intToString(lineNum) +
 					": Unknown directive '" + key +
@@ -264,7 +272,8 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine,
 		}
 	}
 
-	if (braceCount != 0) {
+	if (braceCount != 0)
+	{
 		throw std::runtime_error(
 			"Line " + intToString(lineNum) +
 			": Unexpected end of location block"
@@ -286,10 +295,10 @@ void ConfigParser::_handleListen(const std::string& args,
 
 	std::string host = args.substr(0, colon);
 	int         port = std::atoi(args.substr(colon + 1).c_str());
-	if (port <= 0)
+	if (port <= 0 || port > 65535)
 		throw std::runtime_error(
 			"Line " + intToString(lineNum) +
-			": Invalid port number"
+			": Invalid port number (must be 1-65535)"
 		);
 
 	cfg.setHost(host);
@@ -300,7 +309,26 @@ void ConfigParser::_handleServerName(const std::string& args,
 									ServerConfig&      cfg,
 									int                /*lineNum*/)
 {
-	cfg.setName(args);
+	std::istringstream ss(args);
+	std::string        name;
+
+	while (ss >> name)
+	{
+		if (name == "\"\"")
+			cfg.addServerName("");
+		else
+			cfg.addServerName(name);
+	}
+
+	// Ensure at least one server name is provided
+	if (cfg.getServerNames().empty())
+	{
+		throw std::runtime_error
+		(
+			"Line " + std::to_string(lineNum) +
+			": server_name requires at least one name"
+		);
+	}
 }
 
 void ConfigParser::_handleRoot(const std::string& args,
@@ -327,7 +355,8 @@ void ConfigParser::_handleErrorPage(const std::string& args,
 	std::string        path;
 	ss >> code >> path;
 	if (ss.fail() || !ss.eof())
-		throw std::runtime_error(
+		throw std::runtime_error
+		(
 			"Line " + intToString(lineNum) +
 			": Invalid error_page syntax"
 		);
@@ -343,7 +372,8 @@ void ConfigParser::_handleMaxBodySize(const std::string& args,
 	size_t             sz;
 	ss >> sz;
 	if (ss.fail() || !ss.eof())
-		throw std::runtime_error(
+		throw std::runtime_error
+		(
 			"Line " + intToString(lineNum) +
 			": Invalid client_max_body_size"
 		);
@@ -371,7 +401,8 @@ void ConfigParser::_handleAutoIndex(const std::string& args,
 	if (args == "on")       loc.setAutoIndex(true);
 	else if (args == "off") loc.setAutoIndex(false);
 	else
-		throw std::runtime_error(
+		throw std::runtime_error
+		(
 			"Line " + intToString(lineNum) +
 			": Invalid autoindex value"
 		);
@@ -406,7 +437,8 @@ void ConfigParser::_handleLocReturn(const std::string& args,
 	std::string        target;
 	ss >> code >> target;
 	if (ss.fail() || !ss.eof())
-		throw std::runtime_error(
+		throw std::runtime_error
+		(
 			"Line " + intToString(lineNum) +
 			": Invalid return syntax"
 		);
@@ -421,10 +453,23 @@ void ConfigParser::_handleCgi(const std::string& args,
 	std::istringstream ss(args);
 	std::string        ext, cgiPath;
 	ss >> ext >> cgiPath;
-	if (ss.fail() || !ss.eof())
-		throw std::runtime_error(
+
+	if (ext.empty() || ext[0] != '.')
+	{
+		throw std::runtime_error
+		(
 			"Line " + intToString(lineNum) +
-			": Invalid cgi syntax"
+			": Invalid CGI extension (must start with '.')"
 		);
+	}
+	if (access(cgiPath.c_str(), X_OK) != 0)
+	{
+		throw std::runtime_error
+		(
+			"Line " + intToString(lineNum) +
+			": CGI path '" + cgiPath +
+			"' is not executable"
+		);
+	}
 	loc.addCgi(ext, cgiPath);
 }

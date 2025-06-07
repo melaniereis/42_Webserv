@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "inc/webserv.hpp"
-#include "../server/ServerConfig.hpp"
+#include "../../inc/webserv.hpp"
+#include "../config/ServerConfig.hpp"
 
 class Client
 {

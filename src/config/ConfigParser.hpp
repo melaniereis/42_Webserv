@@ -13,8 +13,9 @@
 #pragma once
 
 #include "../../inc/webserv.hpp"
-#include "ServerConfig.hpp"
-#include "LocationConfig.hpp"
+
+class ServerConfig;
+class LocationConfig;
 
 
 class ConfigParser
@@ -31,25 +32,32 @@ class ConfigParser
 														LocationConfig& loc,
 														int lineNum);
 
+		struct ServerKey
+		{
+			std::string host;
+			int port;
+			std::set<std::string> names;
+
+			bool operator<(const ServerKey& other) const
+			{
+				if (port != other.port)  return port < other.port;
+				if (names != other.names)  return names < other.names;
+				return host < other.host;
+			}
+		};
+
 		std::string _path;
 		std::map<std::string, ServerDirHandler> _serverHandlers;
 		std::map<std::string, LocationDirHandler> _locationHandlers;
 
 		std::string _readFile();
-		std::vector<ServerConfig> _parseConfig(const std::string& content);
-		void _parseServerBlock(const std::string& firstLine,
-							int& lineNum,
-							const std::string& content,
-							size_t& pos,
-							std::vector<ServerConfig>& servers);
-		void _parseLocationBlock(const std::string& firstLine,
-								int& lineNum,
-								const std::string& content,
-								size_t& pos,
+		std::vector<ServerConfig> _parseConfig(std::istringstream& stream);
+		void _parseServerBlock(const std::string& firstLine, int& lineNum,
+							std::istringstream& stream,
+							std::map<ServerKey, ServerConfig>& servers);
+		void _parseLocationBlock(const std::string& firstLine, int& lineNum,
+								std::istringstream& stream,
 								ServerConfig& currentConfig);
-
-		// Handler registration
-		void _initHandlers();
 
 		// Server directive handlers
 		void _handleListen(const std::string& args, ServerConfig& cfg, int lineNum);
@@ -69,6 +77,7 @@ class ConfigParser
 		void _handleCgi(const std::string& args, LocationConfig& loc, int lineNum);
 
 		// Helpers
+		void _initHandlers();
 		static std::string trim(const std::string& s);
 		static std::string intToString(int v);
 };
