@@ -27,8 +27,8 @@ ServerConfig::ServerConfig()
 int ServerConfig::getServerPort() const { return _port; }
 std::string ServerConfig::getServerHost() const { return _host; }
 std::string ServerConfig::getServerName() const { return _name; }
-std::string ServerConfig::getServerRoot() const { return _root; }
-std::vector<std::string> ServerConfig::getServerIndexes() const { return _indexes; }
+const std::string& ServerConfig::getServerRoot() const { return _root; }
+const std::vector<std::string>& ServerConfig::getServerIndexes() const { return _indexes; }
 std::string ServerConfig::getServerNotFound() const { return _notFound; }
 
 void ServerConfig::setPort(int port) { _port = port; }

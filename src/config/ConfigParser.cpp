@@ -272,6 +272,13 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNu
 		}
 	}
 
+	if (loc.getRoot().empty())
+		loc.setRoot(currentConfig.getServerRoot());
+	if (loc.getIndexes().empty())
+		loc.setIndexes(currentConfig.getServerIndexes());
+
+	currentConfig.addLocation(loc);
+
 	if (braceCount != 0)
 	{
 		throw std::runtime_error(
@@ -307,7 +314,7 @@ void ConfigParser::_handleListen(const std::string& args,
 
 void ConfigParser::_handleServerName(const std::string& args,
 									ServerConfig&      cfg,
-									int                /*lineNum*/)
+									int                lineNum)
 {
 	std::istringstream ss(args);
 	std::string        name;
@@ -325,7 +332,7 @@ void ConfigParser::_handleServerName(const std::string& args,
 	{
 		throw std::runtime_error
 		(
-			"Line " + std::to_string(lineNum) +
+			"Line " + intToString(lineNum) +
 			": server_name requires at least one name"
 		);
 	}
@@ -333,14 +340,14 @@ void ConfigParser::_handleServerName(const std::string& args,
 
 void ConfigParser::_handleRoot(const std::string& args,
 							ServerConfig&      cfg,
-							int                /*lineNum*/)
+							int                lineNum)
 {
 	cfg.setRoot(args);
 }
 
 void ConfigParser::_handleIndex(const std::string& args,
 								ServerConfig&      cfg,
-								int                /*lineNum*/)
+								int                lineNum)
 {
 	cfg.setIndex(args);
 }

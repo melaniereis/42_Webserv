@@ -36,23 +36,14 @@ void LocationConfig::addAllowedMethod(const std::string& m) { _allowed_methods.p
 void LocationConfig::setUploadDir(const std::string& dir) { _upload_dir = dir;}
 void LocationConfig::addRedirect(int code, const std::string& target) { _redirects[code] = target; }
 void LocationConfig::addCgi(const std::string& ext, const std::string& cgi_path) { _cgis[ext] = cgi_path; }
-
+void LocationConfig::setIndexes(const std::vector<std::string>& indexes)
+{
+	_indexes = indexes;
+}
 // Getters
 const std::string& LocationConfig::getPath() const { return _path; }
-
-const std::string& LocationConfig::getRoot() const
-{
-	if (!_root.empty())
-		return _root;
-	return _parent->getServerRoot();
-}
-
-const std::vector<std::string>& LocationConfig::getIndexes() const
-{
-	if (!_indexes.empty())
-		return _indexes;
-	return _parent->getServerIndexes();
-}
+const std::string& LocationConfig::getRoot() const { return _root; }
+const std::vector<std::string>& LocationConfig::getIndexes() const { return _indexes; }
 bool LocationConfig::isAutoIndex() const { return _autoindex; }
 const std::vector<std::string>& LocationConfig::getAllowedMethods() const { return _allowed_methods; }
 const std::string& LocationConfig::getUploadDir() const { return _upload_dir; }

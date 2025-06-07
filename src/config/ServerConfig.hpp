@@ -23,8 +23,8 @@ class ServerConfig
 		int getServerPort() const;
 		std::string getServerHost() const;
 		std::string getServerName() const;
-		std::string getServerRoot() const;
-		std::vector<std::string> getServerIndexes() const;
+		const std::string& getServerRoot() const;
+		const std::vector<std::string>& getServerIndexes() const;
 		std::string getServerNotFound() const;
 
 		void setPort(int port);

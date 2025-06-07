@@ -30,7 +30,7 @@ class LocationConfig
 		void setUploadDir(const std::string& dir);
 		void addRedirect(int code, const std::string& target);
 		void addCgi(const std::string& ext, const std::string& cgi_path);
-		void setParentConfig(const ServerConfig& parent);
+		void setIndexes(const std::vector<std::string>& indexes);
 
 		// Getters
 		const std::string& getPath() const;
@@ -51,5 +51,4 @@ class LocationConfig
 		std::string _upload_dir;
 		std::map<int, std::string> _redirects;
 		std::map<std::string, std::string> _cgis;
-		const ServerConfig* _parent;
 };
