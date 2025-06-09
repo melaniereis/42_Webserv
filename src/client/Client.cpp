@@ -44,8 +44,8 @@ bool Client::handleClientRequest()
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
 		_request = new Request(_readBuffer);
+		
 	}
-
 	std::cout << "Client Request:\n" << _readBuffer << std::endl;
 	return true;
 }
