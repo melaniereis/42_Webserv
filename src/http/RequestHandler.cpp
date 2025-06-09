@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 23:10:27 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 23:39:35 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,6 @@ Response RequestHandler::handleGetMethod(const Request &request)
 	if (path == "/")
 		path = "index.html";
 	
-	std::string fullPath = "pages/" + path;
-	std::ifstream file(fullPath.c_str());
-	
-	// Prevent directory traversal
 	if (path.find("..") != std::string::npos)
 	{
 		response.setStatus(403, "Forbidden");
@@ -48,6 +44,9 @@ Response RequestHandler::handleGetMethod(const Request &request)
 		return response;
 	}
 
+	std::string fullPath = "pages/" + path;
+	std::ifstream file(fullPath.c_str());
+	
 	if (!file)
 	{
 		response.setStatus(404, "Not Found");
@@ -64,7 +63,6 @@ Response RequestHandler::handleGetMethod(const Request &request)
 	response.setBody(ss.str());
 	response.setHeader("Content-Type", contentType);
 	return response;
-	
 }
 
 Response RequestHandler::handlePostMethod(const Request &request)
@@ -98,4 +96,3 @@ bool endsWith(const std::string &str, const std::string &suffix)
 		return false;
 	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
-
