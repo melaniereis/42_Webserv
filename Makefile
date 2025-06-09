@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/06 16:34:17 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/09 18:38:42 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
               $(HTTP_PATH)/Request.cpp \
               $(HTTP_PATH)/Response.cpp \
+              $(HTTP_PATH)/RequestHandler.cpp \
               $(UTILS_PATH)/Logger.cpp 
 
 INCLUDES    = -I.

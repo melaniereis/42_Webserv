@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 17:53:43 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 18:22:53 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,14 @@ Request::Request(const std::string &rawRequest)
 	std::istringstream stream(rawRequest);
 	std::string line;
 
+	// Storing the first line of the request in _method, _path and _httpVerion
 	if (std::getline(stream, line))
 	{
 		std::istringstream requestLine(line);
 		requestLine >> _method >> _path >> _httpVersion;
-		// std::cout << "Method: " << _method << std::endl;
-		// std::cout << "Path: " << _path << std::endl;
-		// std::cout << "Http: " << _httpVersion << std::endl;
 	}
+
+	// Storing all headers in _headers and trimming both key and value
 	while (std::getline(stream, line))
 	{
 		if (line == "\r" || line.empty())

@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/06 16:33:54 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 18:44:47 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "../server/ServerConfig.hpp"
 #include "../http/Request.hpp"
 #include "../http/Response.hpp"
+#include "../http/RequestHandler.hpp"
 
 class Client
 {
