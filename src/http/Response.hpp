@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 17:34:46 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/06 19:06:42 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 22:47:53 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ class Response
 		void setHeader(const std::string &key, const std::string &value);
 		void setBody(const std::string &body);
 		std::string toString() const;
-		
+
 	private:
 		int _statusCode;
 		std::string _statusMessage;

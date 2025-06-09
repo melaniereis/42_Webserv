@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 18:44:50 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 23:11:38 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ class Request
 	public:
 		Request(const std::string &rawRequest);
 
-		//Getters
 		const std::string &getReqMethod() const;
 		const std::string &getReqPath() const;
 		const std::string &getReqHttpVersion() const;

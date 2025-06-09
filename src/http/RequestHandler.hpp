@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 18:44:51 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 23:11:14 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,5 +22,10 @@ class RequestHandler
 		static Response handleGetMethod(const Request &request);
 		static Response handlePostMethod(const Request &request);
 		static Response handleDeleteMethod(const Request &request);
-	private:
+
+		private:
 };
+
+//Multipurpose Internet Mail Extensions
+std::string getMimeType(const std::string &extension);
+bool endsWith(const std::string &str, const std::string &suffix);

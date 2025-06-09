@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 20:47:12 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 23:10:27 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,10 @@ Response RequestHandler::handleGetMethod(const Request &request)
 	std::ostringstream ss;
 	ss << file.rdbuf();
 
+	std::string contentType = getMimeType(path);
 	response.setStatus(200, "OK");
 	response.setBody(ss.str());
-	response.setHeader("Content-Type", "text/html");
+	response.setHeader("Content-Type", contentType);
 	return response;
 	
 }
@@ -79,3 +80,22 @@ Response RequestHandler::handleDeleteMethod(const Request &request)
 	Response res;
 	return res;
 }
+
+std::string getMimeType(const std::string &extension)
+{
+	if (endsWith(extension, ".html")) return "text/html";
+	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg")) return "image/jpeg";
+	if (endsWith(extension, ".css")) return "text/css";
+	if (endsWith(extension, ".js")) return "application/javascript";
+	if (endsWith(extension, ".png")) return "image/png";
+	if (endsWith(extension, ".gif")) return "image/gif";
+	return "application/octet-stream";
+}
+
+bool endsWith(const std::string &str, const std::string &suffix)
+{
+	if (str.length() < suffix.length())
+		return false;
+	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
+}
+
