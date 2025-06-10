@@ -26,8 +26,9 @@ bool Client::handleClientRequest()
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
 
 	if (bytesRead < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
+		if (errno == EAGAIN || errno == EWOULDBLOCK){
 			return true;
+		}
 		perror("recv failed");
 		_closed = true;
 		return false;
@@ -52,6 +53,16 @@ bool Client::handleClientRequest()
 
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
+		if (_readBuffer.find("HTTP/") == std::string::npos)
+		{
+			Response res;
+			res.setStatus(400, "Bad Request");
+			res.setHeader("Content-Type", "text/html");
+			res.setBody("<html><body><h1>400 Bad Request</h1></body></html>");
+			_writeBuffer = res.toString();
+			return true;
+		}
+
 		Logger::info("Received request: " + _readBuffer);
 
 		std::string root = _config.getServerRoot();

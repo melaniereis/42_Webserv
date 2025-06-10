@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/10 16:10:10 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/10 21:53:15 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ void Server::runServer()
 		pfd.events = POLLIN;
 		pfd.revents = 0;
 		pollFds.push_back(pfd);
+		_serverSocketSet.insert(_serverFds[i]);
 	}
 
 	while(true)
@@ -93,6 +94,7 @@ bool Server::setupSocket()
 
 		logListeningMessage(ip, port);
 		_serverFds.push_back(fd);
+		_serverSocketSet.insert(fd);
 	}
 
 	return true;
