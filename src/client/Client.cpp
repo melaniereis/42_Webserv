@@ -12,13 +12,12 @@
 
 #include "Client.hpp"
 
-Client::Client(int fd)
-{
-	_fd = fd;
-	_closed = false;
-}
+Client::Client(int fd, const ServerConfig &config)
+	: _fd(fd), _closed(false), _readBuffer(""), _writeBuffer(""), _request(NULL), _config(config)
+{}
 
 Client::~Client(){}
+
 
 bool Client::handleClientRequest()
 {
@@ -39,6 +38,16 @@ bool Client::handleClientRequest()
 
 	buffer[bytesRead] = '\0';
 	_readBuffer += buffer;
+
+	if (_readBuffer.size() > _config.getClientMaxBodySize())
+	{
+		Response res;
+		res.setStatus(413, "Payload Too Large");
+		res.setHeader("Content-Type", "text/html");
+		res.setBody("<html><body><h1>413 Payload Too Large</h1></body></html>");
+		_writeBuffer = res.toString();
+		return true;
+	}
 
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
@@ -89,4 +98,12 @@ bool Client::handleClientResponse()
 	return true;
 }
 
-
+void Client::closeClient()
+{
+	if (_fd > 0)
+	{
+		close(_fd);
+		_fd = -1;
+	}
+	_closed = true;
+}

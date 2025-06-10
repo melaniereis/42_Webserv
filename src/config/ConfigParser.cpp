@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/07 18:25:49 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/10 15:08:17 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,12 @@ std::string ConfigParser::_readFile()
 
 void ConfigParser::_initHandlers()
 {
-	// C++98 compliant map initialization
 	_serverHandlers.insert(std::make_pair("listen", &ConfigParser::_handleListen));
 	_serverHandlers.insert(std::make_pair("server_name", &ConfigParser::_handleServerName));
 	_serverHandlers.insert(std::make_pair("root", &ConfigParser::_handleRoot));
 	_serverHandlers.insert(std::make_pair("index", &ConfigParser::_handleIndex));
 	_serverHandlers.insert(std::make_pair("error_page", &ConfigParser::_handleErrorPage));
-	_serverHandlers.insert(std::make_pair("client_max_body_size", &ConfigParser::_handleMaxBodySize));
+	_serverHandlers.insert(std::make_pair("client_max_body_size", &ConfigParser::_handleClientMaxBodySize));
 
 	_locationHandlers.insert(std::make_pair("root", &ConfigParser::_handleLocRoot));
 	_locationHandlers.insert(std::make_pair("index", &ConfigParser::_handleLocIndex));
@@ -139,16 +138,16 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 			--braceCount;
 			if (braceCount == 0)
 			{
-				if (currentConfig.getServerPort() == 0)
+				if (currentConfig.getListens().empty())
 					throw std::runtime_error("Line " + intToString(lineNum) + ": Missing 'listen' directive");
 
 				ServerKey key;
-				key.host = currentConfig.getServerHost();
-				key.port = currentConfig.getServerPort();
+				key.host = currentConfig.getListens().begin()->second.getIp();
+				key.port = currentConfig.getListens().begin()->second.getPort();
 
 				// Temporary workaround for server names
 				std::vector<std::string> serverNames;
-				serverNames.push_back(currentConfig.getServerName());
+				serverNames = currentConfig.getServerNames();
 				key.names.insert(serverNames.begin(), serverNames.end());
 
 				if (servers.find(key) != servers.end())
@@ -193,7 +192,6 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 	}
 }
 
-// Removed extra semicolon here
 void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNum,
 										std::istringstream& stream,
 										ServerConfig& currentConfig)
@@ -272,26 +270,12 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNu
 }
 
 void ConfigParser::_handleListen(const std::string& args,
-								ServerConfig&      cfg,
-								int                lineNum)
+                                  ServerConfig& cfg,
+                                  int lineNum)
 {
-	size_t colon = args.find(':');
-	if (colon == std::string::npos)
-		throw std::runtime_error(
-			"Line " + intToString(lineNum) +
-			": Invalid listen syntax"
-		);
-
-	std::string host = args.substr(0, colon);
-	int         port = std::atoi(args.substr(colon + 1).c_str());
-	if (port <= 0 || port > 65535)
-		throw std::runtime_error(
-			"Line " + intToString(lineNum) +
-			": Invalid port number (must be 1-65535)"
-		);
-
-	cfg.setHost(host);
-	cfg.setPort(port);
+	(void)lineNum;
+	std::string trimmed = trim(args);
+	cfg.addListen(trimmed);
 }
 
 void ConfigParser::_handleServerName(const std::string& args,
@@ -301,17 +285,15 @@ void ConfigParser::_handleServerName(const std::string& args,
 	std::istringstream ss(args);
 	std::string        name;
 
-	// Temporary implementation for single server name
-	if (ss >> name) {
-		cfg.setName(name);
-	}
-
-	if (cfg.getServerName().empty())
+	if (ss >> name)
 	{
-		throw std::runtime_error
-		(
+		cfg.addServerName(name);
+	}
+	else
+	{
+		throw std::runtime_error(
 			"Line " + intToString(lineNum) +
-			": server_name requires a name"
+			": Invalid server_name syntax"
 		);
 	}
 }
@@ -357,22 +339,21 @@ void ConfigParser::_handleErrorPage(const std::string& args,
 	cfg.setNotFound(path);
 }
 
-void ConfigParser::_handleMaxBodySize(const std::string& args,
+void ConfigParser::_handleClientMaxBodySize(const std::string& args,
 									ServerConfig&      cfg,
 									int                lineNum)
 {
-	(void)cfg;
 	std::istringstream ss(args);
 	size_t             sz;
 	ss >> sz;
-	if (ss.fail() || !ss.eof())
-		throw std::runtime_error
-		(
+
+	if (ss.fail()) {
+		throw std::runtime_error(
 			"Line " + intToString(lineNum) +
 			": Invalid client_max_body_size"
 		);
-	// Assuming setClientBodySize exists
-	// cfg.setClientBodySize(sz);
+	}
+	cfg.setClientMaxBodySize(sz);
 }
 
 void ConfigParser::_handleLocRoot(const std::string& args,

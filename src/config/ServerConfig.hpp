@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/07 18:23:27 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/10 14:50:51 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,11 @@
 
 #include "../../inc/webserv.hpp"
 #include "LocationConfig.hpp"
+#include "ListenConfig.hpp"
 
 class LocationConfig;
+class ServerConfig;
+class ListenConfig;
 
 class ServerConfig
 {
@@ -23,36 +26,34 @@ class ServerConfig
 		ServerConfig();
 		~ServerConfig();
 
-		int getServerPort() const;
-		std::string getServerHost() const;
-		std::string getServerName() const;
+		// Getters
+		const std::map<std::string, ListenConfig>& getListens() const;
+		const std::vector<std::string>& getServerNames() const;
 		const std::string& getServerRoot() const;
 		const std::vector<std::string>& getServerIndexes() const;
+		std::string getServerHost() const;
+		unsigned int getServerPort() const;
 		std::string getServerNotFound() const;
+		size_t getClientMaxBodySize() const;
 
-		void setPort(int port);
-		void setHost(const std::string& host);
-		void setName(const std::string& name);
+		// Setters
+		void addListen(const std::string& token);
+		void addServerName(const std::string& name);
 		void setRoot(const std::string& root);
+		void setHost(const std::string& host);
+		void setPort(unsigned int port);
 		void setIndex(const std::vector<std::string>& index);
 		void setNotFound(const std::string& path);
-		// void setMaxClients(size_t maxClients);
-		// void setClientTimeout(size_t timeout);
-		void addServerName(const std::string& name) { _name = name; }
-		void addErrorPage(int code, const std::string& path) { (void)code; _notFound = path; }
-		void setMaxBodySize(size_t size) { (void)size; /* implement */ }
+		void setClientMaxBodySize(size_t size);
 		void addLocation(const LocationConfig& loc);
 		const std::vector<LocationConfig>& getLocations() const;
 
 	private:
-		int _port;
-		std::string _host;
-		std::string _name;
+		std::map<std::string, ListenConfig> _listens;
+		std::vector<std::string> _serverNames;
 		std::string _root;
 		std::vector<std::string> _indexes;
 		std::string _notFound;
-		// size_t _maxClients;
-		// size_t _clientTimeout;
-
+		size_t _clientMaxBodySize;
 		std::vector<LocationConfig> _locations;
 };

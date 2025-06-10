@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/07 22:18:31 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:07:46 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,120 +15,155 @@
 #include "../client/Client.hpp"
 #include "../utils/Logger.hpp"
 
-Server::Server(const ServerConfig &config) : _serverFd(-1), _config(config) {}
+Server::Server(const ServerConfig &config) : _config(config) {}
 
 Server::~Server(){}
 
-// ==========
-// Server Run
-// ==========
-
 void Server::runServer()
 {
+	//Create all server sockets
 	if (!setupSocket())
-		return ;
+		return;
 
-	struct pollfd pfd;
+	std::vector<struct pollfd> &pollFds = _clientManager.getPollFds();
 
-	pfd.fd = _serverFd;
-	pfd.events = POLLIN;
-	pfd.revents = 0;
-	_clientManager.getPollFds().push_back(pfd);
+	// Add server sockets to poll
+	for (size_t i = 0; i < _serverFds.size(); ++i)
+	{
+		struct pollfd pfd;
+		pfd.fd = _serverFds[i];
+		pfd.events = POLLIN;
+		pfd.revents = 0;
+		pollFds.push_back(pfd);
+	}
 
 	while(true)
 	{
-		std::vector<struct pollfd> &pollFds = _clientManager.getPollFds();
-
-		int pollResult = poll(pollFds.data(), pollFds.size(), 10);
+		int pollResult = poll(pollFds.data(), pollFds.size(), -1);
 		if (pollResult < 0)
 		{
 			std::perror("poll");
 			break;
 		}
-		for (size_t i = 0; i < pollFds.size(); i++)
+
+		// Temporary vector to avoid modifying while iterating
+		std::vector<struct pollfd> tempFds = pollFds;
+
+		for (size_t i = 0; i < tempFds.size(); i++)
 		{
-			int fd = pollFds[i].fd;
-			if (fd == _serverFd && (pollFds[i].revents &POLLIN))
-				_clientManager.acceptNewClient(_serverFd);
-			else if (pollFds[i].revents & (POLLIN | POLLOUT))
-				_clientManager.handleClientIO(fd);
+			struct pollfd &pfd = tempFds[i];
+			if (pfd.revents == 0) continue;
+
+			if (_serverSocketSet.find(pfd.fd) != _serverSocketSet.end())
+			{
+				if (pfd.revents & POLLIN)
+					_clientManager.acceptNewClient(pfd.fd, _config);
 			}
-		// std::cout << "Num|ber of sockets" << _clientManager.getPollFds().size() << std::endl;
+			else if (pfd.revents & (POLLIN | POLLOUT))
+			{
+				_clientManager.handleClientIO(pfd.fd);
+			}
+
+			if (pfd.revents & POLLHUP)
+			{
+				_clientManager.removeClient(pfd.fd);
+			}
+		}
 	}
 }
 
 bool Server::setupSocket()
 {
-	if (!createSocket()) return false;
-	if (!setSocketOptions()) return false;
-	if (!bindSocket()) return false;
-	if (!makeSocketNonBlocking()) return false;
-	if (!startListening()) return false;
+	const std::map<std::string, ListenConfig>& listens = _config.getListens();
+	for (std::map<std::string, ListenConfig>::const_iterator listen = listens.begin(); listen != listens.end(); ++listen)
+	{
+		const std::string& ip = listen->second.getIp();
+		int port = listen->second.getPort();
 
-	logListeningMessage();
-	return true;
-}
+		int fd = createSocket(ip, port);
+		if (fd < 0)
+			return false;
 
-bool Server::createSocket()
-{
-	_serverFd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_serverFd < 0) {
-		std::perror("socket");
-		return false;
+		if (!setSocketOptions(fd) || !bindSocket(fd, ip, port) ||
+			!makeSocketNonBlocking(fd) || !startListening(fd))
+		{
+			close(fd);
+			return false;
+		}
+
+		logListeningMessage(ip, port);
+		_serverFds.push_back(fd);
 	}
+
 	return true;
 }
 
-bool Server::setSocketOptions()
+int Server::createSocket(const std::string& ip, int port)
+{
+	(void)ip; (void)port;
+	int fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd < 0)
+	{
+		std::perror("socket");
+		return -1;
+	}
+	return fd;
+}
+
+bool Server::setSocketOptions(int fd)
 {
 	int opt = 1;
-	if (setsockopt(_serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
 		std::perror("setsockopt");
-		close(_serverFd);
+		close(fd);
 		return false;
 	}
 	return true;
 }
 
-bool Server::bindSocket()
+bool Server::bindSocket(int fd, const std::string& ip, int port)
 {
 	struct sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(_config.getServerPort());
+	addr.sin_port = htons(port);
+	inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
 
-	if (bind(_serverFd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 		std::perror("bind");
-		close(_serverFd);
+		close(fd);
 		return false;
 	}
 	return true;
 }
 
-bool Server::makeSocketNonBlocking()
+bool Server::makeSocketNonBlocking(int fd)
 {
-	if (fcntl(_serverFd, F_SETFL, O_NONBLOCK) < 0) {
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags < 0) {
 		std::perror("fcntl");
-		close(_serverFd);
+		close(fd);
+		return false;
+	}
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+		std::perror("fcntl");
+		close(fd);
 		return false;
 	}
 	return true;
 }
 
-bool Server::startListening()
+bool Server::startListening(int fd)
 {
-	if (listen(_serverFd, SOMAXCONN) < 0) {
+	if (listen(fd, SOMAXCONN) < 0) {
 		std::perror("listen");
-		close(_serverFd);
+		close(fd);
 		return false;
 	}
 	return true;
 }
-
-void Server::logListeningMessage()
+void Server::logListeningMessage(const std::string& ip, int port)
 {
 	std::ostringstream oss;
-	oss << "🟢 Server is listening on port " << _config.getServerPort();
+	oss << "Server listening on " << ip << ":" << port;
 	Logger::info(oss.str());
 }

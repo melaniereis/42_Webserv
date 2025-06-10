@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:39:08 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 21:11:12 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 21:49:14 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ class ClientManager
 		ClientManager();
 		~ClientManager();
 
-		void acceptNewClient(int serverFd);
+		void acceptNewClient(int serverFd, const ServerConfig &config);
 		void handleClientIO(int fd);
 		void removeClient(int fd);
 		std::vector<struct pollfd> &getPollFds();
@@ -28,7 +28,7 @@ class ClientManager
 	private:
 		std::map<int, Client *> _clients;
 		std::vector<struct pollfd> _pollFds;
-		
+
 		void updatePollFds();
 };
 

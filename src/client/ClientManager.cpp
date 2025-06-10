@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/07 22:18:09 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/09 22:16:54 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void ClientManager::handleClientIO(int fd)
 }
 
 
-void ClientManager::acceptNewClient(int serverFd)
+void ClientManager::acceptNewClient(int serverFd, const ServerConfig &config)
 {
 	int clientFd = accept(serverFd, NULL, NULL);
 	if (clientFd < 0)
@@ -43,7 +43,7 @@ void ClientManager::acceptNewClient(int serverFd)
 	fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
 	// Create new Client object
-	Client* client = new Client(clientFd);
+	Client* client = new Client(clientFd, config);
 	_clients[clientFd] = client;
 
 	// Add pollfd
@@ -53,4 +53,22 @@ void ClientManager::acceptNewClient(int serverFd)
 	pfd.revents = 0;
 	_pollFds.push_back(pfd);
 	std::cout << "Client connected" << std::endl;
+}
+
+void ClientManager::removeClient(int fd)
+{
+	if (_clients.find(fd) != _clients.end())
+	{
+		delete _clients[fd];
+		_clients.erase(fd);
+		// Remove from pollfds
+		for (size_t i = 0; i < _pollFds.size(); ++i)
+		{
+			if (_pollFds[i].fd == fd)
+			{
+				_pollFds.erase(_pollFds.begin() + i);
+				break;
+			}
+		}
+	}
 }

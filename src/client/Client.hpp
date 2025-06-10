@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/07 22:17:36 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/09 22:30:04 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,9 @@
 class Client
 {
 	public:
-		Client(int fd);
+		Client(int fd, const ServerConfig &config);
 		~Client();
+
 
 		int getClientFd() const;
 		bool isClientClosed() const;
@@ -31,6 +32,7 @@ class Client
 
 		bool handleClientRequest();
 		bool handleClientResponse();
+		void closeClient();
 
 	private:
 		int _fd;
@@ -43,7 +45,5 @@ class Client
 		Request *_request;
 		Response _response;
 
-		ServerConfig _config;
-
-		void closeClient();
+		const ServerConfig &_config;
 };

@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:51:54 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/07 18:16:23 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/09 17:46:19 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ class ConfigParser
 		void _handleRoot(const std::string& args, ServerConfig& cfg, int lineNum);
 		void _handleIndex(const std::string& args, ServerConfig& cfg, int lineNum);
 		void _handleErrorPage(const std::string& args, ServerConfig& cfg, int lineNum);
-		void _handleMaxBodySize(const std::string& args, ServerConfig& cfg, int lineNum);
+		void _handleClientMaxBodySize(const std::string& args, ServerConfig& cfg, int lineNum);
 
 		// Location directive handlers
 		void _handleLocRoot(const std::string& args, LocationConfig& loc, int lineNum);

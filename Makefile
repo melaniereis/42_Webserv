@@ -6,7 +6,7 @@
 #    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/07 22:19:01 by meferraz         ###   ########.fr        #
+#    Updated: 2025/06/10 14:51:34 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,6 +43,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(CONFIG_PATH)/ServerConfig.cpp \
 			  $(CONFIG_PATH)/LocationConfig.cpp \
 			  $(CONFIG_PATH)/ConfigParser.cpp \
+			  $(CONFIG_PATH)/ListenConfig.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)

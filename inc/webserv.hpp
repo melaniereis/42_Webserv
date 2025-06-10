@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:18:32 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 20:06:32 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 22:18:08 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@
 #include <cstring>
 
 #include <set>
+#include <arpa/inet.h>
 
 // Includes
 #include "macros.hpp"
