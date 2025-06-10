@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/10 15:02:42 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:11:06 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ ServerConfig::ServerConfig()
 	_indexes.push_back("./pages/index.html");
 	_notFound = "./pages/404.html";
 	_clientMaxBodySize = 1048576; // 1 MB
-	addListen("0.0.0.0:8080");
 	// _maxClients = 100; // Default value, can be set later
 	// _clientTimeout = 60; // Default value, can be set later
 }
