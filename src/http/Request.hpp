@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/07 16:01:15 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 23:11:38 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,13 @@ class Request
 	public:
 		Request(const std::string &rawRequest);
 
+		const std::string &getReqMethod() const;
+		const std::string &getReqPath() const;
+		const std::string &getReqHttpVersion() const;
+		const std::string &getReqBody() const;
+		const std::string &getReqHeaderKey(const std::string &key) const;
+		const std::map<std::string, std::string> &getReqHeaders() const;
+
 	private:
 		std::string _method;
 		std::string _path;
@@ -26,3 +33,7 @@ class Request
 		std::string _body;
 		std::map<std::string, std::string> _headers;
 };
+
+// headers will hold
+	// Host | User-Agent | Accept | Content-Type
+	// Content-Length | Connection | Authorization
