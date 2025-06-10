@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
+#    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/02 13:21:30 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/10 22:05:06 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,11 +26,27 @@ MKDIR       = mkdir -p
 #==============================================================================#
 
 BUILD_PATH  = .build
-# SERVER_PATH = src/server
+SRC_PATH    = src
+SERVER_PATH = $(SRC_PATH)/server
+CLIENT_PATH = $(SRC_PATH)/client
+CONFIG_PATH  = $(SRC_PATH)/config
+UTILS_PATH  = $(SRC_PATH)/utils
+HTTP_PATH   = $(SRC_PATH)/http
 
-SRCS        = main.cpp
+SRCS        = $(SRC_PATH)/main.cpp \
+              $(SERVER_PATH)/Server.cpp \
+              $(CLIENT_PATH)/Client.cpp \
+              $(CLIENT_PATH)/ClientManager.cpp \
+              $(HTTP_PATH)/Request.cpp \
+              $(HTTP_PATH)/Response.cpp \
+              $(HTTP_PATH)/RequestHandler.cpp \
+              $(UTILS_PATH)/Logger.cpp \
+              $(CONFIG_PATH)/ServerConfig.cpp \
+			  $(CONFIG_PATH)/LocationConfig.cpp \
+			  $(CONFIG_PATH)/ConfigParser.cpp \
+			  $(CONFIG_PATH)/ListenConfig.cpp \
 
-INCLUDES    = -I.
+INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)
 
 #==============================================================================#

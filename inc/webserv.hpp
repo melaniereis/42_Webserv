@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:18:32 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/02 14:15:57 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/09 22:18:08 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <poll.h>
 
 // Filesystem & CGI
 #include <sys/stat.h>
@@ -38,5 +39,9 @@
 #include <cerrno>
 #include <cstring>
 
-// Includes 
+#include <set>
+#include <arpa/inet.h>
+
+// Includes
 #include "macros.hpp"
+
