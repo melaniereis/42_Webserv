@@ -14,10 +14,11 @@
 
 Client::Client(int fd, const ServerConfig &config)
 	: _fd(fd), _closed(false), _readBuffer(""), _writeBuffer(""), _request(NULL), _config(config)
-{}
+{
+	Logger::info("New connection accepted");
+}
 
-Client::~Client(){}
-
+Client::~Client() {}
 
 bool Client::handleClientRequest()
 {
@@ -51,7 +52,8 @@ bool Client::handleClientRequest()
 
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
-		// Use configured root and index
+		Logger::info("Received request: " + _readBuffer);
+
 		std::string root = _config.getServerRoot();
 		std::vector<std::string> indexes = _config.getServerIndexes();
 		std::string index_file = indexes.empty() ? "index.html" : indexes[0];
@@ -73,10 +75,11 @@ bool Client::handleClientRequest()
 	return true;
 }
 
-
 bool Client::handleClientResponse()
 {
 	if (_writeBuffer.empty()) return true;
+
+	Logger::info("Sending response: " + _writeBuffer);
 
 	ssize_t bytesSent = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
 	if (bytesSent <= 0)

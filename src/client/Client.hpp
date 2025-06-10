@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 22:30:04 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/10 16:25:31 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "../config/ServerConfig.hpp"
 #include "../http/Request.hpp"
 #include "../http/Response.hpp"
+#include "../utils/Logger.hpp"
 
 class Client
 {
