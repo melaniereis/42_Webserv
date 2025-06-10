@@ -28,6 +28,7 @@ bool Client::handleClientRequest()
 	if (bytesRead < 0)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
+		{
 			return true;
 		}
 		perror("recv failed");
