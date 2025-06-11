@@ -28,9 +28,7 @@ bool Client::handleClientRequest()
 	if (bytesRead < 0)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-		{
 			return true;
-		}
 		perror("recv failed");
 		_closed = true;
 		return false;
@@ -43,51 +41,14 @@ bool Client::handleClientRequest()
 
 	buffer[bytesRead] = '\0';
 	_readBuffer += buffer;
-
-	if (_readBuffer.size() > _config.getClientMaxBodySize())
-	{
-		Response res;
-		res.setStatus(413, "Payload Too Large");
-		res.setHeader("Content-Type", "text/html");
-		res.setBody("<html><body><h1>413 Payload Too Large</h1></body></html>");
-		_writeBuffer = res.toString();
-		return true;
-	}
-
+	
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
-		if (_readBuffer.find("HTTP/") == std::string::npos)
-		{
-			Response res;
-			res.setStatus(400, "Bad Request");
-			res.setHeader("Content-Type", "text/html");
-			res.setBody("<html><body><h1>400 Bad Request</h1></body></html>");
-			_writeBuffer = res.toString();
-			return true;
-		}
-
-		Logger::info("Received request: " + _readBuffer);
-
-		std::string root = _config.getServerRoot();
-		std::vector<std::string> indexes = _config.getServerIndexes();
-		std::string index_file = indexes.empty() ? "index.html" : indexes[0];
-
-		std::ifstream file((root + "/" + index_file).c_str());
-		std::ostringstream ss;
-		ss << file.rdbuf();
-
-		Response res;
-		res.setStatus(200, "OK");
-		res.setHeader("Content-Type", "text/html");
-		res.setBody(ss.str());
-
-		_writeBuffer = res.toString();
 		_request = new Request(_readBuffer);
-		_response = RequestHandler::handle(*_request);
+		_response = RequestHandler::handle(*_request, _config);
 		_writeBuffer = _response.toString();
-
 	}
-	std::cout << "Client Request:\n" << _readBuffer << std::endl;
+	// std::cout << "Client Request:" << _readBuffer << std::endl;
 	return true;
 }
 

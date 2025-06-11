@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/10 22:05:08 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/11 22:33:07 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void ServerConfig::setHost(const std::string& host)
 	if (!_listens.empty())
 	{
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(host + ":" + std::to_string(listen.getPort()));
+		listen = ListenConfig(host + ":" + intToString(listen.getPort()));
 	}
 }
 
@@ -66,10 +66,16 @@ void ServerConfig::setPort(unsigned int port)
 	if (!_listens.empty())
 	{
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(listen.getIp() + ":" + std::to_string(port));
+		listen = ListenConfig(listen.getIp() + ":" + intToString(port));
 	}
 }
 
+std::string ServerConfig::intToString(int v)
+{
+	std::ostringstream oss;
+	oss << v;
+	return oss.str();
+}
 
 void ServerConfig::addLocation(const LocationConfig& loc) {
 	_locations.push_back(loc);

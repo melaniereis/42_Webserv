@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/10 14:50:51 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/11 22:33:04 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ class ServerConfig
 		void addLocation(const LocationConfig& loc);
 		const std::vector<LocationConfig>& getLocations() const;
 
-	private:
+		
+		private:
 		std::map<std::string, ListenConfig> _listens;
 		std::vector<std::string> _serverNames;
 		std::string _root;
@@ -56,4 +57,6 @@ class ServerConfig
 		std::string _notFound;
 		size_t _clientMaxBodySize;
 		std::vector<LocationConfig> _locations;
+		
+		std::string intToString(int v);
 };

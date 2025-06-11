@@ -6,16 +6,16 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 23:39:35 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/11 22:54:50 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
 
-Response RequestHandler::handle(const Request &request)
+Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
 	if (request.getReqMethod() == "GET")
-		return RequestHandler::handleGetMethod(request);
+		return RequestHandler::handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST")
 		return RequestHandler::handlePostMethod(request);
 	else if (request.getReqMethod() == "DELETE")
@@ -28,14 +28,20 @@ Response RequestHandler::handle(const Request &request)
 	}
 }
 
-Response RequestHandler::handleGetMethod(const Request &request)
+Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
 	std::string path = request.getReqPath();
 
 	if (path == "/")
 		path = "index.html";
-	
+
+	std::vector<std::string> indexes = config.getServerIndexes();
+	for (size_t i = 0; i < indexes.size(); i++)
+	{
+		std::cout << "req handler > " << indexes[i] << std::endl;
+	}
+
 	if (path.find("..") != std::string::npos)
 	{
 		response.setStatus(403, "Forbidden");
