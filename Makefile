@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/11 22:46:50 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/12 18:20:29 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,17 +34,18 @@ UTILS_PATH  = $(SRC_PATH)/utils
 HTTP_PATH   = $(SRC_PATH)/http
 
 SRCS        = $(SRC_PATH)/main.cpp \
+              $(CONFIG_PATH)/ServerConfig.cpp \
+			  $(CONFIG_PATH)/LocationConfig.cpp \
+			  $(CONFIG_PATH)/ConfigParser.cpp \
+			  $(CONFIG_PATH)/ListenConfig.cpp \
               $(SERVER_PATH)/Server.cpp \
               $(CLIENT_PATH)/Client.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
               $(HTTP_PATH)/Request.cpp \
               $(HTTP_PATH)/Response.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
+              $(HTTP_PATH)/HttpStatus.cpp \
               $(UTILS_PATH)/Logger.cpp \
-              $(CONFIG_PATH)/ServerConfig.cpp \
-			  $(CONFIG_PATH)/LocationConfig.cpp \
-			  $(CONFIG_PATH)/ConfigParser.cpp \
-			  $(CONFIG_PATH)/ListenConfig.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)

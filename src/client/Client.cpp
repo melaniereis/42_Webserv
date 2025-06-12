@@ -48,7 +48,7 @@ bool Client::handleClientRequest()
 		_response = RequestHandler::handle(*_request, _config);
 		_writeBuffer = _response.toString();
 	}
-	// std::cout << "Client Request:" << _readBuffer << std::endl;
+	std::cout << "Client Request:" << _readBuffer << std::endl;
 	return true;
 }
 

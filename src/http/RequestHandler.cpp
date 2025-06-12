@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/11 22:54:50 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/12 18:26:46 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,51 +15,44 @@
 Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
 	if (request.getReqMethod() == "GET")
-		return RequestHandler::handleGetMethod(request, config);
+		return handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST")
-		return RequestHandler::handlePostMethod(request);
+		return handlePostMethod(request, config);
 	else if (request.getReqMethod() == "DELETE")
-		return RequestHandler::handleDeleteMethod(request);
+		return handleDeleteMethod(request);
 	else
 	{
 		Response response;
-		response.setStatus(405, "Method not allowed");
-		return response;
+		return HttpStatus::setErrorResponse(response, 405);
 	}
 }
 
+// ============
+// GET METHOD
+// ============
 Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
 	std::string path = request.getReqPath();
-
-	if (path == "/")
-		path = "index.html";
-
+	std::string rootDir = config.getServerRoot();
 	std::vector<std::string> indexes = config.getServerIndexes();
-	for (size_t i = 0; i < indexes.size(); i++)
+	
+	if (path == "/")
 	{
-		std::cout << "req handler > " << indexes[i] << std::endl;
+		std::string indexFile = resolveMultipleIndexes(rootDir, indexes);
+		if (indexFile.empty())
+			return HttpStatus::setErrorResponse(response, 403);
+		path = "/" + indexFile;
 	}
-
+	
 	if (path.find("..") != std::string::npos)
-	{
-		response.setStatus(403, "Forbidden");
-		response.setBody("<h1>403 Forbidden</h1>");
-		response.setHeader("Content-Type", "text/html");
-		return response;
-	}
-
-	std::string fullPath = "pages/" + path;
+		return HttpStatus::setErrorResponse(response, 403);
+	
+	std::string fullPath = rootDir + path;
 	std::ifstream file(fullPath.c_str());
 	
 	if (!file)
-	{
-		response.setStatus(404, "Not Found");
-		response.setBody("<h1>404 Not Found</h1>");
-		response.setHeader("Content-Type", "text/html");
-		return response;
-	}
+		return HttpStatus::setErrorResponse(response, 404);
 	
 	std::ostringstream ss;
 	ss << file.rdbuf();
@@ -71,18 +64,29 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	return response;
 }
 
-Response RequestHandler::handlePostMethod(const Request &request)
+// ============
+// POST METHOD
+// ============
+Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
-	(void)request;
-	Response res;
-	return res;
+	Response response;
+	std::string path = request.getReqPath();
+	std::string uploadDir = "uploads";
+	
+	(void)config;
+	return response;
 }
 
-Response RequestHandler::handleDeleteMethod(const Request &request)
+std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes)
 {
-	(void)request;
-	Response res;
-	return res;
+	for (size_t i = 0; i < indexes.size(); i++)
+	{
+		std::string fullPath = rootDir + "/" + indexes[i];
+		std::ifstream file(fullPath.c_str());
+		if (file)
+			return indexes[i];
+	}
+	return "";
 }
 
 std::string getMimeType(const std::string &extension)
@@ -101,4 +105,21 @@ bool endsWith(const std::string &str, const std::string &suffix)
 	if (str.length() < suffix.length())
 		return false;
 	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
+}
+
+
+
+
+
+// ============
+// DELETE METHOD
+// ============
+
+Response RequestHandler::handleDeleteMethod(const Request &request)
+{
+	// std::remove
+	// In my case, the webserv accepts DELETE method and the CGI handles the delete thing
+	(void)request;
+	Response res;
+	return res;
 }
