@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/11 16:44:32 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/12 21:40:41 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ class ServerConfig
 		void setNotFound(const std::string& path);
 		void setClientMaxBodySize(size_t size);
 		void addLocation(const LocationConfig& loc);
-		const std::vector<LocationConfig>& getLocations() const;
+		const std::map<std::string, LocationConfig>& getLocations() const;
+		const LocationConfig* findLocation(const std::string& requestPath) const;
 
 	private:
 		std::map<std::string, ListenConfig> _listens;
@@ -55,7 +56,7 @@ class ServerConfig
 		std::vector<std::string> _indexes;
 		std::string _notFound;
 		size_t _clientMaxBodySize;
-		std::vector<LocationConfig> _locations;
+		std::map<std::string, LocationConfig> _locations;
 
 		std::string intToString(int v);
 };

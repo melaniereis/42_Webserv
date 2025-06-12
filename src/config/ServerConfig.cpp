@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/11 22:01:21 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/12 22:14:25 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,13 @@ void ServerConfig::setPort(unsigned int port)
 }
 
 
-void ServerConfig::addLocation(const LocationConfig& loc) {
-	_locations.push_back(loc);
+void ServerConfig::addLocation(const LocationConfig& loc)
+{
+	std::string path = loc.getPath();
+	if (_locations.find(path) != _locations.end()) {
+		throw std::runtime_error("Duplicate location path: " + path);
+	}
+	_locations[path] = loc;
 }
 
 void ServerConfig::addListen(const std::string& token)
@@ -98,7 +103,8 @@ const std::map<std::string, ListenConfig>& ServerConfig::getListens() const
 	return _listens;
 }
 
-const std::vector<LocationConfig>& ServerConfig::getLocations() const {
+const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const
+{
 	return _locations;
 }
 
@@ -107,4 +113,57 @@ std::string ServerConfig::intToString(int v)
 	std::ostringstream oss;
 	oss << v;
 	return oss.str();
+}
+
+const LocationConfig* ServerConfig::findLocation(const std::string& requestPath) const
+{
+	if (requestPath.empty()) {
+		std::map<std::string, LocationConfig>::const_iterator root_it = _locations.find("/");
+		return (root_it != _locations.end()) ? &root_it->second : NULL;
+	}
+
+	std::string path = requestPath;
+
+	// Normalize path - ensure it starts with '/'
+	if (path[0] != '/') path = "/" + path;
+
+	// Try exact match first
+	std::map<std::string, LocationConfig>::const_iterator it = _locations.find(path);
+	if (it != _locations.end()) {
+		return &it->second;
+	}
+
+	// Try with trailing slash
+	if (path[path.size()-1] != '/') {
+		std::string dirPath = path + "/";
+		it = _locations.find(dirPath);
+		if (it != _locations.end()) {
+			return &it->second;
+		}
+	}
+
+	// Find the best matching prefix
+	std::string bestMatch = "";
+	const LocationConfig* bestLocation = NULL;
+
+	for (it = _locations.begin(); it != _locations.end(); ++it) {
+		const std::string& locPath = it->first;
+
+		// Check if this location is a prefix of the request path
+		if (path.compare(0, locPath.length(), locPath) == 0) {
+			// Use the longest matching prefix
+			if (locPath.length() > bestMatch.length()) {
+				bestMatch = locPath;
+				bestLocation = &it->second;
+			}
+		}
+	}
+
+	if (bestLocation) {
+		return bestLocation;
+	}
+
+	// Final fallback to root location
+	it = _locations.find("/");
+	return (it != _locations.end()) ? &it->second : NULL;
 }
