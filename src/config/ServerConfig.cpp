@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/10 22:05:08 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/11 22:01:21 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,16 +57,18 @@ void ServerConfig::setHost(const std::string& host)
 	if (!_listens.empty())
 	{
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(host + ":" + std::to_string(listen.getPort()));
+		listen = ListenConfig(host + ":" + intToString(listen.getPort()));
 	}
 }
 
 void ServerConfig::setPort(unsigned int port)
 {
+	if (port < 1 || port > 65535)
+		throw std::runtime_error("Invalid port number");
 	if (!_listens.empty())
 	{
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(listen.getIp() + ":" + std::to_string(port));
+		listen = ListenConfig(listen.getIp() + ":" + intToString(listen.getPort()));
 	}
 }
 
@@ -98,4 +100,11 @@ const std::map<std::string, ListenConfig>& ServerConfig::getListens() const
 
 const std::vector<LocationConfig>& ServerConfig::getLocations() const {
 	return _locations;
+}
+
+std::string ServerConfig::intToString(int v)
+{
+	std::ostringstream oss;
+	oss << v;
+	return oss.str();
 }

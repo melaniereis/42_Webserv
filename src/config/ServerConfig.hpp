@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/10 14:50:51 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/11 16:44:32 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,4 +56,6 @@ class ServerConfig
 		std::string _notFound;
 		size_t _clientMaxBodySize;
 		std::vector<LocationConfig> _locations;
+
+		std::string intToString(int v);
 };

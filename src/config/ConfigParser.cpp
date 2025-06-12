@@ -6,16 +6,13 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/10 15:08:17 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/11 22:02:45 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigParser.hpp"
 
-ConfigParser::ConfigParser(const std::string& path) : _path(path)
-{
-	_initHandlers();
-}
+ConfigParser::ConfigParser(const std::string& path) : _path(path) {	_initHandlers(); }
 
 std::vector<ServerConfig> ConfigParser::parse()
 {
@@ -310,8 +307,12 @@ void ConfigParser::_handleIndex(const std::string& args,
 								ServerConfig&      cfg,
 								int                lineNum)
 {
-	// Convert string to vector
-	(void)lineNum;
+	if (args.empty())
+		throw std::runtime_error
+		(
+			"Line " + intToString(lineNum) +
+			": Index directive requires at least one argument"
+		);
 
 	std::istringstream ss(args);
 	std::vector<std::string> indexes;
@@ -360,7 +361,20 @@ void ConfigParser::_handleLocRoot(const std::string& args,
 								LocationConfig&    loc,
 								int                lineNum)
 {
-	(void)lineNum;
+	if (args.empty())
+		throw std::runtime_error
+			(
+				"Line " + intToString(lineNum) +
+				": root directive requires a path argument"
+			);
+	if (access(args.c_str(), R_OK) != 0)
+		throw std::runtime_error
+			(
+				"Line " + intToString(lineNum) +
+				": root '" + args +
+				"' is not readable"
+			);
+	// Set the root directory for the location
 	loc.setRoot(args);
 }
 
@@ -368,7 +382,12 @@ void ConfigParser::_handleLocIndex(const std::string& args,
 								LocationConfig&    loc,
 								int                lineNum)
 {
-	(void)lineNum;
+	if (args.empty())
+		throw std::runtime_error
+		(
+			"Line " + intToString(lineNum) +
+			": Index directive requires at least one argument"
+		);
 	loc.addIndex(args);
 }
 
@@ -388,8 +407,16 @@ void ConfigParser::_handleAutoIndex(const std::string& args,
 
 void ConfigParser::_handleAllowMethods(const std::string& args,
 									LocationConfig&    loc,
-									int                /*lineNum*/)
+									int                lineNum)
 {
+	if (args.empty())
+		throw std::runtime_error
+		(
+			"Line " + intToString(lineNum) +
+			": allow_methods directive requires at least one method"
+		);
+
+	// Split the args by whitespace and add each method to the allowed methods
 	std::istringstream ss(args);
 	std::string        m;
 	while (ss >> m) {
@@ -399,8 +426,14 @@ void ConfigParser::_handleAllowMethods(const std::string& args,
 
 void ConfigParser::_handleUploadDir(const std::string& args,
 									LocationConfig&    loc,
-									int                /*lineNum*/)
+									int                lineNum)
 {
+	if (args.empty())
+		throw std::runtime_error
+		(
+			"Line " + intToString(lineNum) +
+			": upload_dir directive requires a directory path"
+		);
 	loc.setUploadDir(args);
 }
 
