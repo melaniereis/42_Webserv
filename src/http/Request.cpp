@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 18:22:53 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/12 19:34:22 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,11 @@ Request::Request(const std::string &rawRequest)
 			_headers[key] = value;
 		}
 	}
+	
+	// Getting the body
+	std::ostringstream bodyStream;
+	bodyStream << stream.rdbuf();
+	_body = bodyStream.str();
 }
 
 const std::string &Request::getReqMethod() const { return _method; }

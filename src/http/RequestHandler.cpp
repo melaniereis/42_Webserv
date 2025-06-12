@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 18:26:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/12 20:37:53 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	else
 	{
 		Response response;
-		return HttpStatus::setErrorResponse(response, 405);
+		return HttpStatus::buildResponse(response, 405);
 	}
 }
 
@@ -41,18 +41,18 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	{
 		std::string indexFile = resolveMultipleIndexes(rootDir, indexes);
 		if (indexFile.empty())
-			return HttpStatus::setErrorResponse(response, 403);
+			return HttpStatus::buildResponse(response, 403);
 		path = "/" + indexFile;
 	}
 	
 	if (path.find("..") != std::string::npos)
-		return HttpStatus::setErrorResponse(response, 403);
+		return HttpStatus::buildResponse(response, 403);
 	
 	std::string fullPath = rootDir + path;
 	std::ifstream file(fullPath.c_str());
 	
 	if (!file)
-		return HttpStatus::setErrorResponse(response, 404);
+		return HttpStatus::buildResponse(response, 404);
 	
 	std::ostringstream ss;
 	ss << file.rdbuf();
@@ -64,15 +64,77 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	return response;
 }
 
+
+
+// Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
+// {
+// 	Response response;
+// 	std::string path = request.getReqPath();
+// 	std::string root = config.getServerRoot();
+// 	std::string uploadDir = "uploads";
+	
+	
+// 	std::string fileName = request.getReqHeaderKey("X-Filename");
+	
+// 	if (fileName.empty())
+// 		fileName = "default_upload_name";
+	
+// 	if (path != "/uploads")
+// 		return HttpStatus::buildResponse(response, 403);
+
+// 	std::string fullPath =  root + "/" + uploadDir + "/" + fileName;
+// 	std::ofstream outFile(fullPath.c_str(), std::ios::binary);
+	
+// 	if (!outFile)
+// 		return HttpStatus::buildResponse(response, 500);
+	
+// 	outFile.write(request.getReqBody().c_str(), request.getReqBody().size());
+// 	outFile.close();
+
+// 	return HttpStatus::buildResponse(response, 200);
+// }
+
+
 // ============
 // POST METHOD
 // ============
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	std::string path = request.getReqPath();
-	std::string uploadDir = "uploads";
+	std::string contentType = request.getReqHeaderKey("Content-Type");
+
+	if (contentType.find("multipart/form-data") != std::string::npos)
+		return handleMultipartPost(request, config);
+	if (contentType == "application/x-www-form-urlencoded")
+		return handleFormPost(request, config);
+	if (contentType == "application/octet-stream")
+		return handleBinaryPost(request, config);
+	// if (contentType == "application/json")
+	// 	return handleJsonPost(request, config);
+	return HttpStatus::buildResponse(response, 415);
 	
+}
+
+Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
+{
+	Response response;
+	(void)request;
+	(void)config;
+	return response;
+}
+
+Response RequestHandler::handleFormPost(const Request &request, const ServerConfig &config)
+{
+	Response response;
+	(void)request;
+	(void)config;
+	return response;
+}
+
+Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
+{
+	Response response;
+	(void)request;
 	(void)config;
 	return response;
 }
@@ -106,9 +168,6 @@ bool endsWith(const std::string &str, const std::string &suffix)
 		return false;
 	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
-
-
-
 
 
 // ============

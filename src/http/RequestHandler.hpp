@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 18:17:32 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/12 20:26:19 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,13 @@ class RequestHandler
 		static Response handlePostMethod(const Request &request, const ServerConfig &config);
 		static Response handleDeleteMethod(const Request &request);
 
-		private:
+		// Post Content-Types
+		static Response handleMultipartPost(const Request &request, const ServerConfig &config);
+		static Response handleFormPost(const Request &request, const ServerConfig &config);
+		static Response handleBinaryPost(const Request &request, const ServerConfig &config);
+		//static Response handleJsonPost(const Request &request, const ServerConfig &config); // maybe
+	
+	private:
 };
 
 //Multipurpose Internet Mail Extensions

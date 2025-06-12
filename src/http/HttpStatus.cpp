@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 18:06:02 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 18:21:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/12 20:33:54 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ std::string HttpStatus::getMessage(int code)
 		case 404: return "Not Found";
 		case 405: return "Method Not Allowed";
 		case 413: return "Payload Too Large";
+		case 415: return "Unsupported Media Type";
 		case 500: return "Internal Server Error";
 		case 501: return "Not Implemented";
 		default:  return "Unknown Status";
@@ -45,7 +46,7 @@ std::string HttpStatus::generateHtmlBody(int code)
 	return html.str();
 }
 
-Response HttpStatus::setErrorResponse(Response &response, int code)
+Response HttpStatus::buildResponse(Response &response, int code)
 {
 	response.setStatus(code, getMessage(code));
 	response.setHeader("Content-Type", "text/html");
