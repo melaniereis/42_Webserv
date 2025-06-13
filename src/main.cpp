@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 15:33:09 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 21:57:22 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,6 @@
 #include "./config/ConfigParser.hpp"
 #include "./config/LocationConfig.hpp"
 #include "./utils/Logger.hpp"
-
-void testLocationFinding(const ServerConfig& server) {
-	std::cout << "\n===== Testing Location Finding =====" << std::endl;
-
-	std::map<std::string, LocationConfig> locations = server.getLocations();
-	std::cout << "Server " << server.getServerHost() << ":" << server.getServerPort() << " has " << locations.size() << " location(s):" << std::endl;
-	std::map<std::string, LocationConfig>::iterator it = locations.begin();
-	while (it != locations.end()) {
-		std::cout << "Location path key: " << it->first << std::endl;
-		std::cout << "Location path: " << it->second.getPath() << std::endl;
-		it++;
-	}
-}
 
 int main(int argc, char** argv)
 {
@@ -73,11 +60,6 @@ int main(int argc, char** argv)
 			{
 				Server server = serverConfigs[i];
 				ServerConfig& config = serverConfigs[i];
-
-				for (size_t i = 0; i < serverConfigs.size(); ++i) {
-				std::cout << "\n\n==== Testing Server " << i + 1 << " ====" << std::endl;
-				testLocationFinding(serverConfigs[i]);
-				}
 
 				Logger::info("Starting web server " + std::to_string(i + 1) + " on " +
 					config.getServerHost() + ":" + std::to_string(config.getServerPort()));
