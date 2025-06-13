@@ -6,12 +6,11 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:28:01 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 17:36:34 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 21:53:43 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "LocationConfig.hpp"
-#include <cctype> // for std::isalpha
 
 LocationConfig::LocationConfig() :
 	_path(""),

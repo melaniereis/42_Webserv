@@ -6,17 +6,14 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:21:53 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 17:36:42 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 21:54:26 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <map>
-#include <stdexcept>
 #include "ServerConfig.hpp"
+#include "../../inc/webserv.hpp"
 
 class ServerConfig;
 

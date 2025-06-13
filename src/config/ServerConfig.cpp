@@ -6,32 +6,30 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 16:24:08 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 21:46:21 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerConfig.hpp"
 
-ServerConfig::~ServerConfig(){}
-
-ServerConfig::ServerConfig()
+ServerConfig::ServerConfig() :
+	_root("./pages"),
+	_notFound("./pages/404.html"),
+	_clientMaxBodySize(1048576)  // 1 MB
 {
-	_root = "./pages";
 	_indexes.push_back("./pages/index.html");
-	_notFound = "./pages/404.html";
-	_clientMaxBodySize = 1048576; // 1 MB
-	// _maxClients = 100; // Default value, can be set later
-	// _clientTimeout = 60; // Default value, can be set later
 }
+
+ServerConfig::~ServerConfig() {}
 
 const std::string& ServerConfig::getServerRoot() const { return _root; }
 const std::vector<std::string>& ServerConfig::getServerIndexes() const { return _indexes; }
 std::string ServerConfig::getServerNotFound() const { return _notFound; }
 std::string ServerConfig::getServerHost() const
 {
-	std::string ip = _listens.empty() ? "0.0.0.0" : _listens.begin()->second.getIp();
-	return ip;
+	return _listens.empty() ? "0.0.0.0" : _listens.begin()->second.getIp();
 }
+
 unsigned int ServerConfig::getServerPort() const
 {
 	return _listens.empty() ? 8080 : _listens.begin()->second.getPort();
@@ -41,41 +39,103 @@ const std::vector<std::string>& ServerConfig::getServerNames() const
 {
 	return _serverNames;
 }
-void ServerConfig::addServerName(const std::string& name)
+
+std::string ServerConfig::_intToString(int v) const
 {
-	if (std::find(_serverNames.begin(), _serverNames.end(), name) == _serverNames.end())
-		_serverNames.push_back(name);
+	std::ostringstream oss;
+	oss << v;
+	return oss.str();
 }
 
-void ServerConfig::setRoot(const std::string& root) { _root = root; }
-void ServerConfig::setIndex(const std::vector<std::string>& index) { _indexes = index; }
-void ServerConfig::setNotFound(const std::string& path) { _notFound = path; }
-// void ServerConfig::setMaxClients(size_t maxClients) { _maxClients = maxClients; }
-// void ServerConfig::setClientTimeout(size_t timeout) { _clientTimeout = timeout; }
+void ServerConfig::_validatePort(unsigned int port) const
+{
+	if (port < 1 || port > 65535) {
+		std::ostringstream oss;
+		oss << "Invalid port number: " << port
+			<< " (must be between 1 and 65535)";
+		throw std::runtime_error(oss.str());
+	}
+}
+
+void ServerConfig::_validatePath(const std::string& path) const
+{
+	if (path.empty()) {
+		throw std::runtime_error("Path cannot be empty");
+	}
+}
+
+void ServerConfig::_validateServerName(const std::string& name) const
+{
+	if (name.empty()) {
+		throw std::runtime_error("Server name cannot be empty");
+	}
+
+	// Check for invalid characters
+	for (size_t i = 0; i < name.size(); i++) {
+		unsigned char c = name[i];
+		if (!std::isalnum(c) && c != '-' && c != '.' && c != '_') {
+			std::ostringstream oss;
+			oss << "Invalid character in server name: '" << name << "'";
+			throw std::runtime_error(oss.str());
+		}
+	}
+}
+
+void ServerConfig::addServerName(const std::string& name)
+{
+	_validateServerName(name);
+
+	// Check for duplicates
+	if (std::find(_serverNames.begin(), _serverNames.end(), name) == _serverNames.end()) {
+		_serverNames.push_back(name);
+	}
+}
+
+void ServerConfig::setRoot(const std::string& root)
+{
+	_validatePath(root);
+	_root = root;
+}
+
+void ServerConfig::setIndex(const std::vector<std::string>& index)
+{
+	if (index.empty()) {
+		throw std::runtime_error("Index list cannot be empty");
+	}
+	_indexes = index;
+}
+
+void ServerConfig::setNotFound(const std::string& path)
+{
+	_validatePath(path);
+	_notFound = path;
+}
+
 void ServerConfig::setHost(const std::string& host)
 {
-	if (!_listens.empty())
-	{
+	if (host.empty()) {
+		throw std::runtime_error("Host cannot be empty");
+	}
+
+	if (!_listens.empty()) {
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(host + ":" + intToString(listen.getPort()));
+		listen = ListenConfig(host + ":" + _intToString(listen.getPort()));
 	}
 }
 
 void ServerConfig::setPort(unsigned int port)
 {
-	if (port < 1 || port > 65535)
-		throw std::runtime_error("Invalid port number");
-	if (!_listens.empty())
-	{
+	_validatePort(port);
+
+	if (!_listens.empty()) {
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(listen.getIp() + ":" + intToString(listen.getPort()));
+		listen = ListenConfig(listen.getIp() + ":" + _intToString(port));
 	}
 }
 
-
 void ServerConfig::addLocation(const LocationConfig& loc)
 {
-	std::string path = loc.getPath();
+	const std::string& path = loc.getPath();
 	if (_locations.find(path) != _locations.end()) {
 		throw std::runtime_error("Duplicate location path: " + path);
 	}
@@ -84,12 +144,22 @@ void ServerConfig::addLocation(const LocationConfig& loc)
 
 void ServerConfig::addListen(const std::string& token)
 {
-	ListenConfig listen(token);
-	_listens[listen.getIpPortJoin()] = listen;
+	try {
+		ListenConfig listen(token);
+		_listens[listen.getIpPortJoin()] = listen;
+	} catch (const std::exception& e) {
+		std::ostringstream oss;
+		oss << "Invalid listen directive: '" << token << "' - " << e.what();
+		throw std::runtime_error(oss.str());
+	}
 }
 
 void ServerConfig::setClientMaxBodySize(size_t size)
 {
+	// Set a reasonable maximum (100MB)
+	if (size > 100 * 1024 * 1024) {
+		throw std::runtime_error("Client max body size too large (max 100MB)");
+	}
 	_clientMaxBodySize = size;
 }
 
@@ -103,14 +173,7 @@ const std::map<std::string, ListenConfig>& ServerConfig::getListens() const
 	return _listens;
 }
 
-const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const
+const std::map<std::string, LocationConfig>& ServerConfig::getLocations() const
 {
 	return _locations;
-}
-
-std::string ServerConfig::intToString(int v)
-{
-	std::ostringstream oss;
-	oss << v;
-	return oss.str();
 }

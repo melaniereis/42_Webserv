@@ -6,14 +6,13 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 17:43:57 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 17:26:08 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 21:54:59 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <string>
-#include <stdexcept>
+#include "../../inc/webserv.hpp"
 
 class ListenConfig
 {
