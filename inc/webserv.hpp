@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:18:32 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 22:18:08 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 18:01:34 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <ctime>
 
 // Networking / Sockets
 #include <netinet/in.h>

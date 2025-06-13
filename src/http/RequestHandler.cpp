@@ -6,11 +6,12 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 16:37:32 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/13 18:14:29 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
+// #include "../config/ServerConfig.hpp"
 
 Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
@@ -99,10 +100,14 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	std::string path = request.getReqPath();
+	std::string reqPath = request.getReqPath();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
+	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
 
-	if (path != "/uploads")
+	if (uploadDir[0] == '.')
+		uploadDir.erase(0, uploadDir.find_first_not_of("."));
+
+	if (uploadDir != reqPath)
 		return HttpStatus::buildResponse(response, 415);
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
@@ -135,9 +140,25 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	(void)request;
-	(void)config;
-	return response;
+
+	std::string body = request.getReqBody();
+	std::string rootDir = config.getServerRoot();
+	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
+	std::string fileName = "default_file_name";
+
+	if (uploadDir[0] == '.')
+		uploadDir.erase(0, uploadDir.find_first_not_of("."));
+
+	std::string fullPath = rootDir + uploadDir + "/" + fileName;
+	std::ofstream out(fullPath.c_str(), std::ios::binary);
+
+	if (!out)
+		return HttpStatus::buildResponse(response, 500);
+	
+	out.write(body.c_str(), body.size());
+	out.close();
+	
+	return HttpStatus::buildResponse(response, 200);
 }
 
 std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes)

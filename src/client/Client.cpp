@@ -48,7 +48,8 @@ bool Client::handleClientRequest()
 		_response = RequestHandler::handle(*_request, _config);
 		_writeBuffer = _response.toString();
 	}
-	std::cout << "Client Request:\n" << _readBuffer << std::endl;
+	Logger::info("Client Request:\n" + _readBuffer);
+	// std::cout << "Client Request:\n" << _readBuffer << std::endl;
 	return true;
 }
 
@@ -56,7 +57,7 @@ bool Client::handleClientResponse()
 {
 	if (_writeBuffer.empty()) return true;
 
-	Logger::info("Sending response: " + _writeBuffer);
+	Logger::info("Sending response:\n" + _writeBuffer);
 
 	ssize_t bytesSent = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
 	if (bytesSent <= 0)

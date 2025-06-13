@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/12 18:20:29 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/13 18:05:56 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,6 +46,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
               $(UTILS_PATH)/Logger.cpp \
+              $(UTILS_PATH)/Utils.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)
