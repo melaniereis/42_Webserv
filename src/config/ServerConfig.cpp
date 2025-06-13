@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/11 22:33:07 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/13 16:42:32 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,22 +63,22 @@ void ServerConfig::setHost(const std::string& host)
 
 void ServerConfig::setPort(unsigned int port)
 {
+	if (port < 1 || port > 65535)
+		throw std::runtime_error("Invalid port number");
 	if (!_listens.empty())
 	{
 		ListenConfig& listen = _listens.begin()->second;
-		listen = ListenConfig(listen.getIp() + ":" + intToString(port));
+		listen = ListenConfig(listen.getIp() + ":" + intToString(listen.getPort()));
 	}
 }
 
-std::string ServerConfig::intToString(int v)
+void ServerConfig::addLocation(const LocationConfig& loc)
 {
-	std::ostringstream oss;
-	oss << v;
-	return oss.str();
-}
-
-void ServerConfig::addLocation(const LocationConfig& loc) {
-	_locations.push_back(loc);
+	std::string path = loc.getPath();
+	if (_locations.find(path) != _locations.end()) {
+		throw std::runtime_error("Duplicate location path: " + path);
+	}
+	_locations[path] = loc;
 }
 
 void ServerConfig::addListen(const std::string& token)
@@ -102,6 +102,14 @@ const std::map<std::string, ListenConfig>& ServerConfig::getListens() const
 	return _listens;
 }
 
-const std::vector<LocationConfig>& ServerConfig::getLocations() const {
+const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const
+{
 	return _locations;
+}
+
+std::string ServerConfig::intToString(int v)
+{
+	std::ostringstream oss;
+	oss << v;
+	return oss.str();
 }

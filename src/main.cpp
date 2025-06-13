@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/11 22:38:18 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/13 16:40:01 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,19 @@
 #include "./config/ConfigParser.hpp"
 #include "./config/LocationConfig.hpp"
 #include "./utils/Logger.hpp"
+
+void testLocationFinding(const ServerConfig& server) {
+	std::cout << "\n===== Testing Location Finding =====" << std::endl;
+
+	std::map<std::string, LocationConfig> locations = server.getLocations();
+	std::cout << "Server " << server.getServerHost() << ":" << server.getServerPort() << " has " << locations.size() << " location(s):" << std::endl;
+	std::map<std::string, LocationConfig>::iterator it = locations.begin();
+	while (it != locations.end()) {
+		std::cout << "Location path key: " << it->first << std::endl;
+		std::cout << "Location path: " << it->second.getPath() << std::endl;
+		it++;
+	}
+}
 
 int main(int argc, char** argv)
 {
@@ -54,10 +67,6 @@ int main(int argc, char** argv)
 		oss << "Loaded " << serverConfigs.size() << " server configuration(s) from " << configPath;
 		Logger::info(oss.str());
 
-		// For now we only start the first server configuration
-		// In a real-world scenario, you might want to handle multiple server configurations
-		// and start a server for each one.
-		// This is a simplification for the sake of this example.
 		if (!serverConfigs.empty())
 		{
 			Server server(serverConfigs[0]);
