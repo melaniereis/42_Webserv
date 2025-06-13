@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 20:37:53 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/13 16:37:32 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,6 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	return response;
 }
 
-
-
 // Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 // {
 // 	Response response;
@@ -101,7 +99,11 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
+	std::string path = request.getReqPath();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
+
+	if (path != "/uploads")
+		return HttpStatus::buildResponse(response, 415);
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
@@ -112,7 +114,6 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	// if (contentType == "application/json")
 	// 	return handleJsonPost(request, config);
 	return HttpStatus::buildResponse(response, 415);
-	
 }
 
 Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
@@ -169,11 +170,9 @@ bool endsWith(const std::string &str, const std::string &suffix)
 	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
 
-
 // ============
 // DELETE METHOD
 // ============
-
 Response RequestHandler::handleDeleteMethod(const Request &request)
 {
 	// std::remove
