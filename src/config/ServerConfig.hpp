@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 16:42:08 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/13 16:43:36 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ class ServerConfig
 		unsigned int getServerPort() const;
 		std::string getServerNotFound() const;
 		size_t getClientMaxBodySize() const;
+		const std::map<std::string, LocationConfig>& getLocations() const;
 
 		// Setters
 		void addListen(const std::string& token);
@@ -46,13 +47,8 @@ class ServerConfig
 		void setNotFound(const std::string& path);
 		void setClientMaxBodySize(size_t size);
 		void addLocation(const LocationConfig& loc);
-		const std::map<std::string, LocationConfig>& getLocations() const;
 
 	private:
-		const std::map<std::string, LocationConfig>& getLocations() const;
-
-		
-		private:
 		std::map<std::string, ListenConfig> _listens;
 		std::vector<std::string> _serverNames;
 		std::string _root;
