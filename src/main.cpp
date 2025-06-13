@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 22:19:46 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/13 15:33:09 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,64 +19,14 @@
 
 void testLocationFinding(const ServerConfig& server) {
 	std::cout << "\n===== Testing Location Finding =====" << std::endl;
-	std::cout << "Server root: " << server.getServerRoot() << "\n" << std::endl;
 
-	// Print all locations first
-	const std::map<std::string, LocationConfig>& locations = server.getLocations();
-	std::cout << "All Locations in Server:" << std::endl;
-	for (std::map<std::string, LocationConfig>::const_iterator it = locations.begin();
-		it != locations.end(); ++it) {
-		std::cout << "  - " << it->first << " => " << it->second.getPath() << std::endl;
-	}
-
-	// Define test paths with expected matches
-	const struct {
-		const char* path;
-		const char* expected;
-	} testCases[] = {
-		{"/", "/"},
-		{"/index.html", "/"},
-		{"/images/logo.png", "/images/"},
-		{"/images", "/images/"},      // Updated expectation
-		{"/images/", "/images/"},
-		{"/cgi-bin/test.py", "/cgi-bin/"},
-		{"/cgi-bin", "/cgi-bin/"},    // Updated expectation
-		{"/cgi-bin/", "/cgi-bin/"},
-		{"/upload", "/upload"},
-		{"/upload/file.txt", "/upload"},
-		{"/docs", "/"},
-		{"/nonexistent", "/"},
-		{"/images/subdir/file.jpg", "/images/"},
-		{"/cgi-bin/subdir/script.pl", "/cgi-bin/"}
-	};
-
-	const int testCount = sizeof(testCases) / sizeof(testCases[0]);
-
-	for (int i = 0; i < testCount; ++i) {
-		const std::string& path = testCases[i].path;
-		const std::string& expected = testCases[i].expected;
-		const LocationConfig* loc = server.findLocation(path);
-
-		std::cout << "\nTesting path: '" << path << "'" << std::endl;
-		std::cout << "  Expected: '" << expected << "'" << std::endl;
-
-		if (loc) {
-			std::cout << "  Found:    '" << loc->getPath() << "'";
-
-			// Check if we got the expected location
-			if (loc->getPath() == expected) {
-				std::cout << " \033[32m[PASS]\033[0m";
-			} else {
-				std::cout << " \033[31m[FAIL]\033[0m";
-				// Print why it might have failed
-				std::cout << "\n  Why: Found '" << loc->getPath() << "' but expected '" << expected << "'";
-			}
-		} else {
-			std::cout << "  Found:    NULL";
-			std::cout << " \033[31m[FAIL]\033[0m";
-			std::cout << "\n  Why: No location found for path '" << path << "'";
-		}
-		std::cout << std::endl;
+	std::map<std::string, LocationConfig> locations = server.getLocations();
+	std::cout << "Server " << server.getServerHost() << ":" << server.getServerPort() << " has " << locations.size() << " location(s):" << std::endl;
+	std::map<std::string, LocationConfig>::iterator it = locations.begin();
+	while (it != locations.end()) {
+		std::cout << "Location path key: " << it->first << std::endl;
+		std::cout << "Location path: " << it->second.getPath() << std::endl;
+		it++;
 	}
 }
 
