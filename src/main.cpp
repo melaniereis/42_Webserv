@@ -61,8 +61,8 @@ int main(int argc, char** argv)
 				Server server = serverConfigs[i];
 				ServerConfig& config = serverConfigs[i];
 
-				Logger::info("Starting web server " + std::to_string(i + 1) + " on " +
-					config.getServerHost() + ":" + std::to_string(config.getServerPort()));
+				Logger::info("Starting web server " + server._intToString(i + 1) + " on " +
+					config.getServerHost() + ":" + server._intToString(config.getServerPort()));
 				server.runServer();
 			}
 		}

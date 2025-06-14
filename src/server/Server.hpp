@@ -23,6 +23,7 @@ class Server
 		~Server();
 
 		void runServer();
+		std::string _intToString(int v) const;
 
 	private:
 		std::vector<int> _serverFds;
@@ -41,5 +42,4 @@ class Server
 		void _acceptNewConnection(struct pollfd& pfd);
 		void _handleClientIO(struct pollfd& pfd);
 		void _cleanupDisconnectedClient(struct pollfd& pfd);
-		std::string _intToString(int v) const;
 };
