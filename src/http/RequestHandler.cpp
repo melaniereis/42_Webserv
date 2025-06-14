@@ -6,54 +6,54 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 23:39:35 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/13 18:14:29 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
+// #include "../config/ServerConfig.hpp"
 
-Response RequestHandler::handle(const Request &request)
+Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
 	if (request.getReqMethod() == "GET")
-		return RequestHandler::handleGetMethod(request);
+		return handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST")
-		return RequestHandler::handlePostMethod(request);
+		return handlePostMethod(request, config);
 	else if (request.getReqMethod() == "DELETE")
-		return RequestHandler::handleDeleteMethod(request);
+		return handleDeleteMethod(request);
 	else
 	{
 		Response response;
-		response.setStatus(405, "Method not allowed");
-		return response;
+		return HttpStatus::buildResponse(response, 405);
 	}
 }
 
-Response RequestHandler::handleGetMethod(const Request &request)
+// ============
+// GET METHOD
+// ============
+Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
 	std::string path = request.getReqPath();
-
+	std::string rootDir = config.getServerRoot();
+	std::vector<std::string> indexes = config.getServerIndexes();
+	
 	if (path == "/")
-		path = "index.html";
+	{
+		std::string indexFile = resolveMultipleIndexes(rootDir, indexes);
+		if (indexFile.empty())
+			return HttpStatus::buildResponse(response, 403);
+		path = "/" + indexFile;
+	}
 	
 	if (path.find("..") != std::string::npos)
-	{
-		response.setStatus(403, "Forbidden");
-		response.setBody("<h1>403 Forbidden</h1>");
-		response.setHeader("Content-Type", "text/html");
-		return response;
-	}
-
-	std::string fullPath = "pages/" + path;
+		return HttpStatus::buildResponse(response, 403);
+	
+	std::string fullPath = rootDir + path;
 	std::ifstream file(fullPath.c_str());
 	
 	if (!file)
-	{
-		response.setStatus(404, "Not Found");
-		response.setBody("<h1>404 Not Found</h1>");
-		response.setHeader("Content-Type", "text/html");
-		return response;
-	}
+		return HttpStatus::buildResponse(response, 404);
 	
 	std::ostringstream ss;
 	ss << file.rdbuf();
@@ -65,18 +65,112 @@ Response RequestHandler::handleGetMethod(const Request &request)
 	return response;
 }
 
-Response RequestHandler::handlePostMethod(const Request &request)
+// Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
+// {
+// 	Response response;
+// 	std::string path = request.getReqPath();
+// 	std::string root = config.getServerRoot();
+// 	std::string uploadDir = "uploads";
+	
+	
+// 	std::string fileName = request.getReqHeaderKey("X-Filename");
+	
+// 	if (fileName.empty())
+// 		fileName = "default_upload_name";
+	
+// 	if (path != "/uploads")
+// 		return HttpStatus::buildResponse(response, 403);
+
+// 	std::string fullPath =  root + "/" + uploadDir + "/" + fileName;
+// 	std::ofstream outFile(fullPath.c_str(), std::ios::binary);
+	
+// 	if (!outFile)
+// 		return HttpStatus::buildResponse(response, 500);
+	
+// 	outFile.write(request.getReqBody().c_str(), request.getReqBody().size());
+// 	outFile.close();
+
+// 	return HttpStatus::buildResponse(response, 200);
+// }
+
+
+// ============
+// POST METHOD
+// ============
+Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
-	(void)request;
-	Response res;
-	return res;
+	Response response;
+	std::string reqPath = request.getReqPath();
+	std::string contentType = request.getReqHeaderKey("Content-Type");
+	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
+
+	if (uploadDir[0] == '.')
+		uploadDir.erase(0, uploadDir.find_first_not_of("."));
+
+	if (uploadDir != reqPath)
+		return HttpStatus::buildResponse(response, 415);
+
+	if (contentType.find("multipart/form-data") != std::string::npos)
+		return handleMultipartPost(request, config);
+	if (contentType == "application/x-www-form-urlencoded")
+		return handleFormPost(request, config);
+	if (contentType == "application/octet-stream")
+		return handleBinaryPost(request, config);
+	// if (contentType == "application/json")
+	// 	return handleJsonPost(request, config);
+	return HttpStatus::buildResponse(response, 415);
 }
 
-Response RequestHandler::handleDeleteMethod(const Request &request)
+Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
 {
+	Response response;
 	(void)request;
-	Response res;
-	return res;
+	(void)config;
+	return response;
+}
+
+Response RequestHandler::handleFormPost(const Request &request, const ServerConfig &config)
+{
+	Response response;
+	(void)request;
+	(void)config;
+	return response;
+}
+
+Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
+{
+	Response response;
+
+	std::string body = request.getReqBody();
+	std::string rootDir = config.getServerRoot();
+	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
+	std::string fileName = "default_file_name";
+
+	if (uploadDir[0] == '.')
+		uploadDir.erase(0, uploadDir.find_first_not_of("."));
+
+	std::string fullPath = rootDir + uploadDir + "/" + fileName;
+	std::ofstream out(fullPath.c_str(), std::ios::binary);
+
+	if (!out)
+		return HttpStatus::buildResponse(response, 500);
+	
+	out.write(body.c_str(), body.size());
+	out.close();
+	
+	return HttpStatus::buildResponse(response, 200);
+}
+
+std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes)
+{
+	for (size_t i = 0; i < indexes.size(); i++)
+	{
+		std::string fullPath = rootDir + "/" + indexes[i];
+		std::ifstream file(fullPath.c_str());
+		if (file)
+			return indexes[i];
+	}
+	return "";
 }
 
 std::string getMimeType(const std::string &extension)
@@ -95,4 +189,16 @@ bool endsWith(const std::string &str, const std::string &suffix)
 	if (str.length() < suffix.length())
 		return false;
 	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
+}
+
+// ============
+// DELETE METHOD
+// ============
+Response RequestHandler::handleDeleteMethod(const Request &request)
+{
+	// std::remove
+	// In my case, the webserv accepts DELETE method and the CGI handles the delete thing
+	(void)request;
+	Response res;
+	return res;
 }

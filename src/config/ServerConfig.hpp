@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
 /*   Updated: 2025/06/13 22:02:38 by meferraz         ###   ########.fr       */
