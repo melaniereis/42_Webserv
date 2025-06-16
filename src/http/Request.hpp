@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 19:34:25 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/16 13:17:31 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,24 +16,26 @@
 
 class Request
 {
-	public:
-		Request(const std::string &rawRequest);
+public:
+	Request(const std::string &rawRequest);
 
-		const std::string &getReqMethod() const;
-		const std::string &getReqPath() const;
-		const std::string &getReqHttpVersion() const;
-		const std::string &getReqBody() const;
-		const std::string &getReqHeaderKey(const std::string &key) const;
-		const std::map<std::string, std::string> &getReqHeaders() const;
-		
-	private:
-		std::string _method;
-		std::string _path;
-		std::string _httpVersion;
-		std::string _body;
-		std::map<std::string, std::string> _headers;
+	const std::string &getReqMethod() const;
+	const std::string &getReqPath() const;
+	const std::string &getReqHttpVersion() const;
+	const std::string &getReqBody() const;
+	const std::string &getReqHeaderKey(const std::string &key) const;
+	const std::map<std::string, std::string> &getReqHeaders() const;
+	const std::string &getReqQueryString() const;
+
+private:
+	std::string _method;
+	std::string _path;
+	std::string _httpVersion;
+	std::string _body;
+	std::map<std::string, std::string> _headers;
+	std::string _queryString;
 };
 
 // headers will hold
-	// Host | User-Agent | Accept | Content-Type
-	// Content-Length | Connection | Authorization
+// Host | User-Agent | Accept | Content-Type
+// Content-Length | Connection | Authorization

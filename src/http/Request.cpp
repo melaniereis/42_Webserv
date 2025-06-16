@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 19:34:22 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/16 13:17:41 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,14 @@ Request::Request(const std::string &rawRequest)
 		{
 			std::string key = line.substr(0, colonPos);
 			std::string value = line.substr(colonPos + 1);
-			
+
 			key.erase(key.find_last_not_of(" \t\r\n") + 1);
 			value.erase(0, value.find_first_not_of(" \t"));
 			value.erase(value.find_last_not_of(" \t\r\n") + 1);
 			_headers[key] = value;
 		}
 	}
-	
+
 	// Getting the body
 	std::ostringstream bodyStream;
 	bodyStream << stream.rdbuf();
@@ -73,3 +73,5 @@ const std::map<std::string, std::string> &Request::getReqHeaders() const
 	}
 	return _headers;
 }
+
+const std::string &Request::getReqQueryString() const { return _queryString; }

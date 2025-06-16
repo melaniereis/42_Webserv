@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
+#    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/13 18:05:56 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/16 14:30:03 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,6 +32,7 @@ CLIENT_PATH = $(SRC_PATH)/client
 CONFIG_PATH  = $(SRC_PATH)/config
 UTILS_PATH  = $(SRC_PATH)/utils
 HTTP_PATH   = $(SRC_PATH)/http
+CGI_PATH = $(SRC_PATH)/cgi
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(CONFIG_PATH)/ServerConfig.cpp \
@@ -45,8 +46,9 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/Response.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
+			  $(CGI_PATH)/CgiHandler.cpp \
               $(UTILS_PATH)/Logger.cpp \
-              $(UTILS_PATH)/Utils.cpp \
+              ##$(UTILS_PATH)/Utils.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)

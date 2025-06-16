@@ -3,18 +3,72 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandler.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 18:14:29 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/16 14:29:25 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
 // #include "../config/ServerConfig.hpp"
 
+// Helper function to find the best matching location for a request
+const LocationConfig *findMatchingLocation(const Request &request, const ServerConfig &config)
+{
+	const std::string &path = request.getReqPath();
+	const std::map<std::string, LocationConfig> &locations = config.getLocations();
+
+	const LocationConfig *bestMatch = NULL;
+	size_t bestLength = 0;
+
+	for (std::map<std::string, LocationConfig>::const_iterator it = locations.begin();
+		 it != locations.end(); ++it)
+	{
+		const std::string &locPath = it->first;
+		if (path.compare(0, locPath.length(), locPath) == 0)
+		{
+			if (locPath.length() > bestLength)
+			{
+				bestLength = locPath.length();
+				bestMatch = &(it->second);
+			}
+		}
+	}
+	return bestMatch;
+}
+
 Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
+	// First find the matching location
+	const LocationConfig *location = findMatchingLocation(request, config);
+
+	// Check if it's a CGI request
+	if (location)
+	{
+		std::map<std::string, std::string> cgis = location->getCgis();
+		std::string path = request.getReqPath();
+		size_t dotPos = path.find_last_of('.');
+		if (dotPos != std::string::npos)
+		{
+			std::string ext = path.substr(dotPos);
+			if (cgis.find(ext) != cgis.end())
+			{
+				try
+				{
+					CgiHandler cgi(request, config, *location);
+					return cgi.execute();
+				}
+				catch (const std::exception &e)
+				{
+					Response errorResponse;
+					return HttpStatus::buildResponse(errorResponse, 500);
+				}
+			}
+		}
+	}
+
+	// Existing method handling
 	if (request.getReqMethod() == "GET")
 		return handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST")
@@ -37,7 +91,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::string path = request.getReqPath();
 	std::string rootDir = config.getServerRoot();
 	std::vector<std::string> indexes = config.getServerIndexes();
-	
+
 	if (path == "/")
 	{
 		std::string indexFile = resolveMultipleIndexes(rootDir, indexes);
@@ -45,16 +99,16 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 			return HttpStatus::buildResponse(response, 403);
 		path = "/" + indexFile;
 	}
-	
+
 	if (path.find("..") != std::string::npos)
 		return HttpStatus::buildResponse(response, 403);
-	
+
 	std::string fullPath = rootDir + path;
 	std::ifstream file(fullPath.c_str());
-	
+
 	if (!file)
 		return HttpStatus::buildResponse(response, 404);
-	
+
 	std::ostringstream ss;
 	ss << file.rdbuf();
 
@@ -71,28 +125,26 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 // 	std::string path = request.getReqPath();
 // 	std::string root = config.getServerRoot();
 // 	std::string uploadDir = "uploads";
-	
-	
+
 // 	std::string fileName = request.getReqHeaderKey("X-Filename");
-	
+
 // 	if (fileName.empty())
 // 		fileName = "default_upload_name";
-	
+
 // 	if (path != "/uploads")
 // 		return HttpStatus::buildResponse(response, 403);
 
 // 	std::string fullPath =  root + "/" + uploadDir + "/" + fileName;
 // 	std::ofstream outFile(fullPath.c_str(), std::ios::binary);
-	
+
 // 	if (!outFile)
 // 		return HttpStatus::buildResponse(response, 500);
-	
+
 // 	outFile.write(request.getReqBody().c_str(), request.getReqBody().size());
 // 	outFile.close();
 
 // 	return HttpStatus::buildResponse(response, 200);
 // }
-
 
 // ============
 // POST METHOD
@@ -154,10 +206,10 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 
 	if (!out)
 		return HttpStatus::buildResponse(response, 500);
-	
+
 	out.write(body.c_str(), body.size());
 	out.close();
-	
+
 	return HttpStatus::buildResponse(response, 200);
 }
 
@@ -175,12 +227,18 @@ std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector
 
 std::string getMimeType(const std::string &extension)
 {
-	if (endsWith(extension, ".html")) return "text/html";
-	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg")) return "image/jpeg";
-	if (endsWith(extension, ".css")) return "text/css";
-	if (endsWith(extension, ".js")) return "application/javascript";
-	if (endsWith(extension, ".png")) return "image/png";
-	if (endsWith(extension, ".gif")) return "image/gif";
+	if (endsWith(extension, ".html"))
+		return "text/html";
+	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg"))
+		return "image/jpeg";
+	if (endsWith(extension, ".css"))
+		return "text/css";
+	if (endsWith(extension, ".js"))
+		return "application/javascript";
+	if (endsWith(extension, ".png"))
+		return "image/png";
+	if (endsWith(extension, ".gif"))
+		return "image/gif";
 	return "application/octet-stream";
 }
 
