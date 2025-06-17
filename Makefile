@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/13 18:05:56 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/17 10:45:41 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,8 +45,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/Response.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
-              $(UTILS_PATH)/Logger.cpp \
-              $(UTILS_PATH)/Utils.cpp \
+              $(UTILS_PATH)/Logger.cpp
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)
@@ -83,6 +82,14 @@ get_log:
 	else \
 		tail -f $(GDB_FILE; \)
 	fi
+
+#==============================================================================#
+#                                   TESTING                                    #
+#==============================================================================#
+
+
+test: $(NAME)
+	./$(NAME) config/valid/new.conf
 
 #==============================================================================#
 #                                CLEANING RULES                                #
