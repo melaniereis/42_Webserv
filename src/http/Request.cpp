@@ -6,12 +6,11 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 19:34:22 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:14:31 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
-
 Request::Request(const std::string &rawRequest)
 {
 	std::istringstream stream(rawRequest);
@@ -48,6 +47,7 @@ Request::Request(const std::string &rawRequest)
 	bodyStream << stream.rdbuf();
 	_body = bodyStream.str();
 }
+
 
 const std::string &Request::getReqMethod() const { return _method; }
 const std::string &Request::getReqPath() const { return _path; }

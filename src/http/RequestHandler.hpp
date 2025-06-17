@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 20:26:19 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/17 12:10:09 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,3 +40,6 @@ bool endsWith(const std::string &str, const std::string &suffix);
 
 // Handling multiple indexes of server indexes
 std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes);
+
+// Generate unique filename for binary post
+std::string generateTimestampFilename(std::string &fileName);

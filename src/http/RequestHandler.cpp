@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 18:14:29 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/17 17:25:05 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
+
 	std::string path = request.getReqPath();
 	std::string rootDir = config.getServerRoot();
 	std::vector<std::string> indexes = config.getServerIndexes();
@@ -65,50 +66,28 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	return response;
 }
 
-// Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
-// {
-// 	Response response;
-// 	std::string path = request.getReqPath();
-// 	std::string root = config.getServerRoot();
-// 	std::string uploadDir = "uploads";
-	
-	
-// 	std::string fileName = request.getReqHeaderKey("X-Filename");
-	
-// 	if (fileName.empty())
-// 		fileName = "default_upload_name";
-	
-// 	if (path != "/uploads")
-// 		return HttpStatus::buildResponse(response, 403);
-
-// 	std::string fullPath =  root + "/" + uploadDir + "/" + fileName;
-// 	std::ofstream outFile(fullPath.c_str(), std::ios::binary);
-	
-// 	if (!outFile)
-// 		return HttpStatus::buildResponse(response, 500);
-	
-// 	outFile.write(request.getReqBody().c_str(), request.getReqBody().size());
-// 	outFile.close();
-
-// 	return HttpStatus::buildResponse(response, 200);
-// }
-
-
 // ============
 // POST METHOD
 // ============
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
+
 	std::string reqPath = request.getReqPath();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
 	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
+
+	std::string fullPath = config.getServerRoot() + reqPath;
+	std::ifstream file(fullPath.c_str());
+	
+	if (!file)
+		return HttpStatus::buildResponse(response, 404);
 
 	if (uploadDir[0] == '.')
 		uploadDir.erase(0, uploadDir.find_first_not_of("."));
 
 	if (uploadDir != reqPath)
-		return HttpStatus::buildResponse(response, 415);
+		return HttpStatus::buildResponse(response, 403);
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
@@ -124,6 +103,10 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
+	
+	std::string body = request.getReqBody();
+
+	std::cout << "\n\n\n\n" << "Printing req body" << body << "\n\n\n\n";
 	(void)request;
 	(void)config;
 	return response;
@@ -132,33 +115,93 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 Response RequestHandler::handleFormPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	(void)request;
 	(void)config;
-	return response;
+	std::string body = request.getReqBody();
+
+	std::map<std::string, std::string> clientData;
+	size_t start = 0;
+
+	while(start < body.length())
+	{
+		size_t end = body.find('&', start);
+		if (end == std::string::npos) end = body.length();
+
+		size_t equal = body.find('=', start);
+		if (equal != std::string::npos && equal < end)
+		{
+			std::string key = body.substr(start, equal - start);
+			std::string value = body.substr(equal + 1, end - equal - 1);
+			clientData[key] = value;
+		}
+		start = end + 1;
+	}
+
+	std::map<std::string, std::string>::iterator it = clientData.begin();
+	
+	while (it != clientData.end())
+	{
+		std::cout << it->first << it->second << std::endl;
+		it++;
+	}
+
+	return HttpStatus::buildResponse(response, 200);
 }
 
 Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-
+	
 	std::string body = request.getReqBody();
 	std::string rootDir = config.getServerRoot();
 	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
-	std::string fileName = "default_file_name";
-
+	
 	if (uploadDir[0] == '.')
 		uploadDir.erase(0, uploadDir.find_first_not_of("."));
+	
+	// Check if client provided a filename via header X-Filename (optional)
+	std::string fileName = request.getReqHeaderKey("X-Filename");
+	std::string updatedFileName = generateTimestampFilename(fileName);
 
-	std::string fullPath = rootDir + uploadDir + "/" + fileName;
+	std::string fullPath = rootDir + uploadDir + "/" + updatedFileName;
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
-
+	
 	if (!out)
 		return HttpStatus::buildResponse(response, 500);
-	
+
 	out.write(body.c_str(), body.size());
 	out.close();
-	
+
 	return HttpStatus::buildResponse(response, 200);
+}
+
+std::string generateTimestampFilename(std::string &fileName)
+{
+	time_t now = time(NULL);
+	int randomNum = rand() % 9000 + 1000;
+	
+	std::stringstream ss;
+	
+	if (fileName.empty())
+		ss << "upload_" << now << "_" << randomNum << ".bin";
+	else
+	{
+		size_t dotPos = fileName.find_last_of('.');
+		std::string namePart;
+		std::string extPart;
+	
+		if (dotPos == std::string::npos)
+		{
+			namePart = fileName;
+			extPart = "";
+		}
+		else
+		{
+			namePart = fileName.substr(0, dotPos);
+			extPart = fileName.substr(dotPos);
+		}
+		ss << namePart << "_" << now << "_" << randomNum << extPart;
+	}
+	return ss.str();
 }
 
 std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes)
