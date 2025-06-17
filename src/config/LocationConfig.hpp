@@ -33,6 +33,7 @@ class LocationConfig
 		void addRedirect(int code, const std::string& target);
 		void addCgi(const std::string& ext, const std::string& cgi_path);
 		void setIndexes(const std::vector<std::string>& indexes);
+		void setAlias(const std::string& alias);
 
 		// Getters
 		const std::string& getPath() const;
@@ -43,10 +44,12 @@ class LocationConfig
 		const std::string& getUploadDir() const;
 		const std::map<int, std::string>& getRedirects() const;
 		const std::map<std::string, std::string>& getCgis() const;
+		const std::string& getAlias() const;
 
 	private:
 		std::string _path;
 		std::string _root;
+		std::string _alias;
 		std::vector<std::string> _indexes;
 		bool _autoindex;
 		std::vector<std::string> _allowed_methods;

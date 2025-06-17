@@ -22,22 +22,20 @@ class HttpStatus;
 
 class CgiHandler
 {
-public:
-	CgiHandler(const Request &request, const ServerConfig &config, const LocationConfig &location);
-	~CgiHandler();
-	Response execute();
+	public:
+		CgiHandler(const Request &request, const ServerConfig &config, const LocationConfig &location);
+		~CgiHandler();
 
-private:
-	Request _request;
-	ServerConfig _config;
-	LocationConfig _location;
-	std::string _cgiPath;
-	std::string _scriptPath;
+		Response execute();
+	private:
+		std::string _resolveScriptPath();
+		void _initEnv();
+		std::string _executeCgiScript(const std::string &scriptPath);
+		void _parseCgiOutput(const std::string &output, Response &response);
+		std::string _intToString(int value) const;
 
-	char **_prepareEnvironment();
-	void _cleanupEnvironment(char **env);
-	std::string _executeScript(char **env);
-	std::string _joinPath(const std::string &a, const std::string &b);
-	bool _isSafePath(const std::string &path);
-	bool _isValidScript();
+		Request _request;
+		ServerConfig _config;
+		LocationConfig _location;
+		std::map<std::string, std::string> _env; // Environment variables for CGI
 };

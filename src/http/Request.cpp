@@ -24,6 +24,13 @@ Request::Request(const std::string &rawRequest)
 		requestLine >> _method >> _path >> _httpVersion;
 	}
 
+	// Extract query string
+	size_t qpos = _path.find('?');
+	if (qpos != std::string::npos) {
+		_queryString = _path.substr(qpos + 1);
+		_path = _path.substr(0, qpos);
+	}
+
 	// Storing all headers in _headers and trimming both key and value
 	while (std::getline(stream, line))
 	{

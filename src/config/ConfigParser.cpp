@@ -49,6 +49,7 @@ void ConfigParser::_initHandlers()
 
 	_locationHandlers["root"] = &ConfigParser::_handleLocRoot;
 	_locationHandlers["index"] = &ConfigParser::_handleLocIndex;
+	_locationHandlers["alias"] = &ConfigParser::_handleLocAlias;
 	_locationHandlers["autoindex"] = &ConfigParser::_handleAutoIndex;
 	_locationHandlers["allow_methods"] = &ConfigParser::_handleAllowMethods;
 	_locationHandlers["upload_dir"] = &ConfigParser::_handleUploadDir;
@@ -405,4 +406,12 @@ void ConfigParser::_handleCgi(const std::string& args,
 		_throwError(lineNum, "Invalid CGI extension (must start with '.')");
 
 	loc.addCgi(ext, cgiPath);
+}
+
+void ConfigParser::_handleLocAlias(const std::string& args,
+	LocationConfig& loc, int lineNum)
+{
+	if (args.empty())
+		_throwError(lineNum, "alias directive requires a path argument");
+	loc.setAlias(args);
 }

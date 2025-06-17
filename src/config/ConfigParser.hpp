@@ -86,6 +86,7 @@ class ConfigParser
 		void _handleUploadDir(const std::string& args, LocationConfig& loc, int lineNum);
 		void _handleLocReturn(const std::string& args, LocationConfig& loc, int lineNum);
 		void _handleCgi(const std::string& args, LocationConfig& loc, int lineNum);
+		void _handleLocAlias(const std::string& args, LocationConfig& loc, int lineNum);
 
 		// Helpers
 		void _initHandlers();

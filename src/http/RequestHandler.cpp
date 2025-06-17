@@ -19,11 +19,17 @@ const LocationConfig *findMatchingLocation(const Request &request, const ServerC
 	const std::string &path = request.getReqPath();
 	const std::map<std::string, LocationConfig> &locations = config.getLocations();
 
+	// First try exact match
+	if (locations.find(path) != locations.end()) {
+		return &locations.at(path);
+	}
+
+	// Then try prefix matching
 	const LocationConfig *bestMatch = NULL;
 	size_t bestLength = 0;
 
 	for (std::map<std::string, LocationConfig>::const_iterator it = locations.begin();
-		 it != locations.end(); ++it)
+		it != locations.end(); ++it)
 	{
 		const std::string &locPath = it->first;
 		if (path.compare(0, locPath.length(), locPath) == 0)
@@ -40,10 +46,10 @@ const LocationConfig *findMatchingLocation(const Request &request, const ServerC
 
 Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
-	// First find the matching location
+	// First find matching location
 	const LocationConfig *location = findMatchingLocation(request, config);
 
-	// Check if it's a CGI request
+	// Check if CGI request
 	if (location)
 	{
 		std::map<std::string, std::string> cgis = location->getCgis();
@@ -68,7 +74,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 		}
 	}
 
-	// Existing method handling
+	// Handle standard methods
 	if (request.getReqMethod() == "GET")
 		return handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST")
