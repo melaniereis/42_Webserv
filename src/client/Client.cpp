@@ -67,8 +67,8 @@ bool Client::handleClientRequest()
 
 	return true;
 }
-	// Logger::info("Client Request:\n" + _readBuffer);
 
+	// Logger::info("Client Request:\n" + _readBuffer);
 	// std::ofstream logFile("log.txt", std::ios::app);
 	// if (logFile.is_open())
 	// {
