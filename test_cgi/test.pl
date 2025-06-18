@@ -1,121 +1,159 @@
 #!/usr/bin/perl
+use strict;
 use warnings;
 
 # Function to decode URL-encoded strings
 sub decode_url {
     my $str = shift;
-    $str =~ s/\+/ /g;                     # Replace '+' with space
-    $str =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;  # Decode %XX hex codes
+    $str =~ s/\+/ /g;
+    $str =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
     return $str;
 }
 
-# Function to escape HTML special characters
+# Function to escape HTML
 sub escape_html {
     my $str = shift;
-    $str =~ s/&/&amp;/g;    # Escape &
-    $str =~ s/</&lt;/g;     # Escape <
-    $str =~ s/>/&gt;/g;     # Escape >
-    $str =~ s/"/&quot;/g;   # Escape "
+    $str =~ s/&/&amp;/g;
+    $str =~ s/</&lt;/g;
+    $str =~ s/>/&gt;/g;
+    $str =~ s/"/&quot;/g;
     return $str;
 }
 
-# Get the query string from the environment
+# Parse query parameters
 my $query = $ENV{'QUERY_STRING'} || '';
-
-# Parse the query string into a hash of parameters
 my %params;
 foreach my $pair (split /&/, $query) {
     my ($key, $value) = split /=/, $pair, 2;
-    if (defined $key && defined $value) {
-        $value = decode_url($value);
-        $params{$key} = $value;
-    }
+    $params{$key} = decode_url($value) if defined $key && defined $value;
 }
 
-# Extract the 'name' parameter, default to empty string if not provided
 my $name = $params{'name'} || '';
+my $escaped_name = escape_html($name);
 
-# Output the HTTP header
+# Print HTTP header
 print "Content-Type: text/html\r\n\r\n";
 
-# Output the HTML content
+# Begin HTML
 print <<"HTML";
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CGI Example</title>
+    <title>CGI Greeting</title>
     <style>
+        :root {
+            --primary: #6C63FF;
+            --accent: #00C9A7;
+            --dark: #121826;
+            --light: #F0F5FF;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         body {
-            background: #f7f9fa;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #222;
+            background: linear-gradient(to bottom, #0a0e17, var(--dark));
+            color: var(--light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             margin: 0;
-            padding: 0;
         }
-        .container {
-            max-width: 420px;
-            margin: 60px auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-            padding: 2em 2.5em;
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem 3rem;
+            box-shadow: var(--shadow);
             text-align: center;
+            backdrop-filter: blur(15px);
+            max-width: 500px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: var(--transition);
         }
+
+        .card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         h1 {
-            color: #3178c6;
-            margin-bottom: 0.4em;
-            font-size: 2.2em;
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
         }
+
         .subtitle {
-            color: #666;
-            margin-bottom: 1.5em;
+            color: #ccc;
+            margin-bottom: 2rem;
         }
-        .input-form {
-            margin-top: 2em;
-        }
-        .input-form input[type="text"] {
-            padding: 0.5em;
-            font-size: 1em;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            margin-right: 0.5em;
-        }
-        .input-form input[type="submit"] {
-            background: #3178c6;
-            color: #fff;
+
+        .form input[type="text"] {
+            padding: 0.6rem 1rem;
+            font-size: 1rem;
+            border-radius: 8px;
             border: none;
-            border-radius: 6px;
-            padding: 0.5em 1.2em;
-            font-size: 1em;
-            cursor: pointer;
+            margin-right: 0.5rem;
+            outline: none;
+            background: #1e263b;
+            color: white;
         }
-        .input-form input[type="submit"]:hover {
-            background: #255a93;
+
+        .form input[type="submit"] {
+            padding: 0.6rem 1.2rem;
+            background: var(--primary);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .form input[type="submit"]:hover {
+            background: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .greeting {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>CGI Example</h1>
-        <div class="subtitle">A simple Perl CGI greeting demo</div>
+    <div class="card" id="greet-card">
+        <h1>👋 Welcome</h1>
+        <div class="subtitle">A modern CGI greeting with Perl</div>
 HTML
 
-# Display greeting if name is provided, otherwise show the form prompt
+# Conditional greeting or form prompt
 if ($name ne '') {
-    my $escaped_name = escape_html($name);
-    print '<p style="font-size:1.3em;">Hello, <b>' . $escaped_name . '</b>!</p>';
+    print qq{<div class="greeting">Hello, <strong>$escaped_name</strong>! 🎉</div>\n};
 } else {
-    print '<p style="font-size:1.1em;">No name provided. Try entering your name below:</p>';
+    print qq{<div class="greeting">Enter your name below to get greeted:</div>\n};
 }
 
-# Output the HTML form
+# Form HTML
 print <<'FORM';
-        <form class="input-form" method="get">
-            <input type="text" name="name" placeholder="Enter your name" />
+        <form class="form" method="get">
+            <input type="text" name="name" placeholder="Enter your name" required />
             <input type="submit" value="Greet Me!" />
         </form>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const card = document.getElementById('greet-card');
+            setTimeout(() => {
+                card.classList.add('show');
+            }, 100);
+        });
+    </script>
 </body>
 </html>
 FORM

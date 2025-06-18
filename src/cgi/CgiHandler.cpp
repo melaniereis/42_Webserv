@@ -48,18 +48,28 @@ Response CgiHandler::execute()
 }
 std::string CgiHandler::_resolveScriptPath()
 {
-	// Use alias if available, otherwise use root
-	std::string base = _location.getAlias().empty() ?
-		_config.getServerRoot() : _location.getAlias();
+	// Use location's root if available, otherwise server root
+	std::string base = _location.getRoot();
+	if (base.empty()) {
+		base = _config.getServerRoot();
+	}
 
-	// Remove location prefix
 	std::string path = _request.getReqPath();
 	std::string locPath = _location.getPath();
+
+	// Remove location prefix from request path
 	if (path.find(locPath) == 0) {
 		path = path.substr(locPath.length());
 	}
 
-	return base + path;
+	// Properly join paths with directory separator
+	if (base[base.length()-1] == '/' && !path.empty() && path[0] == '/') {
+		return base + path.substr(1);
+	} else if (base[base.length()-1] != '/' && !path.empty() && path[0] != '/') {
+		return base + "/" + path;
+	} else {
+		return base + path;
+	}
 }
 
 void CgiHandler::_initEnv()

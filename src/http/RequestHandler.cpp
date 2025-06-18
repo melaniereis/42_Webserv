@@ -41,7 +41,11 @@ const LocationConfig *findMatchingLocation(const Request &request, const ServerC
 			}
 		}
 	}
-	return bestMatch;
+	if (bestMatch && bestMatch->getCgis().size() > 0)
+	{
+		return bestMatch;
+	}
+	return NULL;
 }
 
 Response RequestHandler::handle(const Request &request, const ServerConfig &config)
