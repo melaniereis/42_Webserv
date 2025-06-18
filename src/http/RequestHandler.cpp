@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/18 12:07:05 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/18 15:33:52 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,19 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	if (request.getReqMethod() == "GET")
 		return handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST")
+	{
+		std::string reqPath = request.getReqPath();
+		std::cout << reqPath << std::endl;
+		std::map<std::string, LocationConfig> locations = config.getLocations();
+		std::map<std::string, LocationConfig>::iterator it = locations.begin();
+
+		while (it != locations.end())
+		{
+			std::cout << it->first << std::endl;
+			it++;
+		}
 		return handlePostMethod(request, config);
+	}
 	else if (request.getReqMethod() == "DELETE")
 		return handleDeleteMethod(request);
 	else
@@ -27,6 +39,10 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 		return HttpStatus::buildResponse(response, 405);
 	}
 }
+
+// bool isValidPostRequest(const Request &request, const ServerConfig &config)
+// {
+// }
 
 // ============
 // GET METHOD
@@ -75,6 +91,7 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 
 	std::string reqPath = request.getReqPath();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
+	
 	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
 
 	std::string fullPath = config.getServerRoot() + reqPath;

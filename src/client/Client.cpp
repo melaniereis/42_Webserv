@@ -65,10 +65,10 @@ bool Client::handleClientRequest()
 		_writeBuffer = _response.toString();
 	}
 
+	Logger::info("Client request\n" + _readBuffer);
 	return true;
 }
 
-	// Logger::info("Client Request:\n" + _readBuffer);
 	// std::ofstream logFile("log.txt", std::ios::app);
 	// if (logFile.is_open())
 	// {

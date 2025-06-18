@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/17 10:45:41 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/18 15:16:56 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -89,7 +89,7 @@ get_log:
 
 
 test: $(NAME)
-	./$(NAME) config/valid/new.conf
+	clear ; ./$(NAME) config/valid/miguel.conf
 
 #==============================================================================#
 #                                CLEANING RULES                                #
