@@ -22,24 +22,22 @@ public:
 	Server(const ServerConfig &config);
 	~Server();
 
-	void runServer();
-	std::string _intToString(int v) const;
+	bool setup(); // Setup server sockets
+	int acceptNewConnection(int serverFd); // Accept new client
+	bool handleClientEvent(int clientFd, short revents); // Handle client I/O
+	const std::vector<int>& getServerFds() const; // Get server sockets
+	void removeClient(int fd); // Remove client
 
 private:
 	std::vector<int> _serverFds;
-	std::set<int> _serverSocketSet;
 	ServerConfig _config;
 	ClientManager _clientManager;
 
-	bool _setupSocket();
 	int _createSocket() const;
 	bool _setSocketOptions(int fd) const;
-	bool _bindSocket(int fd, const std::string &ip, int port) const;
+	bool _bindSocket(int fd, const std::string& ip, int port) const;
 	bool _makeSocketNonBlocking(int fd) const;
 	bool _startListening(int fd) const;
-	void _logListeningMessage(const std::string &ip, int port) const;
-	void _handlePollEvents(std::vector<struct pollfd> &pollFds);
-	void _acceptNewConnection(struct pollfd &pfd);
-	void _handleClientIO(struct pollfd &pfd);
-	void _cleanupDisconnectedClient(struct pollfd &pfd);
+	void _logListeningMessage(const std::string& ip, int port) const;
+	std::string _intToString(int value) const;
 };
