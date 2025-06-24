@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/11 22:42:22 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/24 15:06:49 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,25 +66,34 @@ bool ClientManager::handleClientIO(int fd, short revents)
 	}
 
 	Client* client = _clients[fd];
+	bool keepConnection = true;
 
+	// Handle POLLIN (data available to read)
 	if (revents & POLLIN) {
 		if (!client->handleClientRequest()) {
-			return false;
+			keepConnection = false; // Mark for closure only if explicitly failed
 		}
 	}
 
-	if (revents & (POLLOUT | POLLHUP)) {
+	// Handle POLLOUT (ready to write)
+	if (revents & POLLOUT) {
 		if (!client->handleClientResponse()) {
-			return false;
+			keepConnection = false; // Mark for closure only if explicitly failed
 		}
 	}
 
+	// Handle POLLHUP (connection hung up by peer)
+	if (revents & POLLHUP) {
+		keepConnection = false; // Peer closed connection, mark for closure
+	}
+
+	// Handle POLLERR (error on socket)
 	if (revents & POLLERR) {
 		Logger::warn("Error event on client socket: " + intToString(fd));
-		return false;
+		keepConnection = false; // Error condition, mark for closure
 	}
 
-	return true;
+	return keepConnection;
 }
 
 void ClientManager::removeClient(int fd)

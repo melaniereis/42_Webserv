@@ -6,11 +6,12 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 17:44:42 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 21:53:54 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 14:52:26 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListenConfig.hpp"
+#include "../../inc/webserv.hpp"
 
 ListenConfig::ListenConfig() :
 	_ip("0.0.0.0"),

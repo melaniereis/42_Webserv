@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/16 14:30:13 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 16:39:06 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,4 +40,7 @@ private:
 	bool _startListening(int fd) const;
 	void _logListeningMessage(const std::string& ip, int port) const;
 	std::string _intToString(int value) const;
+
+	Server(const Server&);
+	Server& operator=(const Server&);
 };

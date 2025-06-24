@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 22:16:33 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 16:34:47 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,21 @@ bool Server::setup()
 		_logListeningMessage(ip, port);
 		_serverFds.push_back(fd);
 	}
+	for (size_t i = 0; i < _serverFds.size(); ++i)
+	{
+		struct sockaddr_in addr;
+		socklen_t len = sizeof(addr);
+		if (getsockname(_serverFds[i], (struct sockaddr*)&addr, &len) < 0)
+		{
+			Logger::error("Socket verification failed for FD: " + _intToString(_serverFds[i]));
+			return false;
+		}
+
+		char ip_str[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &addr.sin_addr, ip_str, INET_ADDRSTRLEN);
+		Logger::info("Verified socket listening on " + std::string(ip_str) +
+						":" + _intToString(ntohs(addr.sin_port)));
+	}
 
 	return true;
 }
@@ -84,7 +99,9 @@ void Server::removeClient(int fd)
 int Server::_createSocket() const
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd < 0) {
+	Logger::info("Created socket with FD: " + _intToString(fd));
+	if (fd < 0)
+	{
 		int err = errno;
 		Logger::error(std::string("socket() failed: ") + strerror(err));
 	}
@@ -104,25 +121,49 @@ bool Server::_setSocketOptions(int fd) const
 
 bool Server::_bindSocket(int fd, const std::string& ip, int port) const
 {
-	struct sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
+	Logger::info("About to bind FD: " + _intToString(fd));
+    struct sockaddr_in addr;
+    std::memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
 
-	if (inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) <= 0) {
-		Logger::error("Invalid IP address: " + ip);
-		return false;
-	}
+    if (ip == "0.0.0.0") {
+        addr.sin_addr.s_addr = INADDR_ANY;
+    } else {
+        if (inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) <= 0) {
+            Logger::error("Invalid IP address: " + ip);
+            return false;
+        }
+    }
 
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-		int err = errno;
-		std::ostringstream oss;
-		oss << "bind() failed for " << ip << ":" << port
-			<< " - " << strerror(err);
-		Logger::error(oss.str());
-		return false;
-	}
-	return true;
+    // Enhanced error reporting
+    if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        int err = errno;
+        std::ostringstream oss;
+        oss << "bind() failed for " << ip << ":" << port
+            << " - " << strerror(err) << " (errno: " << err << ")";
+        Logger::error(oss.str());
+
+        // Additional diagnostic information
+        char addr_str[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &addr.sin_addr, addr_str, INET_ADDRSTRLEN);
+        Logger::error("Attempted to bind to: " + std::string(addr_str) +
+                      ":" + _intToString(ntohs(addr.sin_port)));
+        return false;
+    }
+
+    // Verify bind actually worked
+    struct sockaddr_in verify_addr;
+    socklen_t verify_len = sizeof(verify_addr);
+    if (getsockname(fd, (struct sockaddr*)&verify_addr, &verify_len) < 0) {
+        int err = errno;
+        Logger::error("getsockname() failed after bind: " + std::string(strerror(err)));
+        return false;
+    }
+
+	Logger::info("Successfully bound FD: " + _intToString(fd) +
+				" to " + ip + ":" + _intToString(port));
+    return true;
 }
 
 bool Server::_makeSocketNonBlocking(int fd) const
@@ -143,13 +184,18 @@ bool Server::_makeSocketNonBlocking(int fd) const
 
 bool Server::_startListening(int fd) const
 {
-	if (listen(fd, SOMAXCONN) < 0) {
-		int err = errno;
-		Logger::error(std::string("listen() failed: ") + strerror(err));
-		return false;
-	}
-	return true;
+    Logger::info("Attempting to start listening on FD: " + _intToString(fd));
+
+    if (listen(fd, SOMAXCONN) < 0) {
+        int err = errno;
+        Logger::error(std::string("listen() failed: ") + strerror(err));
+        return false;
+    }
+
+    Logger::info("listen() succeeded on FD: " + _intToString(fd));
+    return true;
 }
+
 
 void Server::_logListeningMessage(const std::string& ip, int port) const
 {

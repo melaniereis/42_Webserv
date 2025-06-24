@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:21:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 21:57:22 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 16:41:00 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,127 +39,119 @@ static std::string intToString(int value)
 	oss << value;
 	return oss.str();
 }
+int main(int argc, char** argv) {
+    std::string configPath;
+    handleArguments(argc, argv, configPath);
 
-int main(int argc, char** argv)
-{
-	std::string configPath;
-	handleArguments(argc, argv, configPath);
+    try {
+        Logger::info("Parsing configuration file: " + configPath);
+        ConfigParser parser(configPath);
+        std::vector<ServerConfig> serverConfigs = parser.parse();
 
-	try {
-		// Parse configuration
-		Logger::info("Parsing configuration file: " + configPath);
-		ConfigParser parser(configPath);
-		std::vector<ServerConfig> serverConfigs = parser.parse();
+        if (serverConfigs.empty()) {
+            throw std::runtime_error("No valid server configurations found");
+        }
 
-		if (serverConfigs.empty()) {
-			throw std::runtime_error("No valid server configurations found");
-		}
+        std::vector<Server*> servers;
+        servers.reserve(serverConfigs.size());
 
-		// Create servers
-		std::vector<Server> servers;
-		for (size_t i = 0; i < serverConfigs.size(); ++i) {
-			Server server(serverConfigs[i]);
-			if (server.setup()) {
-				servers.push_back(server);
-				Logger::info("Server " + intToString(i + 1) + " setup on " +
-							serverConfigs[i].getServerHost() + ":" +
-							intToString(serverConfigs[i].getServerPort()));
-			}
-		}
+        for (size_t i = 0; i < serverConfigs.size(); ++i) {
+            Server* server = new Server(serverConfigs[i]);
+            if (server->setup()) {
+                servers.push_back(server);
+                Logger::info("Server " + intToString(i + 1) + " setup on " +
+                            serverConfigs[i].getServerHost() + ":" +
+                            intToString(serverConfigs[i].getServerPort()));
+            } else {
+                delete server;
+            }
+        }
 
-		if (servers.empty()) {
-			throw std::runtime_error("No servers were successfully setup");
-		}
+        if (servers.empty()) {
+            throw std::runtime_error("No servers were successfully setup");
+        }
 
-		// Create global poll structure
-		std::vector<struct pollfd> pollFds;
-		std::map<int, int> fdToServerIndex;  // Maps fd to server index
+        // Update the poll loop to use pointer dereferencing
+        std::vector<struct pollfd> pollFds;
+        std::map<int, int> fdToServerIndex;
+        std::set<int> serverFdsSet;
 
-		// Add server sockets to poll
-		for (size_t i = 0; i < servers.size(); ++i) {
-			const std::vector<int>& serverFds = servers[i].getServerFds();
-			for (size_t j = 0; j < serverFds.size(); ++j) {
-				struct pollfd pfd;
-				pfd.fd = serverFds[j];
-				pfd.events = POLLIN;
-				pfd.revents = 0;
-				pollFds.push_back(pfd);
-				fdToServerIndex[serverFds[j]] = i;
-			}
-		}
+        for (size_t i = 0; i < servers.size(); ++i) {
+            const std::vector<int>& serverFds = servers[i]->getServerFds();
+            for (size_t j = 0; j < serverFds.size(); ++j) {
+                struct pollfd pfd;
+                pfd.fd = serverFds[j];
+                pfd.events = POLLIN;
+                pfd.revents = 0;
+                pollFds.push_back(pfd);
+                serverFdsSet.insert(serverFds[j]);
+                fdToServerIndex[serverFds[j]] = i;
+            }
+        }
 
-		Logger::info("All servers started, waiting for connections...");
+        Logger::info("All servers started, waiting for connections...");
 
-		while (true) {
-			int pollResult = poll(&pollFds[0], pollFds.size(), -1);
+        while (true) {
+            int pollResult = poll(&pollFds[0], pollFds.size(), -1);
+            if (pollResult < 0) {
+                if (errno == EINTR) continue;
+                Logger::error(std::string("poll() failed: ") + strerror(errno));
+                break;
+            }
 
-			if (pollResult < 0) {
-				if (errno == EINTR) continue;
-				Logger::error(std::string("poll() failed: ") + strerror(errno));
-				break;
-			}
+            std::vector<struct pollfd> newConnections;
+            std::vector<int> toRemove;
 
-			if (pollResult == 0) continue;  // Timeout
+            for (size_t i = 0; i < pollFds.size(); ++i) {
+                if (pollFds[i].revents == 0) continue;
+                int fd = pollFds[i].fd;
+                short revents = pollFds[i].revents;
 
-			// Create temporary list for new connections
-			std::vector<struct pollfd> newConnections;
-			std::vector<int> toRemove;
+                if (serverFdsSet.find(fd) != serverFdsSet.end()) {
+                    int serverIdx = fdToServerIndex[fd];
+                    if (revents & POLLIN) {
+                        int clientFd = servers[serverIdx]->acceptNewConnection(fd);
+                        if (clientFd >= 0) {
+                            struct pollfd newPfd;
+                            newPfd.fd = clientFd;
+                            newPfd.events = POLLIN | POLLOUT;
+                            newPfd.revents = 0;
+                            newConnections.push_back(newPfd);
+                            fdToServerIndex[clientFd] = serverIdx;
+                        }
+                    }
+                } else {
+                    int serverIdx = fdToServerIndex[fd];
+                    if (!servers[serverIdx]->handleClientEvent(fd, revents)) {
+                        servers[serverIdx]->removeClient(fd);
+                        fdToServerIndex.erase(fd);
+                        toRemove.push_back(i);
+                    }
+                }
+                pollFds[i].revents = 0;
+            }
 
-			// Process events
-			for (size_t i = 0; i < pollFds.size(); ++i) {
-				if (pollFds[i].revents == 0) continue;
+            for (size_t i = 0; i < newConnections.size(); ++i) {
+                pollFds.push_back(newConnections[i]);
+            }
 
-				int fd = pollFds[i].fd;
-				short revents = pollFds[i].revents;
+            for (int i = toRemove.size() - 1; i >= 0; --i) {
+                int idx = toRemove[i];
+                if (idx < static_cast<int>(pollFds.size()) - 1) {
+                    pollFds[idx] = pollFds.back();
+                }
+                pollFds.pop_back();
+            }
+        }
 
-				// Check if it's a server socket
-				if (fdToServerIndex.find(fd) != fdToServerIndex.end()) {
-					int serverIdx = fdToServerIndex[fd];
+        // Cleanup: delete all server pointers
+        for (size_t i = 0; i < servers.size(); ++i) {
+            delete servers[i];
+        }
 
-					if (revents & POLLIN) {
-						int clientFd = servers[serverIdx].acceptNewConnection(fd);
-						if (clientFd >= 0) {
-							struct pollfd newPfd;
-							newPfd.fd = clientFd;
-							newPfd.events = POLLIN | POLLOUT;
-							newPfd.revents = 0;
-							newConnections.push_back(newPfd);
-							fdToServerIndex[clientFd] = serverIdx;
-						}
-					}
-				}
-				// Client socket
-				else {
-					int serverIdx = fdToServerIndex[fd];
-					if (!servers[serverIdx].handleClientEvent(fd, revents)) {
-						servers[serverIdx].removeClient(fd);
-						fdToServerIndex.erase(fd);
-						toRemove.push_back(i);
-					}
-				}
-
-				// Reset revents for next poll
-				pollFds[i].revents = 0;
-			}
-
-			// Add new connections
-			for (size_t i = 0; i < newConnections.size(); ++i) {
-				pollFds.push_back(newConnections[i]);
-			}
-
-			// Clean up closed connections (from back to front)
-			for (int i = toRemove.size() - 1; i >= 0; --i) {
-				int idx = toRemove[i];
-				if (idx < static_cast<int>(pollFds.size()) - 1) {
-					pollFds[idx] = pollFds.back();
-				}
-				pollFds.pop_back();
-			}
-		}
-	}
-	catch (const std::exception& e) {
-		Logger::error(e.what());
-		return 1;
-	}
-	return 0;
+    } catch (const std::exception& e) {
+        Logger::error(e.what());
+        return 1;
+    }
+    return 0;
 }
