@@ -6,7 +6,7 @@
 #    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/16 14:30:03 by meferraz         ###   ########.fr        #
+#    Updated: 2025/06/24 17:16:51 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,7 @@ MKDIR       = mkdir -p
 
 BUILD_PATH  = .build
 SRC_PATH    = src
-SERVER_PATH = $(SRC_PATH)/server
+SERVER_PATH = $(SRC_PATH)/servers
 CLIENT_PATH = $(SRC_PATH)/client
 CONFIG_PATH  = $(SRC_PATH)/config
 UTILS_PATH  = $(SRC_PATH)/utils
@@ -40,6 +40,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
 			  $(CONFIG_PATH)/ConfigParser.cpp \
 			  $(CONFIG_PATH)/ListenConfig.cpp \
               $(SERVER_PATH)/Server.cpp \
+			  $(SERVER_PATH)/WebServer.cpp \
               $(CLIENT_PATH)/Client.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
               $(HTTP_PATH)/Request.cpp \
