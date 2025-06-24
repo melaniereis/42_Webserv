@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:28:41 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/17 12:30:23 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 16:48:15 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "../config/ServerConfig.hpp"
 #include "../config/LocationConfig.hpp"
 #include "../utils/Logger.hpp"
-#include <map>
 
 class CgiHandler
 {

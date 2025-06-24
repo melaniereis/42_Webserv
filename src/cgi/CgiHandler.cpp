@@ -6,20 +6,12 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/17 13:00:28 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 16:48:12 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
 #include "../http/HttpStatus.hpp"
-#include <cstdlib>
-#include <cstring>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sstream>
-#include <fstream>
-#include <cctype>
 
 CgiHandler::CgiHandler(const Request &request,
 					const ServerConfig &config,

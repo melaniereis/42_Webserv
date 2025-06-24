@@ -25,10 +25,15 @@ bool Client::handleClientRequest()
 	char buffer[1024];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
 
+	// Capture errno immediately after recv to avoid overwriting
+	int recvErrno = (bytesRead < 0) ? errno : 0;
+
 	if (bytesRead < 0)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
+		if (recvErrno == EAGAIN || recvErrno == EWOULDBLOCK)
 			return true;
+		// Restore errno for accurate error reporting
+		errno = recvErrno;
 		perror("recv failed");
 		_closed = true;
 		return false;
@@ -41,7 +46,7 @@ bool Client::handleClientRequest()
 
 	buffer[bytesRead] = '\0';
 	_readBuffer += buffer;
-	
+
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
 		_request = new Request(_readBuffer);
@@ -49,7 +54,6 @@ bool Client::handleClientRequest()
 		_writeBuffer = _response.toString();
 	}
 	Logger::info("Client Request:\n" + _readBuffer);
-	// std::cout << "Client Request:\n" << _readBuffer << std::endl;
 	return true;
 }
 
