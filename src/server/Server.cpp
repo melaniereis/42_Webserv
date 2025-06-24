@@ -6,30 +6,29 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/24 16:51:45 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/24 16:59:34 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-Server::Server(const ServerConfig &config) : _config(config) {}
+Server::Server(const ServerConfig &config) : config(config) {}
 
 Server::~Server()
 {
-	for (std::vector<int>::iterator it = _serverFds.begin();
-		it != _serverFds.end(); ++it)
+	for (std::vector<int>::iterator it = serverFds.begin();
+		it != serverFds.end(); ++it)
 	{
-		if (*it > 0) {
-			close(*it);
-		}
+		if (*it > 0) close(*it);
 	}
 }
 
 bool Server::setup()
 {
-	const std::map<std::string, ListenConfig>& listens = _config.getListens();
+	const std::map<std::string, ListenConfig>& listens = config.getListens();
 
-	if (listens.empty()) {
+	if (listens.empty())
+	{
 		Logger::error("No listen directives in server configuration");
 		return false;
 	}
@@ -40,171 +39,152 @@ bool Server::setup()
 		const std::string& ip = it->second.getIp();
 		int port = it->second.getPort();
 
-		int fd = _createSocket();
-		if (fd < 0) {
+		if (!setupSocketForListen(ip, port))
 			return false;
-		}
-
-		if (!_setSocketOptions(fd) ||
-			!_bindSocket(fd, ip, port) ||
-			!_makeSocketNonBlocking(fd) ||
-			!_startListening(fd))
-		{
-			close(fd);
-			return false;
-		}
-
-		_logListeningMessage(ip, port);
-		_serverFds.push_back(fd);
 	}
-	for (size_t i = 0; i < _serverFds.size(); ++i)
+	return true;
+}
+
+bool Server::setupSocketForListen(const std::string& ip, int port)
+{
+	int fd = createSocket();
+	if (fd < 0) return false;
+
+	if (!setSocketOptions(fd) ||
+		!bindSocket(fd, ip, port) ||
+		!makeSocketNonBlocking(fd) ||
+		!startListening(fd))
 	{
-		struct sockaddr_in addr;
-		socklen_t len = sizeof(addr);
-		if (getsockname(_serverFds[i], (struct sockaddr*)&addr, &len) < 0)
-		{
-			Logger::error("Socket verification failed for FD: " + _intToString(_serverFds[i]));
-			return false;
-		}
-
-		char ip_str[INET_ADDRSTRLEN];
-		inet_ntop(AF_INET, &addr.sin_addr, ip_str, INET_ADDRSTRLEN);
-		Logger::info("Verified socket listening on " + std::string(ip_str) +
-						":" + _intToString(ntohs(addr.sin_port)));
+		close(fd);
+		return false;
 	}
 
+	logListeningMessage(ip, port);
+	logSocketInfo(fd);
+	serverFds.push_back(fd);
 	return true;
 }
 
 int Server::acceptNewConnection(int serverFd)
 {
-	return _clientManager.acceptNewClient(serverFd, _config);
+	return clientManager.acceptNewClient(serverFd, config);
 }
 
 bool Server::handleClientEvent(int clientFd, short revents)
 {
-	return _clientManager.handleClientIO(clientFd, revents);
+	return clientManager.handleClientIO(clientFd, revents);
 }
 
 const std::vector<int>& Server::getServerFds() const
 {
-	return _serverFds;
+	return serverFds;
 }
 
 void Server::removeClient(int fd)
 {
-	_clientManager.removeClient(fd);
+	clientManager.removeClient(fd);
 }
 
-int Server::_createSocket() const
+int Server::createSocket() const
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
-	Logger::info("Created socket with FD: " + _intToString(fd));
 	if (fd < 0)
-	{
-		int err = errno;
-		Logger::error(std::string("socket() failed: ") + strerror(err));
-	}
+		Logger::error("socket() failed: " + std::string(strerror(errno)));
+	else
+		Logger::info("Created socket FD: " + intToString(fd));
 	return fd;
 }
 
-bool Server::_setSocketOptions(int fd) const
+bool Server::setSocketOptions(int fd) const
 {
 	int opt = 1;
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-		int err = errno;
-		Logger::error(std::string("setsockopt() failed: ") + strerror(err));
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	{
+		Logger::error("setsockopt() failed: " + std::string(strerror(errno)));
 		return false;
 	}
 	return true;
 }
 
-bool Server::_bindSocket(int fd, const std::string& ip, int port) const
+bool Server::bindSocket(int fd, const std::string& ip, int port) const
 {
-	Logger::info("About to bind FD: " + _intToString(fd));
 	struct sockaddr_in addr;
 	std::memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 
-	if (ip == "0.0.0.0") {
+	if (ip == "0.0.0.0")
 		addr.sin_addr.s_addr = INADDR_ANY;
-	} else {
-		if (inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) <= 0) {
-			Logger::error("Invalid IP address: " + ip);
-			return false;
-		}
+	else if (inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) <= 0)
+	{
+		Logger::error("Invalid IP address: " + ip);
+		return false;
 	}
 
-	// Enhanced error reporting
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-		int err = errno;
+	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+	{
 		std::ostringstream oss;
 		oss << "bind() failed for " << ip << ":" << port
-			<< " - " << strerror(err) << " (errno: " << err << ")";
+			<< " - " << strerror(errno);
 		Logger::error(oss.str());
-
-		// Additional diagnostic information
-		char addr_str[INET_ADDRSTRLEN];
-		inet_ntop(AF_INET, &addr.sin_addr, addr_str, INET_ADDRSTRLEN);
-		Logger::error("Attempted to bind to: " + std::string(addr_str) +
-					":" + _intToString(ntohs(addr.sin_port)));
 		return false;
 	}
-
-	// Verify bind actually worked
-	struct sockaddr_in verify_addr;
-	socklen_t verify_len = sizeof(verify_addr);
-	if (getsockname(fd, (struct sockaddr*)&verify_addr, &verify_len) < 0) {
-		int err = errno;
-		Logger::error("getsockname() failed after bind: " + std::string(strerror(err)));
-		return false;
-	}
-
-	Logger::info("Successfully bound FD: " + _intToString(fd) +
-				" to " + ip + ":" + _intToString(port));
 	return true;
 }
 
-bool Server::_makeSocketNonBlocking(int fd) const
+bool Server::makeSocketNonBlocking(int fd) const
 {
 	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags < 0) {
-		int err = errno;
-		Logger::error(std::string("fcntl(F_GETFL) failed: ") + strerror(err));
+	if (flags < 0)
+	{
+		Logger::error("fcntl(F_GETFL) failed: " + std::string(strerror(errno)));
 		return false;
 	}
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
-		int err = errno;
-		Logger::error(std::string("fcntl(F_SETFL) failed: ") + strerror(err));
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		Logger::error("fcntl(F_SETFL) failed: " + std::string(strerror(errno)));
 		return false;
 	}
 	return true;
 }
 
-bool Server::_startListening(int fd) const
+bool Server::startListening(int fd) const
 {
-	Logger::info("Attempting to start listening on FD: " + _intToString(fd));
-
-	if (listen(fd, SOMAXCONN) < 0) {
-		int err = errno;
-		Logger::error(std::string("listen() failed: ") + strerror(err));
+	if (listen(fd, SOMAXCONN) < 0)
+	{
+		Logger::error("listen() failed: " + std::string(strerror(errno)));
 		return false;
 	}
-
-	Logger::info("listen() succeeded on FD: " + _intToString(fd));
+	Logger::info("Listening on FD: " + intToString(fd));
 	return true;
 }
 
-
-void Server::_logListeningMessage(const std::string& ip, int port) const
+void Server::logListeningMessage(const std::string& ip, int port) const
 {
 	std::ostringstream oss;
-	oss << "Listening on " << ip << ":" << port;
+	oss << "Configured to listen on " << ip << ":" << port;
 	Logger::info(oss.str());
 }
 
-std::string Server::_intToString(int value) const
+void Server::logSocketInfo(int fd) const
+{
+	struct sockaddr_in addr;
+	socklen_t len = sizeof(addr);
+	if (getsockname(fd, (struct sockaddr*)&addr, &len) < 0)
+	{
+		Logger::error("getsockname failed for FD: " + intToString(fd));
+		return;
+	}
+
+	char ip_str[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &addr.sin_addr, ip_str, INET_ADDRSTRLEN);
+	std::ostringstream oss;
+	oss << "Socket FD " << fd << " listening on "
+		<< ip_str << ":" << ntohs(addr.sin_port);
+	Logger::info(oss.str());
+}
+
+std::string Server::intToString(int value) const
 {
 	std::ostringstream oss;
 	oss << value;
