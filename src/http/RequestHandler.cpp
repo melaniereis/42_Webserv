@@ -6,12 +6,11 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 16:38:01 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/25 19:13:53 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
-// #include "../config/ServerConfig.hpp"
 
 // Helper function to find the best matching location for a request
 const LocationConfig *findMatchingLocation(const Request &request, const ServerConfig &config)
@@ -81,20 +80,8 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	// Handle standard methods
 	if (request.getReqMethod() == "GET")
 		return handleGetMethod(request, config);
-	else if (request.getReqMethod() == "POST")
-	{
-		std::string reqPath = request.getReqPath();
-		std::cout << reqPath << std::endl;
-		std::map<std::string, LocationConfig> locations = config.getLocations();
-		std::map<std::string, LocationConfig>::iterator it = locations.begin();
-
-		while (it != locations.end())
-		{
-			std::cout << it->first << std::endl;
-			it++;
-		}
+	else if (request.getReqMethod() == "POST" && isValidPostRequest(request, config))
 		return handlePostMethod(request, config);
-	}
 	else if (request.getReqMethod() == "DELETE")
 		return handleDeleteMethod(request);
 	else
@@ -104,9 +91,24 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	}
 }
 
-// bool isValidPostRequest(const Request &request, const ServerConfig &config)
-// {
-// }
+bool isValidPostRequest(const Request &request, const ServerConfig &config)
+{
+	const std::map<std::string, LocationConfig> &locations = config.getLocations();
+
+	// Extract location prefix
+	std::string locationPrefix = extractLocationPrefix(request, config);
+
+	const LocationConfig &location = locations.find(locationPrefix)->second;
+
+	// Check if POST is allowed
+	const std::vector<std::string> &methods = location.getAllowedMethods();
+	for (size_t i = 0; i < methods.size(); ++i)
+	{
+		if (methods[i] == "POST")
+			return true;
+	}
+	return false;
+}
 
 // ============
 // GET METHOD
@@ -153,31 +155,14 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 {
 	Response response;
 
-	std::string reqPath = request.getReqPath();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
 	
-	std::string uploadDir = config.getLocations().at("/upload").getRoot();
-
-	std::string fullPath = config.getServerRoot() + reqPath;
-	std::ifstream file(fullPath.c_str());
-	
-	if (!file)
-		return HttpStatus::buildResponse(response, 404);
-
-	if (uploadDir[0] == '.')
-		uploadDir.erase(0, uploadDir.find_first_not_of("."));
-
-	if (uploadDir != reqPath)
-		return HttpStatus::buildResponse(response, 403);
-
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
 	if (contentType == "application/x-www-form-urlencoded")
 		return handleFormPost(request, config);
 	if (contentType == "application/octet-stream")
 		return handleBinaryPost(request, config);
-	// if (contentType == "application/json")
-	// 	return handleJsonPost(request, config);
 	return HttpStatus::buildResponse(response, 415);
 }
 
@@ -232,18 +217,19 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 {
 	Response response;
 	
+	std::string reqPath = request.getReqPath();
 	std::string body = request.getReqBody();
 	std::string rootDir = config.getServerRoot();
-	std::string uploadDir = config.getLocations().at("/upload").getRoot();
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
 	
-	if (uploadDir[0] == '.')
-		uploadDir.erase(0, uploadDir.find_first_not_of("."));
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 	
-	// Check if client provided a filename via header X-Filename (optional)
-	std::string fileName = request.getReqHeaderKey("X-Filename");
+	std::string fileName = extractFilenameFromPath(reqPath);
 	std::string updatedFileName = generateTimestampFilename(fileName);
 
-	std::string fullPath = rootDir + uploadDir + "/" + updatedFileName;
+	std::string fullPath = rootDir + locationRootDir + "/" + updatedFileName;
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
 	
 	if (!out)
@@ -253,72 +239,6 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 	out.close();
 
 	return HttpStatus::buildResponse(response, 200);
-}
-
-std::string generateTimestampFilename(std::string &fileName)
-{
-	time_t now = time(NULL);
-	int randomNum = rand() % 9000 + 1000;
-	
-	std::stringstream ss;
-	
-	if (fileName.empty())
-		ss << "upload_" << now << "_" << randomNum << ".bin";
-	else
-	{
-		size_t dotPos = fileName.find_last_of('.');
-		std::string namePart;
-		std::string extPart;
-	
-		if (dotPos == std::string::npos)
-		{
-			namePart = fileName;
-			extPart = "";
-		}
-		else
-		{
-			namePart = fileName.substr(0, dotPos);
-			extPart = fileName.substr(dotPos);
-		}
-		ss << namePart << "_" << now << "_" << randomNum << extPart;
-	}
-	return ss.str();
-}
-
-std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes)
-{
-	for (size_t i = 0; i < indexes.size(); i++)
-	{
-		std::string fullPath = rootDir + "/" + indexes[i];
-		std::ifstream file(fullPath.c_str());
-		if (file)
-			return indexes[i];
-	}
-	return "";
-}
-
-std::string getMimeType(const std::string &extension)
-{
-	if (endsWith(extension, ".html"))
-		return "text/html";
-	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg"))
-		return "image/jpeg";
-	if (endsWith(extension, ".css"))
-		return "text/css";
-	if (endsWith(extension, ".js"))
-		return "application/javascript";
-	if (endsWith(extension, ".png"))
-		return "image/png";
-	if (endsWith(extension, ".gif"))
-		return "image/gif";
-	return "application/octet-stream";
-}
-
-bool endsWith(const std::string &str, const std::string &suffix)
-{
-	if (str.length() < suffix.length())
-		return false;
-	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
 
 // ============

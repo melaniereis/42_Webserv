@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/25 16:35:55 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/06/25 17:40:30 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,6 +46,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/Request.cpp \
               $(HTTP_PATH)/Response.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
+              $(HTTP_PATH)/RequestHandlerUtils.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
 			  $(CGI_PATH)/CgiHandler.cpp \
               $(UTILS_PATH)/Logger.cpp \
