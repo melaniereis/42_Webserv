@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 18:53:13 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/25 22:35:54 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,14 @@ public:
 private:
 };
 
+struct MultipartPart
+{
+	std::string name;
+	std::vector<char> content;
+	std::string fileName;
+	std::string contentType;
+};
+
 // Multipurpose Internet Mail Extensions =>  MIME
 std::string getMimeType(const std::string &extension);
 bool endsWith(const std::string &str, const std::string &suffix);
@@ -46,7 +54,14 @@ std::string generateTimestampFilename(std::string &fileName);
 // Validating the location and the allowed methods on the specific location
 bool isValidPostRequest(const Request &request, const ServerConfig &config);
 
-
 std::string extractLocationPrefix(const Request &request, const ServerConfig &config);
 
 std::string extractFilenameFromPath(const std::string &path);
+
+std::vector<MultipartPart> parseMultiparts(const Request &request);
+
+
+void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::vector<char> &buffer);
+void parseContentDisposition(const std::string &line, MultipartPart &part);
+
+

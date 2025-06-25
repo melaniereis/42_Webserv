@@ -70,7 +70,7 @@ bool Client::handleClientRequest()
 		_writeBuffer = _response.toString();
 	}
 
-	Logger::info("Client request\n" + _readBuffer);
+	// Logger::info("Client request\n" + _readBuffer);
 	return true;
 }
 
@@ -85,7 +85,7 @@ bool Client::handleClientResponse()
 {
 	if (_writeBuffer.empty()) return true;
 
-	Logger::info("Sending response:\n" + _writeBuffer);
+	// Logger::info("Sending response:\n" + _writeBuffer);
 
 	ssize_t bytesSent = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
 	if (bytesSent <= 0)

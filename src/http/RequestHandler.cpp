@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 19:13:53 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/25 22:45:57 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,24 +91,6 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	}
 }
 
-bool isValidPostRequest(const Request &request, const ServerConfig &config)
-{
-	const std::map<std::string, LocationConfig> &locations = config.getLocations();
-
-	// Extract location prefix
-	std::string locationPrefix = extractLocationPrefix(request, config);
-
-	const LocationConfig &location = locations.find(locationPrefix)->second;
-
-	// Check if POST is allowed
-	const std::vector<std::string> &methods = location.getAllowedMethods();
-	for (size_t i = 0; i < methods.size(); ++i)
-	{
-		if (methods[i] == "POST")
-			return true;
-	}
-	return false;
-}
 
 // ============
 // GET METHOD
@@ -170,12 +152,74 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 {
 	Response response;
 	
-	std::string body = request.getReqBody();
+	std::string reqPath = request.getReqPath();
+	std::string rootDir = config.getServerRoot();
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
-	std::cout << "\n\n\n\n" << "Printing req body" << body << "\n\n\n\n";
-	(void)request;
-	(void)config;
-	return response;
+	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
+	
+	
+	return HttpStatus::buildResponse(response, 200);
+}
+
+std::vector<MultipartPart> parseMultiparts(const Request &request)
+{
+	std::vector<MultipartPart> parts;
+
+	std::string body = request.getReqBody();
+	std::string contentType = request.getReqHeaderKey("Content-Type");
+
+	size_t boundaryPos = contentType.find('=');
+	
+	if (boundaryPos == std::string::npos)
+		return parts;
+
+	std::string boundary = "--" + contentType.substr(boundaryPos + 1);
+	std::string boundaryEnd = boundary + "--";
+	
+	std::istringstream stream(body);
+	std::string line;
+	
+	MultipartPart currPart;
+	
+	bool readingHeaders = false;
+	bool readingBody = false;
+	std::vector<char> bodyBuffer;
+	
+	while (std::getline(stream, line))
+	{
+		if (!line.empty() && line.back() == '\r')
+			line.pop_back();
+
+		if (line == boundary)
+		{
+			finalizePart(parts, currPart, bodyBuffer);
+			readingHeaders = true;
+			readingBody = false;
+		}
+		else if (line == boundaryEnd)
+		{
+			finalizePart(parts, currPart, bodyBuffer);
+			break;
+		}
+		else if (readingHeaders)
+		{
+			if (line.empty())
+			{
+				readingHeaders = false;
+				readingBody = true;
+			}
+			else if (line.find("Content-Disposition") != std::string::npos)
+				parseContentDisposition(line, currPart);
+		}
+		else if (readingBody)
+			bodyBuffer += line + "\n";
+	}
+	return parts;
 }
 
 Response RequestHandler::handleFormPost(const Request &request, const ServerConfig &config)
@@ -206,7 +250,8 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 	
 	while (it != clientData.end())
 	{
-		std::cout << it->first << it->second << std::endl;
+		std::cout << "key->" << it->first << std::endl;
+		std::cout << "Value->" << it->second << std::endl;
 		it++;
 	}
 

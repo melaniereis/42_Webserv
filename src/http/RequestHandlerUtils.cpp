@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 18:53:11 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/25 22:35:24 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,4 +108,48 @@ std::string extractFilenameFromPath(const std::string &path)
 	if (pos == std::string::npos)
 		return path;
 	return path.substr(pos + 1);
+}
+
+bool isValidPostRequest(const Request &request, const ServerConfig &config)
+{
+	const std::map<std::string, LocationConfig> &locations = config.getLocations();
+
+	// Extract location prefix
+	std::string locationPrefix = extractLocationPrefix(request, config);
+
+	const LocationConfig &location = locations.find(locationPrefix)->second;
+
+	// Check if POST is allowed
+	const std::vector<std::string> &methods = location.getAllowedMethods();
+	for (size_t i = 0; i < methods.size(); ++i)
+	{
+		if (methods[i] == "POST")
+			return true;
+	}
+	return false;
+}
+
+void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::vector<char> &buffer)
+{
+	if (!part.name.empty() || !buffer.empty())
+	{
+		part.content = buffer;
+		parts.push_back(part);
+		part = MultipartPart(); // Reset for next
+		buffer.clear();
+	}
+}
+
+void parseContentDisposition(const std::string &line, MultipartPart &part)
+{
+	size_t namePos = line.find("name=\"");
+	if (namePos != std::string::npos) {
+		size_t nameEnd = line.find("\"", namePos + 6);
+		part.name = line.substr(namePos + 6, nameEnd - (namePos + 6));
+	}
+	size_t filePos = line.find("filename=\"");
+	if (filePos != std::string::npos) {
+		size_t fileEnd = line.find("\"", filePos + 10);
+		part.fileName = line.substr(filePos + 10, fileEnd - (filePos + 10));
+	}
 }

@@ -6,14 +6,13 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 16:36:34 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/25 19:31:39 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 Request::Request(const std::string &rawRequest)
 {
-	std::cout << rawRequest << std::endl;
 	std::istringstream stream(rawRequest);
 	std::string line;
 
