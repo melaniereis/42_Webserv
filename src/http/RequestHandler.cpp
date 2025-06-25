@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/16 14:29:25 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/25 16:18:24 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,7 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	Response response;
 	std::string reqPath = request.getReqPath();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
-	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
+	std::string uploadDir = config.getLocations().at("/upload").getRoot();
 
 	if (uploadDir[0] == '.')
 		uploadDir.erase(0, uploadDir.find_first_not_of("."));
@@ -205,7 +205,7 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 
 	std::string body = request.getReqBody();
 	std::string rootDir = config.getServerRoot();
-	std::string uploadDir = config.getLocations().at("/upload").getUploadDir();
+	std::string uploadDir = config.getLocations().at("/upload").getRoot();
 	std::string fileName = "default_file_name";
 
 	if (uploadDir[0] == '.')

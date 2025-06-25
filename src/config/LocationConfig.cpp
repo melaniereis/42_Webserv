@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:28:01 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 21:53:43 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/25 16:09:30 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,7 @@
 LocationConfig::LocationConfig() :
 	_path(""),
 	_root(""),
-	_autoindex(false),
-	_upload_dir("")
+	_autoindex(false)
 {
 	// Initialize all containers as empty
 }
@@ -113,14 +112,6 @@ void LocationConfig::addAllowedMethod(const std::string& m)
 	_allowed_methods.push_back(m);
 }
 
-void LocationConfig::setUploadDir(const std::string& dir)
-{
-	if (dir.empty()) {
-		throw std::runtime_error("Upload directory cannot be empty");
-	}
-	_upload_dir = dir;
-}
-
 void LocationConfig::addRedirect(int code, const std::string& target)
 {
 	_validateStatusCode(code);
@@ -149,21 +140,11 @@ void LocationConfig::setIndexes(const std::vector<std::string>& indexes)
 	_indexes = indexes;
 }
 
-void LocationConfig::setAlias(const std::string& alias)
-{
-	if (alias.empty()) {
-		throw std::runtime_error("Alias cannot be empty");
-	}
-	_alias = alias;
-}
-
 // Getters remain the same as before
 const std::string& LocationConfig::getPath() const { return _path; }
 const std::string& LocationConfig::getRoot() const { return _root; }
-const std::string& LocationConfig::getAlias() const { return _alias; }
 const std::vector<std::string>& LocationConfig::getIndexes() const { return _indexes; }
 bool LocationConfig::isAutoIndex() const { return _autoindex; }
 const std::vector<std::string>& LocationConfig::getAllowedMethods() const { return _allowed_methods; }
-const std::string& LocationConfig::getUploadDir() const { return _upload_dir; }
 const std::map<int, std::string>& LocationConfig::getRedirects() const { return _redirects; }
 const std::map<std::string, std::string>& LocationConfig::getCgis() const { return _cgis; }

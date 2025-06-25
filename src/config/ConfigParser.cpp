@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/25 15:05:47 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/25 16:19:16 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,8 @@ void ConfigParser::_initHandlers()
 
 	_locationHandlers["root"] = &ConfigParser::_handleLocRoot;
 	_locationHandlers["index"] = &ConfigParser::_handleLocIndex;
-	_locationHandlers["alias"] = &ConfigParser::_handleLocAlias;
 	_locationHandlers["autoindex"] = &ConfigParser::_handleAutoIndex;
 	_locationHandlers["allow_methods"] = &ConfigParser::_handleAllowMethods;
-	_locationHandlers["upload_dir"] = &ConfigParser::_handleUploadDir;
 	_locationHandlers["return"] = &ConfigParser::_handleLocReturn;
 	_locationHandlers["cgi"] = &ConfigParser::_handleCgi;
 }
@@ -375,14 +373,6 @@ void ConfigParser::_handleAllowMethods(const std::string& args,
 		loc.addAllowedMethod(m);
 }
 
-void ConfigParser::_handleUploadDir(const std::string& args,
-									LocationConfig& loc, int lineNum)
-{
-	if (args.empty())
-		_throwError(lineNum, "upload_dir directive requires a directory path");
-	loc.setUploadDir(args);
-}
-
 void ConfigParser::_handleLocReturn(const std::string& args,
 									LocationConfig& loc, int lineNum)
 {
@@ -406,12 +396,4 @@ void ConfigParser::_handleCgi(const std::string& args,
 		_throwError(lineNum, "Invalid CGI extension (must start with '.')");
 
 	loc.addCgi(ext, cgiPath);
-}
-
-void ConfigParser::_handleLocAlias(const std::string& args,
-	LocationConfig& loc, int lineNum)
-{
-	if (args.empty())
-		_throwError(lineNum, "alias directive requires a path argument");
-	loc.setAlias(args);
 }

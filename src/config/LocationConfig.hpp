@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:21:53 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 22:02:47 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/25 16:07:47 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,9 @@ class LocationConfig
 		void addIndex(const std::string& idx);
 		void setAutoIndex(bool a);
 		void addAllowedMethod(const std::string& m);
-		void setUploadDir(const std::string& dir);
 		void addRedirect(int code, const std::string& target);
 		void addCgi(const std::string& ext, const std::string& cgi_path);
 		void setIndexes(const std::vector<std::string>& indexes);
-		void setAlias(const std::string& alias);
 
 		// Getters
 		const std::string& getPath() const;
@@ -41,19 +39,15 @@ class LocationConfig
 		const std::vector<std::string>& getIndexes() const;
 		bool isAutoIndex() const;
 		const std::vector<std::string>& getAllowedMethods() const;
-		const std::string& getUploadDir() const;
 		const std::map<int, std::string>& getRedirects() const;
 		const std::map<std::string, std::string>& getCgis() const;
-		const std::string& getAlias() const;
 
 	private:
 		std::string _path;
 		std::string _root;
-		std::string _alias;
 		std::vector<std::string> _indexes;
 		bool _autoindex;
 		std::vector<std::string> _allowed_methods;
-		std::string _upload_dir;
 		std::map<int, std::string> _redirects;
 		std::map<std::string, std::string> _cgis;
 
