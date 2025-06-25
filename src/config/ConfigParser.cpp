@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/12 17:52:54 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/25 15:05:47 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,8 @@ void ConfigParser::_initHandlers()
 
 std::string ConfigParser::trim(const std::string &s)
 {
-	size_t first = s.find_first_not_of(" \t\r\n");
-	size_t last = s.find_last_not_of(" \t\r\n");
+	size_t first = s.find_first_not_of(" \t\r\n;");
+	size_t last = s.find_last_not_of(" \t\r\n;");
 	if (first == std::string::npos || last == std::string::npos)
 		return "";
 	return s.substr(first, last - first + 1);
