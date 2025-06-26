@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/16 13:17:31 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/26 20:42:48 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ public:
 	const std::string &getReqHeaderKey(const std::string &key) const;
 	const std::map<std::string, std::string> &getReqHeaders() const;
 	const std::string &getReqQueryString() const;
+
+	const std::string normalizePath(const std::string &path);
 
 private:
 	std::string _method;

@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 22:35:24 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/26 20:39:18 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,16 +78,17 @@ bool endsWith(const std::string &str, const std::string &suffix)
 	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
 
-std::string extractLocationPrefix(const Request &request, const ServerConfig& config)
+std::string extractLocationPrefix(const Request &request, const ServerConfig &config)
 {
 	const std::map<std::string, LocationConfig> &locations = config.getLocations();
 	std::string reqPath = request.getReqPath();
+
 	std::string bestMatch = "";
 	size_t bestMatchLength = 0;
 
 	for (std::map<std::string, LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); ++it)
 	{
-		const std::string& locationPath = it->first;
+		const std::string &locationPath = it->first;
 
 		if (reqPath.compare(0, locationPath.length(), locationPath) == 0 &&
 			(reqPath.length() == locationPath.length() || reqPath[locationPath.length()] == '/' || locationPath == "/"))
@@ -99,6 +100,10 @@ std::string extractLocationPrefix(const Request &request, const ServerConfig& co
 			}
 		}
 	}
+
+	if (bestMatch.empty())
+		return locations.count("/") ? "/" : "";
+
 	return bestMatch;
 }
 
@@ -110,20 +115,24 @@ std::string extractFilenameFromPath(const std::string &path)
 	return path.substr(pos + 1);
 }
 
-bool isValidPostRequest(const Request &request, const ServerConfig &config)
+bool isMethodAllowed(const Request &request, const ServerConfig &config, const std::string &method)
 {
 	const std::map<std::string, LocationConfig> &locations = config.getLocations();
 
-	// Extract location prefix
 	std::string locationPrefix = extractLocationPrefix(request, config);
 
-	const LocationConfig &location = locations.find(locationPrefix)->second;
+	std::cout << locationPrefix << std::endl;
 
-	// Check if POST is allowed
-	const std::vector<std::string> &methods = location.getAllowedMethods();
+	std::map<std::string, LocationConfig>::const_iterator it = locations.find(locationPrefix);
+
+	if (it == locations.end())
+		return false;
+
+	const std::vector<std::string> &methods = it->second.getAllowedMethods();
+
 	for (size_t i = 0; i < methods.size(); ++i)
 	{
-		if (methods[i] == "POST")
+		if (methods[i] == method)
 			return true;
 	}
 	return false;
@@ -135,7 +144,7 @@ void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::v
 	{
 		part.content = buffer;
 		parts.push_back(part);
-		part = MultipartPart(); // Reset for next
+		part = MultipartPart();
 		buffer.clear();
 	}
 }

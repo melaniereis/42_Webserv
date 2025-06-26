@@ -6,11 +6,12 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 19:31:39 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/26 20:46:28 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
+
 Request::Request(const std::string &rawRequest)
 {
 	std::istringstream stream(rawRequest);
@@ -29,6 +30,8 @@ Request::Request(const std::string &rawRequest)
 		_queryString = _path.substr(qpos + 1);
 		_path = _path.substr(0, qpos);
 	}
+
+	_path = normalizePath(_path);
 
 	// Storing all headers in _headers and trimming both key and value
 	while (std::getline(stream, line))
@@ -54,7 +57,6 @@ Request::Request(const std::string &rawRequest)
 	bodyStream << stream.rdbuf();
 	_body = bodyStream.str();
 }
-
 
 const std::string &Request::getReqMethod() const { return _method; }
 const std::string &Request::getReqPath() const { return _path; }
@@ -82,3 +84,28 @@ const std::map<std::string, std::string> &Request::getReqHeaders() const
 }
 
 const std::string &Request::getReqQueryString() const { return _queryString; }
+
+
+const std::string Request::normalizePath(const std::string &path)
+{
+	std::string result;
+	bool prevSlash = false;
+
+	for (size_t i = 0; i < path.length(); ++i)
+	{
+		if (path[i] == '/')
+		{
+			if (!prevSlash)
+			{
+				result += '/';
+				prevSlash = true;
+			}
+		}
+		else
+		{
+			result += path[i];
+			prevSlash = false;
+		}
+	}
+	return result.empty() ? "/" : result;
+}

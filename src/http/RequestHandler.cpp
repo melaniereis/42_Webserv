@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 22:45:57 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/26 20:40:46 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,11 +78,11 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	}
 
 	// Handle standard methods
-	if (request.getReqMethod() == "GET")
+	if (request.getReqMethod() == "GET" && isMethodAllowed(request, config, "GET"))
 		return handleGetMethod(request, config);
-	else if (request.getReqMethod() == "POST" && isValidPostRequest(request, config))
+	else if (request.getReqMethod() == "POST" && isMethodAllowed(request, config, "POST"))
 		return handlePostMethod(request, config);
-	else if (request.getReqMethod() == "DELETE")
+	else if (request.getReqMethod() == "DELETE" && isMethodAllowed(request, config, "DELETE"))
 		return handleDeleteMethod(request);
 	else
 	{
@@ -90,7 +90,6 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 		return HttpStatus::buildResponse(response, 405);
 	}
 }
-
 
 // ============
 // GET METHOD
@@ -102,6 +101,11 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::string path = request.getReqPath();
 	std::string rootDir = config.getServerRoot();
 	std::vector<std::string> indexes = config.getServerIndexes();
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
 	if (path == "/")
 	{
@@ -114,7 +118,11 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	if (path.find("..") != std::string::npos)
 		return HttpStatus::buildResponse(response, 403);
 
-	std::string fullPath = rootDir + path;
+	if (locationPrefix != "/")
+		path = path.substr(locationPrefix.length());
+
+	std::string fullPath = rootDir + locationRootDir + path;
+	std::cout << fullPath << std::endl;
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
@@ -162,7 +170,35 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 
 	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
 	
-	
+	// for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); it++)
+	// {
+	// 	std::string contentStr(it->content.begin(), it->content.end());
+	// 	std::cout << "Name ->" << it->name << std::endl;
+	// 	std::cout << "Content-Type ->" << it->contentType << std::endl;
+	// 	std::cout << "Content ->" << contentStr << std::endl;
+	// 	std::cout << "Filename ->" << it->fileName << std::endl;
+	// }
+
+	for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); ++it)
+	{
+		if (!it->fileName.empty())
+		{
+			std::string updatedFileName = generateTimestampFilename(it->fileName);
+			std::string fullPath = rootDir + locationRootDir + "/" + updatedFileName;
+			
+			std::ofstream out(fullPath.c_str(), std::ios::binary);
+			if (!out)
+				return HttpStatus::buildResponse(response, 500);
+
+			out.write(it->content.data(), it->content.size());
+			out.close();
+		}
+		else
+		{
+			std::cout << "Key->" << it->name << std::endl;
+			std::cout << "Value->" << std::string(it->content.begin(), it->content.end()) << "\n\n";
+		}
+	}
 	return HttpStatus::buildResponse(response, 200);
 }
 
@@ -170,54 +206,64 @@ std::vector<MultipartPart> parseMultiparts(const Request &request)
 {
 	std::vector<MultipartPart> parts;
 
-	std::string body = request.getReqBody();
+	const std::string &body = request.getReqBody();
 	std::string contentType = request.getReqHeaderKey("Content-Type");
 
 	size_t boundaryPos = contentType.find('=');
-	
 	if (boundaryPos == std::string::npos)
 		return parts;
 
 	std::string boundary = "--" + contentType.substr(boundaryPos + 1);
 	std::string boundaryEnd = boundary + "--";
-	
-	std::istringstream stream(body);
-	std::string line;
-	
-	MultipartPart currPart;
-	
-	bool readingHeaders = false;
-	bool readingBody = false;
-	std::vector<char> bodyBuffer;
-	
-	while (std::getline(stream, line))
-	{
-		if (!line.empty() && line.back() == '\r')
-			line.pop_back();
 
-		if (line == boundary)
-		{
-			finalizePart(parts, currPart, bodyBuffer);
-			readingHeaders = true;
-			readingBody = false;
-		}
-		else if (line == boundaryEnd)
-		{
-			finalizePart(parts, currPart, bodyBuffer);
+	size_t pos = 0;
+	while (true)
+	{
+		// Find the next boundary
+		size_t boundaryStart = body.find(boundary, pos);
+		if (boundaryStart == std::string::npos)
 			break;
-		}
-		else if (readingHeaders)
+
+		// Skip the boundary and next \r\n
+		pos = boundaryStart + boundary.length();
+		if (body.substr(pos, 2) == "--") break; // End boundary
+		if (body.substr(pos, 2) == "\r\n") pos += 2;
+
+		// Find headers
+		size_t headerEnd = body.find("\r\n\r\n", pos);
+		if (headerEnd == std::string::npos) break;
+
+		std::string headers = body.substr(pos, headerEnd - pos);
+		pos = headerEnd + 4; // move to body
+
+		MultipartPart part;
+		std::istringstream headerStream(headers);
+		std::string headerLine;
+		while (std::getline(headerStream, headerLine))
 		{
-			if (line.empty())
-			{
-				readingHeaders = false;
-				readingBody = true;
-			}
-			else if (line.find("Content-Disposition") != std::string::npos)
-				parseContentDisposition(line, currPart);
+			if (!headerLine.empty() && headerLine[headerLine.size() - 1] == '\r')
+					headerLine.erase(headerLine.size() - 1);
+
+			if (headerLine.find("Content-Disposition:") != std::string::npos)
+				parseContentDisposition(headerLine, part);
+			else if (headerLine.find("Content-Type:") != std::string::npos)
+				part.contentType = headerLine.substr(14); // assumes exactly "Content-Type: "
 		}
-		else if (readingBody)
-			bodyBuffer += line + "\n";
+
+		// Find next boundary to determine content range
+		size_t nextBoundary = body.find(boundary, pos);
+		if (nextBoundary == std::string::npos)
+			break;
+
+		size_t contentLen = nextBoundary - pos;
+		part.content = std::vector<char>(body.begin() + pos, body.begin() + pos + contentLen);
+
+		// Trim trailing \r\n from content if present
+		if (contentLen >= 2 && part.content[contentLen - 2] == '\r' && part.content[contentLen - 1] == '\n')
+			part.content.resize(contentLen - 2);
+
+		parts.push_back(part);
+		pos = nextBoundary;
 	}
 	return parts;
 }

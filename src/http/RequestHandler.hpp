@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 22:35:54 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/06/26 19:40:23 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,14 +52,13 @@ std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector
 std::string generateTimestampFilename(std::string &fileName);
 
 // Validating the location and the allowed methods on the specific location
-bool isValidPostRequest(const Request &request, const ServerConfig &config);
+bool isMethodAllowed(const Request &request, const ServerConfig &config, const std::string &method);
 
 std::string extractLocationPrefix(const Request &request, const ServerConfig &config);
 
 std::string extractFilenameFromPath(const std::string &path);
 
 std::vector<MultipartPart> parseMultiparts(const Request &request);
-
 
 void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::vector<char> &buffer);
 void parseContentDisposition(const std::string &line, MultipartPart &part);
