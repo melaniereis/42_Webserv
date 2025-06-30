@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:51:54 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 22:02:58 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/30 15:32:26 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,11 @@ class ConfigParser
 		LocationHandlerMap _locationHandlers;
 
 		std::string _readFile();
+
 		std::vector<ServerConfig> _parseConfig(std::istringstream& stream);
+		bool _findOpeningBrace(const std::string& firstLine, int& lineNum,
+									std::istringstream& stream,
+									const std::string& context);
 		void _parseServerBlock(const std::string& firstLine, int& lineNum,
 							std::istringstream& stream,
 							std::map<ServerKey, ServerConfig>& servers);

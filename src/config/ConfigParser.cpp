@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/25 16:19:16 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/30 15:31:55 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,17 +111,46 @@ std::vector<ServerConfig> ConfigParser::_parseConfig(std::istringstream& stream)
 	return servers;
 }
 
-void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
+bool ConfigParser::_findOpeningBrace(const std::string& firstLine, int& lineNum,
 									std::istringstream& stream,
-									std::map<ServerKey, ServerConfig>& servers)
+									const std::string& context)
 {
 	std::istringstream iline(firstLine);
 	std::string token;
 
-	iline >> token;
-	iline >> token;
-	if (token != "{")
-		_throwError(lineNum, "Expected '{' after server");
+	// Skip past the directive name and check for brace on same line
+	while (iline >> token && token != "{")
+		;
+
+	if (token == "{")
+		return true;
+
+	// Look for brace on next non-empty, non-comment line
+	std::string nextLine;
+	while (std::getline(stream, nextLine))
+	{
+		++lineNum;
+		std::string trimmed = trim(nextLine);
+
+		if (trimmed.empty() || trimmed[0] == '#')
+			continue;
+
+		if (trimmed == "{")
+			return true;
+
+		_throwError(lineNum, "Expected '{' after " + context + ", found: " + trimmed);
+	}
+
+	_throwError(lineNum, "Expected '{' after " + context);
+	return false;
+}
+
+void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
+									std::istringstream& stream,
+									std::map<ServerKey, ServerConfig>& servers)
+{
+	if (!_findOpeningBrace(firstLine, lineNum, stream, "server"))
+		return;
 
 	ServerConfig currentConfig;
 	int braceCount = 1;
@@ -214,8 +243,12 @@ void ConfigParser::_parseLocationBlock(const std::string& firstLine, int& lineNu
 	iline >> path;
 	iline >> brace;
 
-	if (brace != "{")
-		_throwError(lineNum, "Expected '{' after location " + path);
+	if (path.empty())
+		_throwError(lineNum, "Location directive requires a path argument");
+
+	// Use the enhanced brace finding method
+	if (!_findOpeningBrace(firstLine, lineNum, stream, "location " + path))
+		return;
 
 	LocationConfig loc;
 	loc.setPath(path);
