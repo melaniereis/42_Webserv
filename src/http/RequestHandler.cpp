@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/26 20:40:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/01 21:37:31 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	else if (request.getReqMethod() == "POST" && isMethodAllowed(request, config, "POST"))
 		return handlePostMethod(request, config);
 	else if (request.getReqMethod() == "DELETE" && isMethodAllowed(request, config, "DELETE"))
-		return handleDeleteMethod(request);
+		return handleDeleteMethod(request, config);
 	else
 	{
 		Response response;
@@ -98,7 +98,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 {
 	Response response;
 
-	std::string path = request.getReqPath();
+	std::string reqPath = request.getReqPath();
 	std::string rootDir = config.getServerRoot();
 	std::vector<std::string> indexes = config.getServerIndexes();
 	std::string locationPrefix = extractLocationPrefix(request, config);
@@ -107,22 +107,22 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
-	if (path == "/")
+	if (reqPath == "/")
 	{
 		std::string indexFile = resolveMultipleIndexes(rootDir, indexes);
 		if (indexFile.empty())
 			return HttpStatus::buildResponse(response, 403);
-		path = "/" + indexFile;
+		reqPath = "/" + indexFile;
 	}
 
-	if (path.find("..") != std::string::npos)
+	if (reqPath.find("..") != std::string::npos)
 		return HttpStatus::buildResponse(response, 403);
 
 	if (locationPrefix != "/")
-		path = path.substr(locationPrefix.length());
+		reqPath = reqPath.substr(locationPrefix.length());
 
-	std::string fullPath = rootDir + locationRootDir + path;
-	std::cout << fullPath << std::endl;
+	std::string fullPath = rootDir + locationRootDir + reqPath;
+
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
@@ -131,7 +131,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::ostringstream ss;
 	ss << file.rdbuf();
 
-	std::string contentType = getMimeType(path);
+	std::string contentType = getMimeType(reqPath);
 	response.setStatus(200, "OK");
 	response.setBody(ss.str());
 	response.setHeader("Content-Type", contentType);
@@ -168,6 +168,9 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
+	if (reqPath.find("..") != std::string::npos)
+		return HttpStatus::buildResponse(response, 403);
+	
 	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
 	
 	// for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); it++)
@@ -226,12 +229,16 @@ std::vector<MultipartPart> parseMultiparts(const Request &request)
 
 		// Skip the boundary and next \r\n
 		pos = boundaryStart + boundary.length();
-		if (body.substr(pos, 2) == "--") break; // End boundary
-		if (body.substr(pos, 2) == "\r\n") pos += 2;
+		if (body.substr(pos, 2) == "--")
+			break; // End boundary
+
+		if (body.substr(pos, 2) == "\r\n")
+			pos += 2;
 
 		// Find headers
 		size_t headerEnd = body.find("\r\n\r\n", pos);
-		if (headerEnd == std::string::npos) break;
+		if (headerEnd == std::string::npos)
+			break;
 
 		std::string headers = body.substr(pos, headerEnd - pos);
 		pos = headerEnd + 4; // move to body
@@ -270,9 +277,14 @@ std::vector<MultipartPart> parseMultiparts(const Request &request)
 
 Response RequestHandler::handleFormPost(const Request &request, const ServerConfig &config)
 {
-	Response response;
 	(void)config;
+	Response response;
+
+	std::string reqPath = request.getReqPath();
 	std::string body = request.getReqBody();
+
+	if (reqPath.find("..") != std::string::npos)
+		return HttpStatus::buildResponse(response, 403);
 
 	std::map<std::string, std::string> clientData;
 	size_t start = 0;
@@ -317,6 +329,9 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 	
+	if (reqPath.find("..") != std::string::npos)
+		return HttpStatus::buildResponse(response, 403);
+	
 	std::string fileName = extractFilenameFromPath(reqPath);
 	std::string updatedFileName = generateTimestampFilename(fileName);
 
@@ -335,11 +350,40 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 // ============
 // DELETE METHOD
 // ============
-Response RequestHandler::handleDeleteMethod(const Request &request)
+Response RequestHandler::handleDeleteMethod(const Request &request, const ServerConfig &config)
 {
-	// std::remove
-	// In my case, the webserv accepts DELETE method and the CGI handles the delete thing
-	(void)request;
-	Response res;
-	return res;
+	Response response;
+
+	std::string reqPath = request.getReqPath();
+	std::string rootDir = config.getServerRoot();
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
+
+	// Strip location prefix if needed
+	if (locationPrefix != "/")
+		reqPath = reqPath.substr(locationPrefix.length());
+
+	if (reqPath.find("..") != std::string::npos)
+		return HttpStatus::buildResponse(response, 403);
+
+	std::string fullPath = rootDir + locationRootDir + reqPath;
+
+	std::ifstream file(fullPath.c_str());
+	if (!file)
+		return HttpStatus::buildResponse(response, 404);
+
+	file.close();
+
+	// Verify if it is a directory
+	if (isDirectory(fullPath))
+		return HttpStatus::buildResponse(response, 403);
+
+	// Actually try to remove the file
+	if (std::remove(fullPath.c_str()) != 0)
+		return HttpStatus::buildResponse(response, 500);
+
+	return HttpStatus::buildResponse(response, 200);
 }

@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/26 20:39:18 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/01 19:05:38 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,8 +121,6 @@ bool isMethodAllowed(const Request &request, const ServerConfig &config, const s
 
 	std::string locationPrefix = extractLocationPrefix(request, config);
 
-	std::cout << locationPrefix << std::endl;
-
 	std::map<std::string, LocationConfig>::const_iterator it = locations.find(locationPrefix);
 
 	if (it == locations.end())
@@ -152,13 +150,25 @@ void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::v
 void parseContentDisposition(const std::string &line, MultipartPart &part)
 {
 	size_t namePos = line.find("name=\"");
-	if (namePos != std::string::npos) {
+	if (namePos != std::string::npos)
+	{
 		size_t nameEnd = line.find("\"", namePos + 6);
 		part.name = line.substr(namePos + 6, nameEnd - (namePos + 6));
 	}
+	
 	size_t filePos = line.find("filename=\"");
-	if (filePos != std::string::npos) {
+	if (filePos != std::string::npos)
+	{
 		size_t fileEnd = line.find("\"", filePos + 10);
 		part.fileName = line.substr(filePos + 10, fileEnd - (filePos + 10));
 	}
+}
+
+bool isDirectory(const std::string &path)
+{
+	struct stat s;
+
+	if (stat(path.c_str(), &s) == 0)
+		return S_ISDIR(s.st_mode);
+	return false;
 }

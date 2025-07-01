@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/02 13:18:32 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 18:01:34 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/01 21:22:18 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,4 @@
 
 #include <set>
 #include <arpa/inet.h>
-
-// Includes
-#include "macros.hpp"
 
