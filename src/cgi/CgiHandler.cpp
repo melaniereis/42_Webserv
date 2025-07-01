@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/30 15:50:22 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/01 17:29:25 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,6 +109,10 @@ void CgiHandler::_initEnv()
 	_env["SERVER_PORT"] = _intToString(_config.getServerPort());
 	_env["PATH_INFO"] = _request.getReqPath();
 	_env["PATH_TRANSLATED"] = _resolveScriptPath();
+	// Set CONTENT_LENGTH based on actual body size (after dechunking)
+	std::ostringstream contentLength;
+	contentLength << _request.getReqBody().size();
+	_env["CONTENT_LENGTH"] = contentLength.str();
 
 	// Add all headers as HTTP_* variables
 	const std::map<std::string, std::string>& headers = _request.getReqHeaders();
@@ -167,6 +171,28 @@ void CgiHandler::_childProcess(int pipeIn[2], int pipeOut[2],
 	close(pipeIn[1]);
 	close(pipeOut[0]);
 
+	// Convert relative script path to absolute path BEFORE chdir
+	char* absolutePath = realpath(scriptPath.c_str(), NULL);
+	if (!absolutePath) {
+		perror("realpath failed");
+		exit(EXIT_FAILURE);
+	}
+
+	std::string absScriptPath(absolutePath);
+	free(absolutePath);
+
+	// Extract directory for chdir (RFC 3875 compliance)
+	size_t lastSlash = absScriptPath.find_last_of('/');
+	if (lastSlash != std::string::npos) {
+		std::string scriptDir = absScriptPath.substr(0, lastSlash);
+
+		// REQUIRED: Set working directory to script's directory
+		if (chdir(scriptDir.c_str()) != 0) {
+			perror("chdir failed - RFC 3875 compliance error");
+			exit(EXIT_FAILURE);
+		}
+	}
+
 	if (dup2(pipeIn[0], STDIN_FILENO) < 0) {
 		perror("dup2 stdin failed");
 		exit(EXIT_FAILURE);
@@ -179,7 +205,7 @@ void CgiHandler::_childProcess(int pipeIn[2], int pipeOut[2],
 	char** env = _createEnvArray();
 	std::map<std::string, std::string> cgiMap = _location.getCgis();
 	std::string interpreter;
-	std::string resolvedScript = scriptPath;
+	std::string resolvedScript = absScriptPath;
 
 	// Extract extension and find matching interpreter
 	size_t dotPos = scriptPath.find_last_of('.');

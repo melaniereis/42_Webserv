@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:28:41 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/24 16:48:15 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/01 17:08:21 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ class CgiHandler
 		std::map<std::string, std::string> _env;
 
 		std::string _resolveScriptPath() const;
+
 		void _initEnv();
 		std::string _executeCgiScript(const std::string &scriptPath);
 		void _parseCgiOutput(const std::string &output, Response &response);

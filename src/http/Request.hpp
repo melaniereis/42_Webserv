@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/16 13:17:31 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/01 17:02:59 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,10 @@ private:
 	std::string _body;
 	std::map<std::string, std::string> _headers;
 	std::string _queryString;
+	bool _isChunked;
+	std::string _decodeChunkedBody(const std::string& chunkedBody);
+	void _processTransferEncoding();
+
 };
 
 // headers will hold
