@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/24 16:48:12 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/30 15:50:22 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,22 +41,26 @@ Response CgiHandler::execute()
 	_parseCgiOutput(output, response);
 	return response;
 }
-
-bool CgiHandler::_validateScript(const std::string& scriptPath,
-								Response& response)
+bool CgiHandler::_validateScript(const std::string& scriptPath, Response& response)
 {
 	if (access(scriptPath.c_str(), F_OK) != 0) {
-		int err = errno;
-		Logger::error("Script not found: " + scriptPath + " - " + strerror(err));
 		HttpStatus::buildResponse(response, 404);
 		return false;
 	}
-	if (access(scriptPath.c_str(), X_OK) != 0) {
-		int err = errno;
-		Logger::error("Script not executable: " + scriptPath + " - " + strerror(err));
+
+	// Check if it's a regular file
+	struct stat stat_buf;
+	if (stat(scriptPath.c_str(), &stat_buf) != 0 || !S_ISREG(stat_buf.st_mode)) {
 		HttpStatus::buildResponse(response, 403);
 		return false;
 	}
+
+	// Verify execute permissions
+	if (access(scriptPath.c_str(), X_OK) != 0) {
+		HttpStatus::buildResponse(response, 403);
+		return false;
+	}
+
 	return true;
 }
 
@@ -80,22 +84,22 @@ std::string CgiHandler::_resolveScriptPath() const
 		path = path.substr(locPath.length());
 	}
 
-	if (base[base.length()-1] == '/') {
-		if (!path.empty() && path[0] == '/') {
-			return base + path.substr(1);
-		}
-		return base + path;
-	}
-	else {
-		if (!path.empty() && path[0] != '/') {
-			return base + "/" + path;
-		}
-		return base + path;
+	// Handle trailing slashes
+	if (base.back() == '/') {
+		return (path.front() == '/')
+			? base + path.substr(1)
+			: base + path;
+	} else {
+		return (path.front() != '/')
+			? base + "/" + path
+			: base + path;
 	}
 }
 
 void CgiHandler::_initEnv()
 {
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	_env["QUERY_STRING"] = _request.getReqQueryString();
 	_env["REQUEST_METHOD"] = _request.getReqMethod();
 	_env["SCRIPT_NAME"] = _request.getReqPath();
@@ -103,11 +107,17 @@ void CgiHandler::_initEnv()
 	_env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env["SERVER_NAME"] = _config.getServerHost();
 	_env["SERVER_PORT"] = _intToString(_config.getServerPort());
-	_env["CONTENT_TYPE"] = _request.getReqHeaderKey("Content-Type");
-	_env["CONTENT_LENGTH"] = _request.getReqHeaderKey("Content-Length");
-	_env["HTTP_COOKIE"] = _request.getReqHeaderKey("Cookie");
-	_env["HTTP_USER_AGENT"] = _request.getReqHeaderKey("User-Agent");
 	_env["PATH_INFO"] = _request.getReqPath();
+	_env["PATH_TRANSLATED"] = _resolveScriptPath();
+
+	// Add all headers as HTTP_* variables
+	const std::map<std::string, std::string>& headers = _request.getReqHeaders();
+	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+		std::string env_var = "HTTP_" + it->first;
+		std::replace(env_var.begin(), env_var.end(), '-', '_');
+		std::transform(env_var.begin(), env_var.end(), env_var.begin(), ::toupper);
+		_env[env_var] = it->second;
+	}
 }
 
 char** CgiHandler::_createEnvArray() const
@@ -169,22 +179,28 @@ void CgiHandler::_childProcess(int pipeIn[2], int pipeOut[2],
 	char** env = _createEnvArray();
 	std::map<std::string, std::string> cgiMap = _location.getCgis();
 	std::string interpreter;
-	size_t dotPos = scriptPath.find_last_of('.');
+	std::string resolvedScript = scriptPath;
 
-	if (dotPos != std::string::npos) {
+	// Extract extension and find matching interpreter
+	size_t dotPos = scriptPath.find_last_of('.');
+	if (dotPos != std::string::npos)
+	{
 		std::string ext = scriptPath.substr(dotPos);
-		std::map<std::string, std::string>::const_iterator it = cgiMap.find(ext);
-		if (it != cgiMap.end()) {
-			interpreter = it->second;
+		if (cgiMap.find(ext) != cgiMap.end())
+		{
+			interpreter = cgiMap[ext];
 		}
 	}
 
+	// Prepare arguments for execve
 	char* argv[3] = { NULL, NULL, NULL };
-	if (!interpreter.empty()) {
+	if (!interpreter.empty())
+	{
 		argv[0] = const_cast<char*>(interpreter.c_str());
-		argv[1] = const_cast<char*>(scriptPath.c_str());
-	} else {
-		argv[0] = const_cast<char*>(scriptPath.c_str());
+		argv[1] = const_cast<char*>(resolvedScript.c_str());
+	} else
+	{
+		argv[0] = const_cast<char*>(resolvedScript.c_str());
 	}
 
 	execve(argv[0], argv, env);
