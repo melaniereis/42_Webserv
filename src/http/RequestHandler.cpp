@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandler.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 16:18:24 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/06/26 20:40:46 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
-// #include "../config/ServerConfig.hpp"
 
 // Helper function to find the best matching location for a request
 const LocationConfig *findMatchingLocation(const Request &request, const ServerConfig &config)
@@ -79,11 +78,11 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	}
 
 	// Handle standard methods
-	if (request.getReqMethod() == "GET")
+	if (request.getReqMethod() == "GET" && isMethodAllowed(request, config, "GET"))
 		return handleGetMethod(request, config);
-	else if (request.getReqMethod() == "POST")
+	else if (request.getReqMethod() == "POST" && isMethodAllowed(request, config, "POST"))
 		return handlePostMethod(request, config);
-	else if (request.getReqMethod() == "DELETE")
+	else if (request.getReqMethod() == "DELETE" && isMethodAllowed(request, config, "DELETE"))
 		return handleDeleteMethod(request);
 	else
 	{
@@ -98,9 +97,15 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
+
 	std::string path = request.getReqPath();
 	std::string rootDir = config.getServerRoot();
 	std::vector<std::string> indexes = config.getServerIndexes();
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
 	if (path == "/")
 	{
@@ -113,7 +118,11 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	if (path.find("..") != std::string::npos)
 		return HttpStatus::buildResponse(response, 403);
 
-	std::string fullPath = rootDir + path;
+	if (locationPrefix != "/")
+		path = path.substr(locationPrefix.length());
+
+	std::string fullPath = rootDir + locationRootDir + path;
+	std::cout << fullPath << std::endl;
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
@@ -129,91 +138,191 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	return response;
 }
 
-// Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
-// {
-// 	Response response;
-// 	std::string path = request.getReqPath();
-// 	std::string root = config.getServerRoot();
-// 	std::string uploadDir = "uploads";
-
-// 	std::string fileName = request.getReqHeaderKey("X-Filename");
-
-// 	if (fileName.empty())
-// 		fileName = "default_upload_name";
-
-// 	if (path != "/uploads")
-// 		return HttpStatus::buildResponse(response, 403);
-
-// 	std::string fullPath =  root + "/" + uploadDir + "/" + fileName;
-// 	std::ofstream outFile(fullPath.c_str(), std::ios::binary);
-
-// 	if (!outFile)
-// 		return HttpStatus::buildResponse(response, 500);
-
-// 	outFile.write(request.getReqBody().c_str(), request.getReqBody().size());
-// 	outFile.close();
-
-// 	return HttpStatus::buildResponse(response, 200);
-// }
-
 // ============
 // POST METHOD
 // ============
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	std::string reqPath = request.getReqPath();
+
 	std::string contentType = request.getReqHeaderKey("Content-Type");
-	std::string uploadDir = config.getLocations().at("/upload").getRoot();
-
-	if (uploadDir[0] == '.')
-		uploadDir.erase(0, uploadDir.find_first_not_of("."));
-
-	if (uploadDir != reqPath)
-		return HttpStatus::buildResponse(response, 415);
-
+	
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
 	if (contentType == "application/x-www-form-urlencoded")
 		return handleFormPost(request, config);
 	if (contentType == "application/octet-stream")
 		return handleBinaryPost(request, config);
-	// if (contentType == "application/json")
-	// 	return handleJsonPost(request, config);
 	return HttpStatus::buildResponse(response, 415);
 }
 
 Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	(void)request;
-	(void)config;
-	return response;
+	
+	std::string reqPath = request.getReqPath();
+	std::string rootDir = config.getServerRoot();
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
+
+	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
+	
+	// for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); it++)
+	// {
+	// 	std::string contentStr(it->content.begin(), it->content.end());
+	// 	std::cout << "Name ->" << it->name << std::endl;
+	// 	std::cout << "Content-Type ->" << it->contentType << std::endl;
+	// 	std::cout << "Content ->" << contentStr << std::endl;
+	// 	std::cout << "Filename ->" << it->fileName << std::endl;
+	// }
+
+	for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); ++it)
+	{
+		if (!it->fileName.empty())
+		{
+			std::string updatedFileName = generateTimestampFilename(it->fileName);
+			std::string fullPath = rootDir + locationRootDir + "/" + updatedFileName;
+			
+			std::ofstream out(fullPath.c_str(), std::ios::binary);
+			if (!out)
+				return HttpStatus::buildResponse(response, 500);
+
+			out.write(it->content.data(), it->content.size());
+			out.close();
+		}
+		else
+		{
+			std::cout << "Key->" << it->name << std::endl;
+			std::cout << "Value->" << std::string(it->content.begin(), it->content.end()) << "\n\n";
+		}
+	}
+	return HttpStatus::buildResponse(response, 200);
+}
+
+std::vector<MultipartPart> parseMultiparts(const Request &request)
+{
+	std::vector<MultipartPart> parts;
+
+	const std::string &body = request.getReqBody();
+	std::string contentType = request.getReqHeaderKey("Content-Type");
+
+	size_t boundaryPos = contentType.find('=');
+	if (boundaryPos == std::string::npos)
+		return parts;
+
+	std::string boundary = "--" + contentType.substr(boundaryPos + 1);
+	std::string boundaryEnd = boundary + "--";
+
+	size_t pos = 0;
+	while (true)
+	{
+		// Find the next boundary
+		size_t boundaryStart = body.find(boundary, pos);
+		if (boundaryStart == std::string::npos)
+			break;
+
+		// Skip the boundary and next \r\n
+		pos = boundaryStart + boundary.length();
+		if (body.substr(pos, 2) == "--") break; // End boundary
+		if (body.substr(pos, 2) == "\r\n") pos += 2;
+
+		// Find headers
+		size_t headerEnd = body.find("\r\n\r\n", pos);
+		if (headerEnd == std::string::npos) break;
+
+		std::string headers = body.substr(pos, headerEnd - pos);
+		pos = headerEnd + 4; // move to body
+
+		MultipartPart part;
+		std::istringstream headerStream(headers);
+		std::string headerLine;
+		while (std::getline(headerStream, headerLine))
+		{
+			if (!headerLine.empty() && headerLine[headerLine.size() - 1] == '\r')
+					headerLine.erase(headerLine.size() - 1);
+
+			if (headerLine.find("Content-Disposition:") != std::string::npos)
+				parseContentDisposition(headerLine, part);
+			else if (headerLine.find("Content-Type:") != std::string::npos)
+				part.contentType = headerLine.substr(14); // assumes exactly "Content-Type: "
+		}
+
+		// Find next boundary to determine content range
+		size_t nextBoundary = body.find(boundary, pos);
+		if (nextBoundary == std::string::npos)
+			break;
+
+		size_t contentLen = nextBoundary - pos;
+		part.content = std::vector<char>(body.begin() + pos, body.begin() + pos + contentLen);
+
+		// Trim trailing \r\n from content if present
+		if (contentLen >= 2 && part.content[contentLen - 2] == '\r' && part.content[contentLen - 1] == '\n')
+			part.content.resize(contentLen - 2);
+
+		parts.push_back(part);
+		pos = nextBoundary;
+	}
+	return parts;
 }
 
 Response RequestHandler::handleFormPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	(void)request;
 	(void)config;
-	return response;
+	std::string body = request.getReqBody();
+
+	std::map<std::string, std::string> clientData;
+	size_t start = 0;
+
+	while(start < body.length())
+	{
+		size_t end = body.find('&', start);
+		if (end == std::string::npos) end = body.length();
+
+		size_t equal = body.find('=', start);
+		if (equal != std::string::npos && equal < end)
+		{
+			std::string key = body.substr(start, equal - start);
+			std::string value = body.substr(equal + 1, end - equal - 1);
+			clientData[key] = value;
+		}
+		start = end + 1;
+	}
+
+	std::map<std::string, std::string>::iterator it = clientData.begin();
+	
+	while (it != clientData.end())
+	{
+		std::cout << "key->" << it->first << std::endl;
+		std::cout << "Value->" << it->second << std::endl;
+		it++;
+	}
+
+	return HttpStatus::buildResponse(response, 200);
 }
 
 Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-
+	
+	std::string reqPath = request.getReqPath();
 	std::string body = request.getReqBody();
 	std::string rootDir = config.getServerRoot();
-	std::string uploadDir = config.getLocations().at("/upload").getRoot();
-	std::string fileName = "default_file_name";
+	std::string locationPrefix = extractLocationPrefix(request, config);
+	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	
+	if (locationRootDir[0] == '.')
+		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
+	
+	std::string fileName = extractFilenameFromPath(reqPath);
+	std::string updatedFileName = generateTimestampFilename(fileName);
 
-	if (uploadDir[0] == '.')
-		uploadDir.erase(0, uploadDir.find_first_not_of("."));
-
-	std::string fullPath = rootDir + uploadDir + "/" + fileName;
+	std::string fullPath = rootDir + locationRootDir + "/" + updatedFileName;
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
-
+	
 	if (!out)
 		return HttpStatus::buildResponse(response, 500);
 
@@ -221,42 +330,6 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 	out.close();
 
 	return HttpStatus::buildResponse(response, 200);
-}
-
-std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes)
-{
-	for (size_t i = 0; i < indexes.size(); i++)
-	{
-		std::string fullPath = rootDir + "/" + indexes[i];
-		std::ifstream file(fullPath.c_str());
-		if (file)
-			return indexes[i];
-	}
-	return "";
-}
-
-std::string getMimeType(const std::string &extension)
-{
-	if (endsWith(extension, ".html"))
-		return "text/html";
-	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg"))
-		return "image/jpeg";
-	if (endsWith(extension, ".css"))
-		return "text/css";
-	if (endsWith(extension, ".js"))
-		return "application/javascript";
-	if (endsWith(extension, ".png"))
-		return "image/png";
-	if (endsWith(extension, ".gif"))
-		return "image/gif";
-	return "application/octet-stream";
-}
-
-bool endsWith(const std::string &str, const std::string &suffix)
-{
-	if (str.length() < suffix.length())
-		return false;
-	return str.compare(str.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
 
 // ============

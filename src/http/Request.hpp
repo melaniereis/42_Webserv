@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/01 17:02:59 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/01 17:32:27 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ public:
 	const std::string &getReqHeaderKey(const std::string &key) const;
 	const std::map<std::string, std::string> &getReqHeaders() const;
 	const std::string &getReqQueryString() const;
+
+	const std::string normalizePath(const std::string &path);
 
 private:
 	std::string _method;

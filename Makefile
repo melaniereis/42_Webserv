@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
+#    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/24 17:16:51 by meferraz         ###   ########.fr        #
+#    Updated: 2025/06/25 17:40:30 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,6 +46,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/Request.cpp \
               $(HTTP_PATH)/Response.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
+              $(HTTP_PATH)/RequestHandlerUtils.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
 			  $(CGI_PATH)/CgiHandler.cpp \
               $(UTILS_PATH)/Logger.cpp \
@@ -86,6 +87,14 @@ get_log:
 	else \
 		tail -f $(GDB_FILE; \)
 	fi
+
+#==============================================================================#
+#                                   TESTING                                    #
+#==============================================================================#
+
+
+test: $(NAME)
+	clear ; ./$(NAME) config/valid/miguel.conf
 
 #==============================================================================#
 #                                CLEANING RULES                                #

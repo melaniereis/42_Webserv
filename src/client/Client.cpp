@@ -43,9 +43,25 @@ bool Client::handleClientRequest()
 		_closed = true;
 		return false;
 	}
+	
+	_readBuffer.append(buffer, bytesRead);
 
-	buffer[bytesRead] = '\0';
-	_readBuffer += buffer;
+	size_t headerEnd = _readBuffer.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+		return true;
+
+	size_t contentLength = 0;
+	size_t clPos = _readBuffer.find("Content-Length:");
+	if (clPos != std::string::npos)
+	{
+		size_t lineEnd = _readBuffer.find("\r\n", clPos);
+		std::string clStr = _readBuffer.substr(clPos + 15, lineEnd - (clPos + 15));
+		contentLength = std::atoi(clStr.c_str());
+	}
+
+	// Check if full body received
+	if (_readBuffer.size() < headerEnd + 4 + contentLength)
+		return true;
 
 	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
 	{
@@ -53,15 +69,23 @@ bool Client::handleClientRequest()
 		_response = RequestHandler::handle(*_request, _config);
 		_writeBuffer = _response.toString();
 	}
-	Logger::info("Client Request:\n" + _readBuffer);
+
+	// Logger::info("Client request\n" + _readBuffer);
 	return true;
 }
+
+// std::ofstream logFile("log.txt", std::ios::app);
+// if (logFile.is_open())
+// {
+// 	logFile << _readBuffer << std::endl;
+// 	logFile.close();
+// }
 
 bool Client::handleClientResponse()
 {
 	if (_writeBuffer.empty()) return true;
 
-	Logger::info("Sending response:\n" + _writeBuffer);
+	// Logger::info("Sending response:\n" + _writeBuffer);
 
 	ssize_t bytesSent = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
 	if (bytesSent <= 0)

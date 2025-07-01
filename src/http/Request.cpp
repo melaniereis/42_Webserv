@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/01 17:05:31 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/01 17:34:06 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ Request::Request(const std::string &rawRequest) : _isChunked(false)
 		_queryString = _path.substr(qpos + 1);
 		_path = _path.substr(0, qpos);
 	}
+
+	_path = normalizePath(_path);
 
 	// Storing all headers in _headers and trimming both key and value
 	while (std::getline(stream, line))
@@ -145,4 +147,29 @@ std::string Request::_decodeChunkedBody(const std::string& chunkedBody)
 	}
 
 	return decodedBody;
+}
+
+
+const std::string Request::normalizePath(const std::string &path)
+{
+	std::string result;
+	bool prevSlash = false;
+
+	for (size_t i = 0; i < path.length(); ++i)
+	{
+		if (path[i] == '/')
+		{
+			if (!prevSlash)
+			{
+				result += '/';
+				prevSlash = true;
+			}
+		}
+		else
+		{
+			result += path[i];
+			prevSlash = false;
+		}
+	}
+	return result.empty() ? "/" : result;
 }
