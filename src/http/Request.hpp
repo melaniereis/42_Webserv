@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/26 20:42:48 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:52:26 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,26 +16,26 @@
 
 class Request
 {
-public:
-	Request(const std::string &rawRequest);
+	public:
+		Request(const std::string &rawRequest);
 
-	const std::string &getReqMethod() const;
-	const std::string &getReqPath() const;
-	const std::string &getReqHttpVersion() const;
-	const std::string &getReqBody() const;
-	const std::string &getReqHeaderKey(const std::string &key) const;
-	const std::map<std::string, std::string> &getReqHeaders() const;
-	const std::string &getReqQueryString() const;
+		const std::string &getReqMethod() const;
+		const std::string &getReqPath() const;
+		const std::string &getReqHttpVersion() const;
+		const std::string &getReqBody() const;
+		const std::string &getReqHeaderKey(const std::string &key) const;
+		const std::map<std::string, std::string> &getReqHeaders() const;
+		const std::string &getReqQueryString() const;
 
-	const std::string normalizePath(const std::string &path);
+		const std::string normalizePath(const std::string &path);
 
-private:
-	std::string _method;
-	std::string _path;
-	std::string _httpVersion;
-	std::string _body;
-	std::map<std::string, std::string> _headers;
-	std::string _queryString;
+	private:
+		std::string _method;
+		std::string _path;
+		std::string _httpVersion;
+		std::string _body;
+		std::map<std::string, std::string> _headers;
+		std::string _queryString;
 };
 
 // headers will hold

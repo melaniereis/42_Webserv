@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/06/25 17:40:30 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/07/06 02:18:23 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,6 +20,7 @@ CPP         = c++
 CPPFLAGS    = -Wall -Wextra -Werror -g -std=c++98
 RM          = rm -fr
 MKDIR       = mkdir -p
+V_ARGS      = --leak-check=full --track-origins=yes --show-leak-kinds=all
 
 #==============================================================================#
 #                                 SOURCE FILES                                 #
@@ -95,6 +96,9 @@ get_log:
 
 test: $(NAME)
 	clear ; ./$(NAME) config/valid/miguel.conf
+
+val: $(NAME)
+	clear ; valgrind $(V_ARGS) ./$(NAME) config/valid/miguel.conf
 
 #==============================================================================#
 #                                CLEANING RULES                                #

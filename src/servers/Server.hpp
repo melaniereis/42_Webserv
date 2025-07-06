@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/24 17:00:06 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:45:54 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ class Server
 		bool handleClientEvent(int clientFd, short revents);
 		const std::vector<int>& getServerFds() const;
 		void removeClient(int fd);
+
+		void cleanup();
 
 	private:
 		Server(const Server&);

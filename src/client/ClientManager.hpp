@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:39:08 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/09 21:49:14 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:45:42 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ class ClientManager
 		int acceptNewClient(int serverFd, const ServerConfig &config);
 		bool handleClientIO(int fd, short revents);
 		void removeClient(int fd);
+
+		void cleanup();
 
 	private:
 		std::map<int, Client *> _clients;

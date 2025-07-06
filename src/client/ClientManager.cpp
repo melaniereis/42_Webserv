@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/24 15:06:49 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:47:28 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientManager.hpp"
+
 static std::string intToString(int value)
 {
 	std::ostringstream oss;
@@ -104,4 +105,15 @@ void ClientManager::removeClient(int fd)
 		close(fd);
 		Logger::info("Client disconnected: " + intToString(fd));
 	}
+}
+
+void ClientManager::cleanup()
+{
+	for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		delete it->second;
+		close(it->first);
+	}
+	_clients.clear();
+	Logger::info("All clients cleaned up.");
 }

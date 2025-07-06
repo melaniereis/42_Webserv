@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:14:02 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/24 17:15:00 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:45:53 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "Server.hpp"
 #include "../config/ConfigParser.hpp"
 #include "../utils/Logger.hpp"
+#include "../client/ClientManager.hpp"
 
 class WebServer
 {
@@ -40,6 +41,8 @@ class WebServer
 		void acceptNewConnections();
 		void cleanup();
 
+		static void handleSigInt(int signum);
+
 		static std::string intToString(int value);
 
 		std::string configPath;
@@ -48,4 +51,6 @@ class WebServer
 		std::vector<struct pollfd> pollFds;
 		std::map<int, int> fdToServerIndex;
 		std::set<int> serverFdsSet;
+
+		static bool _stopFlag;
 };

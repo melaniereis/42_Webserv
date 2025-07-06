@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/24 16:59:34 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:46:59 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,4 +189,18 @@ std::string Server::intToString(int value) const
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
+}
+
+void Server::cleanup()
+{
+	for (std::vector<int>::iterator it = serverFds.begin(); it != serverFds.end(); ++it)
+	{
+		if (*it >= 0)
+		{
+			close(*it);
+			Logger::info("Closed socket FD: " + intToString(*it));
+		}
+	}
+	serverFds.clear();
+	clientManager.cleanup();
 }

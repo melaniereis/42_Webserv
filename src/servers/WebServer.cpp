@@ -3,14 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/24 17:15:29 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:46:50 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServer.hpp"
+
+
+bool WebServer::_stopFlag = false;
 
 WebServer::WebServer(const std::string& configPath) :
 	configPath(configPath) {}
@@ -22,6 +25,7 @@ WebServer::~WebServer()
 
 void WebServer::run()
 {
+	signal(SIGINT, handleSigInt);
 	parseConfig();
 	setupServers();
 	initPollStructures();
@@ -80,7 +84,7 @@ void WebServer::runEventLoop()
 {
 	Logger::info("All servers started, waiting for connections...");
 
-	while (true)
+	while (!_stopFlag)
 	{
 		int pollResult = poll(&pollFds[0], pollFds.size(), -1);
 		if (pollResult < 0)
@@ -160,7 +164,10 @@ void WebServer::cleanup()
 	}
 
 	for (size_t i = 0; i < servers.size(); ++i)
+	{
+		servers[i]->cleanup();
 		delete servers[i];
+	}
 
 	pollFds.clear();
 	servers.clear();
@@ -173,4 +180,11 @@ std::string WebServer::intToString(int value)
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
+}
+
+void WebServer::handleSigInt(int signum)
+{
+	(void)signum;
+	Logger::info("Received SIGINT, shutting down ...");
+	_stopFlag = true;
 }

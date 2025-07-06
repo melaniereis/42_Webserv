@@ -106,6 +106,7 @@ bool Client::handleClientResponse()
 
 	return true;
 }
+
 void Client::closeClient()
 {
 	if (_fd > 0)
