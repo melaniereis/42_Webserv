@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/06 02:46:50 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/06 02:59:52 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ WebServer::~WebServer()
 void WebServer::run()
 {
 	signal(SIGINT, handleSigInt);
+	signal(SIGQUIT, handleSigInt);
 	parseConfig();
 	setupServers();
 	initPollStructures();
