@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/01 17:29:25 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/09 21:51:53 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,20 @@ void CgiHandler::_initEnv()
 	std::ostringstream contentLength;
 	contentLength << _request.getReqBody().size();
 	_env["CONTENT_LENGTH"] = contentLength.str();
+
+	// Enhanced cookie handling
+	std::string cookies = getCookies();
+	if (!cookies.empty()) {
+		_env["HTTP_COOKIE"] = cookies;
+		Logger::debug("Set HTTP_COOKIE: " + cookies);
+	}
+
+	// Handle query string cookie setting (like your friend's PHP)
+	std::string queryString = _request.getReqQueryString();
+	if (!queryString.empty()) {
+		_env["QUERY_STRING"] = queryString;
+		// You could also pre-process query params for cookie setting here
+	}
 
 	// Add all headers as HTTP_* variables
 	const std::map<std::string, std::string>& headers = _request.getReqHeaders();
@@ -369,4 +383,21 @@ std::string CgiHandler::_intToString(int value) const
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
+}
+
+// Enhanced getCookies method:
+std::string CgiHandler::getCookies() {
+	std::string cookies;
+	const std::map<std::string, std::string>& cookieMap = _request.getCookies();
+
+	for (std::map<std::string, std::string>::const_iterator it = cookieMap.begin();
+		it != cookieMap.end(); ++it) {
+		if (!cookies.empty()) {
+			cookies += "; ";
+		}
+		cookies += it->first + "=" + it->second;
+	}
+
+	Logger::debug("Formatted cookies for CGI: " + cookies);
+	return cookies;
 }

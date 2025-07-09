@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandler.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/26 19:40:23 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/09 21:56:28 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,17 +20,21 @@
 
 class RequestHandler
 {
-public:
-	static Response handle(const Request &request, const ServerConfig &config);
-	static Response handleGetMethod(const Request &request, const ServerConfig &config);
-	static Response handlePostMethod(const Request &request, const ServerConfig &config);
-	static Response handleDeleteMethod(const Request &request);
+	public:
+		static Response handle(const Request &request, const ServerConfig &config);
+		static Response handleGetMethod(const Request &request, const ServerConfig &config);
+		static Response handlePostMethod(const Request &request, const ServerConfig &config);
+		static Response handleDeleteMethod(const Request &request);
 
-	// Post Content-Types
-	static Response handleMultipartPost(const Request &request, const ServerConfig &config);
-	static Response handleFormPost(const Request &request, const ServerConfig &config);
-	static Response handleBinaryPost(const Request &request, const ServerConfig &config);
-private:
+		// Post Content-Types
+		static Response handleMultipartPost(const Request &request, const ServerConfig &config);
+		static Response handleFormPost(const Request &request, const ServerConfig &config);
+		static Response handleBinaryPost(const Request &request, const ServerConfig &config);
+		static Response handleSessionRoute(const Request &request);
+		static Response handleCookieDisplayRoute(const Request &request);
+		static void setQueryStringAsCookies(const std::string &queryString, Response &response);
+		static std::string urlDecode(const std::string &str);
+	private:
 };
 
 struct MultipartPart

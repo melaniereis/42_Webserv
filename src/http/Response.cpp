@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 17:38:56 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/16 14:32:49 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/09 21:45:08 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,14 +40,19 @@ std::string Response::toString() const
 
 	responseStream << "HTTP/1.1 " << _statusCode << " " << _statusMessage << "\r\n";
 
+	// Add regular headers first
 	for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
-		 it != _headers.end(); ++it)
+		it != _headers.end(); ++it)
 	{
 		responseStream << it->first << ": " << it->second << "\r\n";
 	}
 
-	responseStream << "\r\n";
+	// Add Set-Cookie headers
+	for (size_t i = 0; i < _cookies.size(); ++i) {
+		responseStream << "Set-Cookie: " << _cookies[i] << "\r\n";
+	}
 
+	responseStream << "\r\n";
 	responseStream << _body;
 
 	return responseStream.str();
@@ -56,4 +61,26 @@ std::string Response::toString() const
 int Response::getStatusCode() const
 {
 	return _statusCode;
+}
+
+void Response::setCookie(const std::string& name, const std::string& value,
+						const std::string& path, int maxAge) {
+	std::ostringstream oss;
+	oss << name << "=" << value;
+
+	if (!path.empty()) {
+		oss << "; Path=" << path;
+	}
+
+	if (maxAge > 0) {
+		oss << "; Max-Age=" << maxAge;
+	}
+
+	oss << "; HttpOnly";
+	_cookies.push_back(oss.str());
+}
+
+// Add overloaded method for simple cookie setting:
+void Response::setCookie(const std::string& name, const std::string& value) {
+	setCookie(name, value, "/", 3600); // Default 1 hour
 }

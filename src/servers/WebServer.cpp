@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/24 17:15:29 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/08 16:21:40 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void WebServer::runEventLoop()
 {
 	Logger::info("All servers started, waiting for connections...");
 
+	time_t lastCleanup = time(NULL);
 	while (true)
 	{
 		int pollResult = poll(&pollFds[0], pollFds.size(), -1);
@@ -106,6 +107,11 @@ void WebServer::runEventLoop()
 			if (idx < pollFds.size() - 1)
 				pollFds[idx] = pollFds.back();
 			pollFds.pop_back();
+		}
+		time_t now = time(NULL);
+		if (now - lastCleanup > 600) {
+			SessionManager::getInstance().cleanupSessions();
+			lastCleanup = now;
 		}
 	}
 }

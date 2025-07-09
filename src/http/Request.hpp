@@ -6,13 +6,14 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/01 17:32:27 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/09 21:54:16 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "../../inc/webserv.hpp"
+#include "../utils/Logger.hpp"
 
 class Request
 {
@@ -26,7 +27,7 @@ public:
 	const std::string &getReqHeaderKey(const std::string &key) const;
 	const std::map<std::string, std::string> &getReqHeaders() const;
 	const std::string &getReqQueryString() const;
-
+	const std::map<std::string, std::string>& getCookies() const;
 	const std::string normalizePath(const std::string &path);
 
 private:
@@ -39,7 +40,8 @@ private:
 	bool _isChunked;
 	std::string _decodeChunkedBody(const std::string& chunkedBody);
 	void _processTransferEncoding();
-
+	void _parseCookies();
+    std::map<std::string, std::string> _cookies;
 };
 
 // headers will hold

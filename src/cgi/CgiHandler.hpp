@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:28:41 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/01 17:08:21 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/09 21:53:07 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class CgiHandler
 		~CgiHandler();
 
 		Response execute();
+		std::string getCookies();
 
 	private:
 		Request _request;
@@ -50,7 +51,9 @@ class CgiHandler
 		bool _validateScript(const std::string& scriptPath, Response& response);
 		void _handleCgiError(Response& response);
 		bool _setupPipes(int pipeIn[2], int pipeOut[2]);
+
 		CgiHandler();
 		CgiHandler(const CgiHandler&);
 		CgiHandler& operator=(const CgiHandler&);
+
 };

@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandler.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/26 20:40:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/09 21:49:25 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
+#include "../session/SessionManager.hpp"
 
 // Helper function to find the best matching location for a request
 const LocationConfig *findMatchingLocation(const Request &request, const ServerConfig &config)
@@ -49,6 +50,11 @@ const LocationConfig *findMatchingLocation(const Request &request, const ServerC
 
 Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
+	// Add cookie display route
+	if (request.getReqPath() == "/cookies") {
+		return handleCookieDisplayRoute(request);
+	}
+
 	// First find matching location
 	const LocationConfig *location = findMatchingLocation(request, config);
 
@@ -77,6 +83,10 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 		}
 	}
 
+	if (request.getReqPath() == "/session") {
+		return handleSessionRoute(request);
+	}
+
 	// Handle standard methods
 	if (request.getReqMethod() == "GET" && isMethodAllowed(request, config, "GET"))
 		return handleGetMethod(request, config);
@@ -103,7 +113,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::vector<std::string> indexes = config.getServerIndexes();
 	std::string locationPrefix = extractLocationPrefix(request, config);
 	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
-	
+
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
@@ -146,7 +156,7 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	Response response;
 
 	std::string contentType = request.getReqHeaderKey("Content-Type");
-	
+
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
 	if (contentType == "application/x-www-form-urlencoded")
@@ -159,17 +169,17 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	
+
 	std::string reqPath = request.getReqPath();
 	std::string rootDir = config.getServerRoot();
 	std::string locationPrefix = extractLocationPrefix(request, config);
 	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
-	
+
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
 	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
-	
+
 	// for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); it++)
 	// {
 	// 	std::string contentStr(it->content.begin(), it->content.end());
@@ -185,7 +195,7 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 		{
 			std::string updatedFileName = generateTimestampFilename(it->fileName);
 			std::string fullPath = rootDir + locationRootDir + "/" + updatedFileName;
-			
+
 			std::ofstream out(fullPath.c_str(), std::ios::binary);
 			if (!out)
 				return HttpStatus::buildResponse(response, 500);
@@ -293,7 +303,7 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 	}
 
 	std::map<std::string, std::string>::iterator it = clientData.begin();
-	
+
 	while (it != clientData.end())
 	{
 		std::cout << "key->" << it->first << std::endl;
@@ -307,22 +317,22 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
 {
 	Response response;
-	
+
 	std::string reqPath = request.getReqPath();
 	std::string body = request.getReqBody();
 	std::string rootDir = config.getServerRoot();
 	std::string locationPrefix = extractLocationPrefix(request, config);
 	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
-	
+
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
-	
+
 	std::string fileName = extractFilenameFromPath(reqPath);
 	std::string updatedFileName = generateTimestampFilename(fileName);
 
 	std::string fullPath = rootDir + locationRootDir + "/" + updatedFileName;
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
-	
+
 	if (!out)
 		return HttpStatus::buildResponse(response, 500);
 
@@ -342,4 +352,136 @@ Response RequestHandler::handleDeleteMethod(const Request &request)
 	(void)request;
 	Response res;
 	return res;
+}
+
+// src/http/RequestHandler.cpp
+// src/http/RequestHandler.cpp
+Response RequestHandler::handleSessionRoute(const Request& request) {
+	Response response;
+	SessionManager& sessionMgr = SessionManager::getInstance();
+
+	std::string sessionId;
+	bool createNewSession = true;
+
+	// Check if we have a session cookie
+	const std::map<std::string, std::string>& cookies = request.getCookies();
+	for (std::map<std::string, std::string>::const_iterator it = cookies.begin();
+		it != cookies.end(); ++it)
+	{
+		Logger::debug("Cookie found: " + it->first + "=" + it->second);
+	}
+	std::map<std::string, std::string>::const_iterator it = cookies.find("sessionid");
+
+	if (it != cookies.end()) {
+		sessionId = it->second;
+		if (sessionMgr.hasSession(sessionId)) {
+			// Valid session found
+			createNewSession = false;
+			sessionMgr.updateSessionAccessTime(sessionId);
+			Logger::debug("Using existing session: " + sessionId);
+		} else {
+			Logger::debug("Invalid session ID provided: " + sessionId);
+			// Don't create session yet - we'll create after this block
+		}
+	}
+
+	if (createNewSession) {
+		sessionId = sessionMgr.createSession();
+		response.setCookie("sessionid", sessionId);
+		Logger::debug("Created new session: " + sessionId);
+	}
+
+	// Update session data
+	std::string& sessionData = sessionMgr.getSessionData(sessionId);
+	int count = 0;
+	if (!sessionData.empty()) {
+		count = atoi(sessionData.c_str());
+	}
+	count++;
+
+	// Store updated count
+	std::ostringstream oss;
+	oss << count;
+	sessionData = oss.str();
+
+	// Build response
+	response.setStatus(200, "OK");
+	response.setBody("Session ID: " + sessionId + "\nCount: " + sessionData);
+	return response;
+}
+
+const std::map<std::string, std::string>& Request::getCookies() const
+{
+	return _cookies;
+}
+
+Response RequestHandler::handleCookieDisplayRoute(const Request& request) {
+	Response response;
+
+	// Handle query string parameters for cookie setting (like your friend's PHP)
+	std::string queryString = request.getReqQueryString();
+	if (!queryString.empty()) {
+		setQueryStringAsCookies(queryString, response);
+	}
+
+	std::string html = "<!DOCTYPE html>\n<html>\n<body>\n";
+	html += "<h1>Current Cookies</h1>\n<ul>\n";
+
+	const std::map<std::string, std::string>& cookies = request.getCookies();
+	for (std::map<std::string, std::string>::const_iterator it = cookies.begin();
+		it != cookies.end(); ++it) {
+		html += "<li><strong>" + it->first + "</strong>=" + it->second + "</li>\n";
+	}
+
+	html += "</ul>\n</body>\n</html>\n";
+
+	response.setStatus(200, "OK");
+	response.setHeader("Content-Type", "text/html");
+	response.setBody(html);
+	return response;
+}
+
+// Add method to convert query parameters to cookies:
+void RequestHandler::setQueryStringAsCookies(const std::string& queryString, Response& response) {
+	size_t start = 0;
+	while (start < queryString.length()) {
+		size_t end = queryString.find('&', start);
+		if (end == std::string::npos) end = queryString.length();
+
+		std::string pair = queryString.substr(start, end - start);
+		size_t equalPos = pair.find('=');
+
+		if (equalPos != std::string::npos) {
+			std::string key = pair.substr(0, equalPos);
+			std::string value = pair.substr(equalPos + 1);
+
+			// URL decode if needed
+			key = urlDecode(key);
+			value = urlDecode(value);
+
+			response.setCookie(key, value);
+			Logger::debug("Set cookie from query: " + key + "=" + value);
+		}
+
+		start = end + 1;
+	}
+}
+
+// Add URL decode helper:
+std::string RequestHandler::urlDecode(const std::string& str) {
+	std::string result;
+	for (size_t i = 0; i < str.length(); ++i) {
+		if (str[i] == '%' && i + 2 < str.length()) {
+			int value;
+			std::istringstream ss(str.substr(i + 1, 2));
+			ss >> std::hex >> value;
+			result += static_cast<char>(value);
+			i += 2;
+		} else if (str[i] == '+') {
+			result += ' ';
+		} else {
+			result += str[i];
+		}
+	}
+	return result;
 }
