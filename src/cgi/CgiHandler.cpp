@@ -85,12 +85,12 @@ std::string CgiHandler::_resolveScriptPath() const
 	}
 
 	// Handle trailing slashes
-	if (base.back() == '/') {
-		return (path.front() == '/')
+	if (base[base.length() - 1] == '/') {
+		return (path[0] == '/')
 			? base + path.substr(1)
 			: base + path;
 	} else {
-		return (path.front() != '/')
+		return (path[0] != '/')
 			? base + "/" + path
 			: base + path;
 	}

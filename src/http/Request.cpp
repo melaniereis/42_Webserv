@@ -126,7 +126,7 @@ std::string Request::_decodeChunkedBody(const std::string& chunkedBody)
 
 		size_t chunkSize;
 		try {
-			chunkSize = std::stoul(chunkSizeStr, nullptr, 16);
+			chunkSize = std::strtoul(chunkSizeStr.c_str(), NULL, 16);
 		} catch (const std::exception&) {
 			break; // Invalid chunk size
 		}
