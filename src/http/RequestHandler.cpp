@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/01 21:37:31 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/11 22:12:22 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,10 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::vector<std::string> indexes = config.getServerIndexes();
 	std::string locationPrefix = extractLocationPrefix(request, config);
 	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	std::vector<std::string> locationIndex = config.getLocations().at(locationPrefix).getIndexes();
+
+	
+	config.getServerNotFound();
 	
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
@@ -121,8 +125,13 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	if (locationPrefix != "/")
 		reqPath = reqPath.substr(locationPrefix.length());
 
-	std::string fullPath = rootDir + locationRootDir + reqPath;
+	std::string fullPath;
 
+	if (!locationIndex.empty())
+		fullPath = rootDir + locationRootDir + reqPath + "/" + locationIndex.at(0);
+	else
+		fullPath = rootDir + locationRootDir + reqPath;
+	
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
