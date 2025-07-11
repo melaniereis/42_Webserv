@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/11 22:12:22 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/11 22:41:01 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 // ============
 Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
+	// config.getServerNotFound();
 	Response response;
 
 	std::string reqPath = request.getReqPath();
@@ -104,10 +105,19 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::string locationPrefix = extractLocationPrefix(request, config);
 	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
 	std::vector<std::string> locationIndex = config.getLocations().at(locationPrefix).getIndexes();
+	std::map<int, std::string> locationRedirects = config.getLocations().at(locationPrefix).getRedirects();
 
-	
-	config.getServerNotFound();
-	
+	if (!locationRedirects.empty())
+	{
+		int code = locationRedirects.begin()->first;
+		std::string link = locationRedirects.begin()->second;
+
+		std::cout << code << std::endl;
+		response.setStatus(code, "Redirect");
+		response.setHeader("Location", link);
+		return response;
+	}
+		
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
