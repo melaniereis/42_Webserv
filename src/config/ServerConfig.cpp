@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 16:18:51 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:23:24 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,4 +190,20 @@ const std::map<std::string, ListenConfig> &ServerConfig::getListens() const
 const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const
 {
 	return _locations;
+}
+
+void ServerConfig::setErrorPage(int code, const std::string &path)
+{
+	if (code < 100 || code > 599)
+	{
+		throw std::runtime_error("Invalid HTTP status code: " + _intToString(code));
+	}
+	_validatePath(path);
+	_errorPages[code] = path;
+}
+
+std::string ServerConfig::getErrorPage(int code) const
+{
+	std::map<int, std::string>::const_iterator it = _errorPages.find(code);
+	return (it != _errorPages.end()) ? it->second : _notFound;
 }

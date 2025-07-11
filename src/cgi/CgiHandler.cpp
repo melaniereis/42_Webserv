@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/10 14:41:07 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:27:40 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,10 @@ void CgiHandler::_initEnv()
 	std::ostringstream contentLength;
 	contentLength << _request.getReqBody().size();
 	_env["CONTENT_LENGTH"] = contentLength.str();
+	std::string contentType = _request.getReqHeaderKey("Content-Type");
+	if (!contentType.empty()) {
+		_env["CONTENT_TYPE"] = contentType;
+	}
 
 	// Enhanced cookie handling
 	std::string cookies = getCookies();
@@ -310,6 +314,22 @@ std::string CgiHandler::_executeCgiScript(const std::string& scriptPath)
 		_childProcess(pipeIn, pipeOut, scriptPath);
 	} else {
 		_parentProcess(pipeIn, pipeOut, pid, output);
+
+		// Add timeout handling
+		int status;
+		int result = waitpid(pid, &status, WNOHANG);
+		if (result == 0)
+		{
+			// Child still running, implement timeout
+			sleep(30); // 30 second timeout
+			result = waitpid(pid, &status, WNOHANG);
+			if (result == 0) {
+				kill(pid, SIGTERM);
+				waitpid(pid, &status, 0);
+				Logger::error("CGI script timed out");
+				output.clear();
+			}
+		}
 	}
 	return output;
 }

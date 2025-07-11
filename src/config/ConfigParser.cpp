@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/30 15:31:55 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:54:01 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,6 +187,7 @@ void ConfigParser::_parseServerBlock(const std::string& firstLine, int& lineNum,
 void ConfigParser::_finalizeServerBlock(int lineNum, ServerConfig& currentConfig,
 										std::map<ServerKey, ServerConfig>& servers)
 {
+	_validateServerBlock(currentConfig, lineNum);
 	if (currentConfig.getListens().empty())
 		_throwError(lineNum, "Missing 'listen' directive");
 
@@ -429,4 +430,21 @@ void ConfigParser::_handleCgi(const std::string& args,
 		_throwError(lineNum, "Invalid CGI extension (must start with '.')");
 
 	loc.addCgi(ext, cgiPath);
+}
+
+void ConfigParser::_validateServerBlock(const ServerConfig& config, int lineNum)
+{
+	if (config.getListens().empty()) {
+		_throwError(lineNum, "Server block must have at least one 'listen' directive");
+	}
+
+	if (config.getServerRoot().empty()) {
+		_throwError(lineNum, "Server block must have a 'root' directive");
+	}
+
+	// Validate paths exist
+	struct stat statBuf;
+	if (stat(config.getServerRoot().c_str(), &statBuf) != 0) {
+		_throwError(lineNum, "Root directory does not exist: " + config.getServerRoot());
+	}
 }

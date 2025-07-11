@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 22:02:38 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:21:28 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ class ServerConfig
 		void setNotFound(const std::string& path);
 		void setClientMaxBodySize(size_t size);
 		void addLocation(const LocationConfig& loc);
+		void setErrorPage(int code, const std::string& path);
+		std::string getErrorPage(int code) const;
 
 	private:
 		std::map<std::string, ListenConfig> _listens;
@@ -59,4 +61,5 @@ class ServerConfig
 		void _validatePort(unsigned int port) const;
 		void _validatePath(const std::string& path) const;
 		void _validateServerName(const std::string& name) const;
+		std::map<int, std::string> _errorPages;
 };

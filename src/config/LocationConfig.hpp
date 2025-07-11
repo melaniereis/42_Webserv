@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:21:53 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/25 16:07:47 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:54:34 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class LocationConfig
 		const std::vector<std::string>& getAllowedMethods() const;
 		const std::map<int, std::string>& getRedirects() const;
 		const std::map<std::string, std::string>& getCgis() const;
+		LocationConfig inheritFromServer(const ServerConfig& server) const;
 
 	private:
 		std::string _path;

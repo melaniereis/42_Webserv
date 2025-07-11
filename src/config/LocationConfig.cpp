@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:28:01 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/25 16:09:30 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:54:53 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,3 +148,20 @@ bool LocationConfig::isAutoIndex() const { return _autoindex; }
 const std::vector<std::string>& LocationConfig::getAllowedMethods() const { return _allowed_methods; }
 const std::map<int, std::string>& LocationConfig::getRedirects() const { return _redirects; }
 const std::map<std::string, std::string>& LocationConfig::getCgis() const { return _cgis; }
+
+LocationConfig LocationConfig::inheritFromServer(const ServerConfig& server) const
+{
+	LocationConfig result = *this;
+
+	// Inherit root if not set
+	if (result.getRoot().empty()) {
+		result.setRoot(server.getServerRoot());
+	}
+
+	// Inherit indexes if not set
+	if (result.getIndexes().empty()) {
+		result.setIndexes(server.getServerIndexes());
+	}
+
+	return result;
+}

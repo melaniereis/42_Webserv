@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:51:54 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/30 15:32:26 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:53:22 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,9 @@ class ConfigParser
 
 			bool operator<(const ServerKey& other) const
 			{
-				if (port != other.port)  return port < other.port;
-				if (names != other.names)  return names < other.names;
-				return host < other.host;
+				if (host != other.host) return host < other.host;
+				if (port != other.port) return port < other.port;
+				return names < other.names;
 			}
 		};
 
@@ -72,6 +72,7 @@ class ConfigParser
 		void _finalizeServerBlock(int lineNum, ServerConfig& currentConfig,
 								std::map<ServerKey, ServerConfig>& servers);
 		void _throwError(int lineNum, const std::string& msg) const;
+		void _validateServerBlock(const ServerConfig& config, int lineNum);
 
 		// Server directive handlers
 		void _handleListen(const std::string& args, ServerConfig& cfg, int lineNum);

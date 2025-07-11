@@ -43,7 +43,7 @@ bool Client::handleClientRequest()
 		_closed = true;
 		return false;
 	}
-	
+
 	_readBuffer.append(buffer, bytesRead);
 
 	size_t headerEnd = _readBuffer.find("\r\n\r\n");
@@ -57,6 +57,16 @@ bool Client::handleClientRequest()
 		size_t lineEnd = _readBuffer.find("\r\n", clPos);
 		std::string clStr = _readBuffer.substr(clPos + 15, lineEnd - (clPos + 15));
 		contentLength = std::atoi(clStr.c_str());
+
+		// Check against server limit
+		if (contentLength > _config.getClientMaxBodySize())
+		{
+			// Send 413 Payload Too Large
+			_response = Response();
+			HttpStatus::buildResponse(_response, 413);
+			_writeBuffer = _response.toString();
+			return true;
+		}
 	}
 
 	// Check if full body received
