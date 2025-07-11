@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/08 16:21:40 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:17:24 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,15 +42,21 @@ void WebServer::setupServers()
 {
 	for (size_t i = 0; i < serverConfigs.size(); ++i)
 	{
-		Server* server = new Server(serverConfigs[i]);
-		if (server->setup())
+		const std::map<std::string, ListenConfig>& listens = serverConfigs[i].getListens();
+			// Create a separate server instance for each listen directive
+		for (std::map<std::string, ListenConfig>::const_iterator it = listens.begin();
+			it != listens.end(); ++it)
 		{
-			servers.push_back(server);
-			Logger::info("Server " + intToString(i + 1) + " setup");
-		}
-		else
-		{
-			delete server;
+			Server* server = new Server(serverConfigs[i]);
+			if (server->setupSocketForListen(it->second.getIp(), it->second.getPort()))
+			{
+				servers.push_back(server);
+				Logger::info("Server setup for " + it->second.getIpPortJoin());
+			}
+			else
+			{
+				delete server;
+			}
 		}
 	}
 

@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/24 17:00:06 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:16:52 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Server
 		bool handleClientEvent(int clientFd, short revents);
 		const std::vector<int>& getServerFds() const;
 		void removeClient(int fd);
+		bool setupSocketForListen(const std::string& ip, int port);
 
 	private:
 		Server(const Server&);
@@ -39,7 +40,6 @@ class Server
 		bool startListening(int fd) const;
 		void logListeningMessage(const std::string& ip, int port) const;
 		std::string intToString(int value) const;
-		bool setupSocketForListen(const std::string& ip, int port);
 		bool verifySocket(int fd) const;
 		void logSocketInfo(int fd) const;
 

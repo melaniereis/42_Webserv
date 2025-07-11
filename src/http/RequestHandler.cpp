@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/09 21:49:25 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/11 16:57:47 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,10 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 
 	// First find matching location
 	const LocationConfig *location = findMatchingLocation(request, config);
-
+	if (location) {
+		LocationConfig inheritedLocation = location->inheritFromServer(config);
+		// Use inheritedLocation which has server defaults applied
+	}
 	// Check if CGI request
 	if (location)
 	{
