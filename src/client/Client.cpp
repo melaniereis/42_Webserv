@@ -25,26 +25,18 @@ bool Client::handleClientRequest()
 	char buffer[1024];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
 
-	// Capture errno immediately after recv to avoid overwriting
-	int recvErrno = (bytesRead < 0) ? errno : 0;
-
-	if (bytesRead < 0)
+	// Se bytesRead > 0, acumula dados; caso contrário, encerra conexão
+	if (bytesRead > 0)
 	{
-		if (recvErrno == EAGAIN || recvErrno == EWOULDBLOCK)
-			return true;
-		// Restore errno for accurate error reporting
-		errno = recvErrno;
-		perror("recv failed");
+		_readBuffer.append(buffer, bytesRead);
+	}
+	else
+	{
+		// bytesRead == 0 → conexão fechada pelo cliente
+		// bytesRead < 0 → erro de I/O (sem inspecionar errno)
 		_closed = true;
 		return false;
 	}
-	else if (bytesRead == 0)
-	{
-		_closed = true;
-		return false;
-	}
-
-	_readBuffer.append(buffer, bytesRead);
 
 	size_t headerEnd = _readBuffer.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
@@ -58,64 +50,47 @@ bool Client::handleClientRequest()
 		std::string clStr = _readBuffer.substr(clPos + 15, lineEnd - (clPos + 15));
 		contentLength = std::atoi(clStr.c_str());
 
-		// Check against server limit
 		if (contentLength > _config.getClientMaxBodySize())
 		{
-			// Send 413 Payload Too Large
-			_response = Response();
-			HttpStatus::buildResponse(_response, 413);
-			_writeBuffer = _response.toString();
+			Response resp;
+			HttpStatus::buildResponse(resp, 413);
+			_writeBuffer = resp.toString();
 			return true;
 		}
 	}
 
-	// Check if full body received
 	if (_readBuffer.size() < headerEnd + 4 + contentLength)
 		return true;
 
-	if (_readBuffer.find("\r\n\r\n") != std::string::npos)
-	{
-		_request = new Request(_readBuffer);
-		_response = RequestHandler::handle(*_request, _config);
-		_writeBuffer = _response.toString();
-	}
-
-	// Logger::info("Client request\n" + _readBuffer);
+	_request = new Request(_readBuffer);
+	_response = RequestHandler::handle(*_request, _config);
+	_writeBuffer = _response.toString();
 	return true;
 }
-
-// std::ofstream logFile("log.txt", std::ios::app);
-// if (logFile.is_open())
-// {
-// 	logFile << _readBuffer << std::endl;
-// 	logFile.close();
-// }
 
 bool Client::handleClientResponse()
 {
-	if (_writeBuffer.empty()) return true;
-
-	// Logger::info("Sending response:\n" + _writeBuffer);
-
-	ssize_t bytesSent = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
-	if (bytesSent <= 0)
-	{
-		perror("send failed");
-		_closed = true;
-		return false;
-	}
-
-	_writeBuffer.erase(0, bytesSent);
-
 	if (_writeBuffer.empty())
+		return true;
+
+	ssize_t bytesRead = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
+	if (bytesRead > 0)
 	{
-		_readBuffer.clear();
-		delete _request;
-		_request = NULL;
+		_writeBuffer.erase(0, bytesRead);
+		if (_writeBuffer.empty())
+		{
+			_readBuffer.clear();
+			delete _request;
+			_request = NULL;
+		}
+		return true;
 	}
 
-	return true;
+	// bytesRead == 0 ou <0 → encerra conexão sem checar errno
+	_closed = true;
+	return false;
 }
+
 void Client::closeClient()
 {
 	if (_fd > 0)
