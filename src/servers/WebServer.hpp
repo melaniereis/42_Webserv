@@ -38,7 +38,7 @@ class WebServer
 		void initPollStructures();
 		void runEventLoop();
 		void handlePollEvents(std::vector<struct pollfd>& newConnections,
-							std::vector<size_t>& toRemove);
+							std::vector<size_t>& toRemove, const std::vector<struct pollfd>& allFds);
 		void acceptNewConnections();
 		void cleanup();
 

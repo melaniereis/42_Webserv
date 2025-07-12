@@ -24,6 +24,8 @@ class ClientManager
 		bool handleClientIO(int fd, short revents);
 		void removeClient(int fd);
 
+		Client *getClient(int fd) const;
+
 	private:
 		std::map<int, Client *> _clients;
 

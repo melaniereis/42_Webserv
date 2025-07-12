@@ -17,11 +17,14 @@
 #include "../config/ServerConfig.hpp"
 #include "HttpStatus.hpp"
 #include "../cgi/CgiHandler.hpp"
+#include "../client/Client.hpp"
+
+class Client;
 
 class RequestHandler
 {
 	public:
-		static Response handle(const Request &request, const ServerConfig &config);
+		static Response handle(const Request &request, const ServerConfig &config, Client& client);
 		static Response handleGetMethod(const Request &request, const ServerConfig &config);
 		static Response handlePostMethod(const Request &request, const ServerConfig &config);
 		static Response handleDeleteMethod(const Request &request);

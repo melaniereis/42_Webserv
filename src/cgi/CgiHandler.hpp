@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:28:41 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/09 21:53:07 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/12 10:51:03 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,17 @@
 #include "../config/ServerConfig.hpp"
 #include "../config/LocationConfig.hpp"
 #include "../utils/Logger.hpp"
+#include "CgiManager.hpp"
+
+class Client;
 
 class CgiHandler
 {
 	public:
 		CgiHandler(const Request &request,
 				const ServerConfig &config,
-				const LocationConfig &location);
+				const LocationConfig &location,
+				Client& client);
 		~CgiHandler();
 
 		Response execute();
@@ -33,6 +37,7 @@ class CgiHandler
 		Request _request;
 		ServerConfig _config;
 		LocationConfig _location;
+		Client& _client;
 		std::map<std::string, std::string> _env;
 
 		std::string _resolveScriptPath() const;
@@ -46,8 +51,6 @@ class CgiHandler
 		bool _setupPipes(int pipeIn[2], int pipeOut[2]) const;
 		void _childProcess(int pipeIn[2], int pipeOut[2],
 						const std::string& scriptPath);
-		void _parentProcess(int pipeIn[2], int pipeOut[2],
-						pid_t pid, std::string& output);
 		bool _validateScript(const std::string& scriptPath, Response& response);
 		void _handleCgiError(Response& response);
 		bool _setupPipes(int pipeIn[2], int pipeOut[2]);

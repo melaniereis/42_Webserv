@@ -67,12 +67,12 @@ bool Server::setupSocketForListen(const std::string& ip, int port)
 
 int Server::acceptNewConnection(int serverFd)
 {
-	return clientManager.acceptNewClient(serverFd, config);
+	return _clientManager.acceptNewClient(serverFd, config);
 }
 
 bool Server::handleClientEvent(int clientFd, short revents)
 {
-	return clientManager.handleClientIO(clientFd, revents);
+	return _clientManager.handleClientIO(clientFd, revents);
 }
 
 const std::vector<int>& Server::getServerFds() const
@@ -82,7 +82,7 @@ const std::vector<int>& Server::getServerFds() const
 
 void Server::removeClient(int fd)
 {
-	clientManager.removeClient(fd);
+	_clientManager.removeClient(fd);
 }
 
 int Server::createSocket() const
@@ -190,3 +190,5 @@ std::string Server::intToString(int value) const
 	oss << value;
 	return oss.str();
 }
+
+ClientManager Server::getClientManager() const { return _clientManager; }

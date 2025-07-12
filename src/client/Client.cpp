@@ -4,36 +4,51 @@
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#z+#+   +#+           */
+/*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 21:19:42 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/04 22:19:26 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/12 10:48:05 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client(int fd, const ServerConfig &config)
-	: _fd(fd), _closed(false), _readBuffer(""), _writeBuffer(""), _request(NULL), _config(config)
+Client::Client(int fd, const struct sockaddr_in& addr, const ServerConfig &config)
+	: _fd(fd), _closed(false), _readBuffer(""), _writeBuffer(""),
+	_cgi_processing(false), _request(NULL), _config(config)
 {
-	Logger::info("New connection accepted");
+	char ipStr[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &(addr.sin_addr), ipStr, INET_ADDRSTRLEN);
+	_clientAddress = ipStr;
+	Logger::info("New connection from: " + _clientAddress);
 }
 
 Client::~Client() {}
 
+int Client::getFd() const
+{
+	return _fd;
+}
+
+const std::string& Client::getClientAddress() const {
+	return _clientAddress;
+}
+
 bool Client::handleClientRequest()
 {
+	if (_cgi_processing) {
+		// Still processing CGI, wait for completion
+		return true;
+	}
+
 	char buffer[1024];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer) - 1, 0);
 
-	// Se bytesRead > 0, acumula dados; caso contrário, encerra conexão
 	if (bytesRead > 0)
 	{
 		_readBuffer.append(buffer, bytesRead);
 	}
 	else
 	{
-		// bytesRead == 0 → conexão fechada pelo cliente
-		// bytesRead < 0 → erro de I/O (sem inspecionar errno)
 		_closed = true;
 		return false;
 	}
@@ -63,20 +78,25 @@ bool Client::handleClientRequest()
 		return true;
 
 	_request = new Request(_readBuffer);
-	_response = RequestHandler::handle(*_request, _config);
+	_response = RequestHandler::handle(*_request, _config, *this);
 	_writeBuffer = _response.toString();
 	return true;
 }
 
 bool Client::handleClientResponse()
 {
+	if (_cgi_processing) {
+		// Still processing CGI, wait for completion
+		return true;
+	}
+
 	if (_writeBuffer.empty())
 		return true;
 
-	ssize_t bytesRead = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
-	if (bytesRead > 0)
+	ssize_t bytesWritten = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
+	if (bytesWritten > 0)
 	{
-		_writeBuffer.erase(0, bytesRead);
+		_writeBuffer.erase(0, bytesWritten);
 		if (_writeBuffer.empty())
 		{
 			_readBuffer.clear();
@@ -86,7 +106,6 @@ bool Client::handleClientResponse()
 		return true;
 	}
 
-	// bytesRead == 0 ou <0 → encerra conexão sem checar errno
 	_closed = true;
 	return false;
 }
@@ -99,4 +118,26 @@ void Client::closeClient()
 		_fd = -1;
 	}
 	_closed = true;
+}
+
+void Client::setCgiOutput(const std::string& output)
+{
+	_cgi_output = output;
+	_cgi_processing = false;
+
+	// Create proper response from CGI output
+	Response response;
+	_response = response;
+	_response.setBody(_cgi_output);
+	_response.setStatus(200, "OK");
+
+	_writeBuffer = _response.toString();
+}
+
+bool Client::isCgiProcessing() const {
+	return _cgi_processing;
+}
+
+void Client::setCgiProcessing(bool state) {
+	_cgi_processing = state;
 }

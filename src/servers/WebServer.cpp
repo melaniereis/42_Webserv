@@ -6,11 +6,14 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/11 16:17:24 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/12 10:45:24 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServer.hpp"
+#include "../cgi/CgiManager.hpp"
+
+CgiManager g_cgi_manager;  // Global instance
 
 WebServer::WebServer(const std::string& configPath) :
 	configPath(configPath) {}
@@ -89,17 +92,28 @@ void WebServer::runEventLoop()
 	time_t lastCleanup = time(NULL);
 	while (true)
 	{
-		int pollResult = poll(&pollFds[0], pollFds.size(), -1);
-		if (pollResult < 0)
-		{
+		std::vector<struct pollfd> allFds = pollFds;
+
+		// Add CGI pipes to poll set
+		g_cgi_manager.fillPollfds(allFds);
+
+		int pollResult = poll(&allFds[0], allFds.size(), -1);
+		if (pollResult < 0) {
 			if (errno == EINTR) continue;
 			Logger::error(std::string("poll() failed: ") + strerror(errno));
 			break;
 		}
 
+		// Handle server and client events
 		std::vector<struct pollfd> newConnections;
 		std::vector<size_t> toRemove;
-		handlePollEvents(newConnections, toRemove);
+		handlePollEvents(newConnections, toRemove, allFds);
+
+		// Handle CGI events
+		g_cgi_manager.handlePollEvents(allFds);
+
+		// Clean up completed processes
+		g_cgi_manager.checkProcesses();
 
 		// Add new connections
 		for (size_t i = 0; i < newConnections.size(); ++i)
@@ -123,14 +137,12 @@ void WebServer::runEventLoop()
 }
 
 void WebServer::handlePollEvents(std::vector<struct pollfd>& newConnections,
-								std::vector<size_t>& toRemove)
+								std::vector<size_t>& toRemove, const std::vector<struct pollfd>& allFds)
 {
-	for (size_t i = 0; i < pollFds.size(); ++i)
+	for (size_t i = 0; i < allFds.size(); ++i)
 	{
-		if (pollFds[i].revents == 0) continue;
-
-		int fd = pollFds[i].fd;
-		short revents = pollFds[i].revents;
+		int fd = allFds[i].fd;
+		short revents = allFds[i].revents;
 
 		if (serverFdsSet.find(fd) != serverFdsSet.end())
 		{
@@ -152,6 +164,13 @@ void WebServer::handlePollEvents(std::vector<struct pollfd>& newConnections,
 		else
 		{
 			int serverIndex = fdToServerIndex[fd];
+			Client* client = servers[serverIndex]->getClientManager().getClient(fd);
+
+			// Skip clients in CGI processing
+			if (client && client->isCgiProcessing()) {
+				continue;
+			}
+
 			if (!servers[serverIndex]->handleClientEvent(fd, revents))
 			{
 				servers[serverIndex]->removeClient(fd);
@@ -159,7 +178,6 @@ void WebServer::handlePollEvents(std::vector<struct pollfd>& newConnections,
 				toRemove.push_back(i);
 			}
 		}
-		pollFds[i].revents = 0;
 	}
 }
 

@@ -6,17 +6,20 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/11 16:27:40 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/12 10:52:45 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
 #include "../http/HttpStatus.hpp"
 
+extern CgiManager g_cgi_manager;  // Global instance
+
 CgiHandler::CgiHandler(const Request &request,
 					const ServerConfig &config,
-					const LocationConfig &location)
-	: _request(request), _config(config), _location(location)
+					const LocationConfig &location,
+					Client& client)
+	: _request(request), _config(config), _location(location), _client(client)
 {}
 
 CgiHandler::~CgiHandler() {}
@@ -32,15 +35,23 @@ Response CgiHandler::execute()
 	}
 
 	_initEnv();
+	Logger::debug("CGI Environment:");
+	for (std::map<std::string, std::string>::const_iterator it = _env.begin();
+		it != _env.end(); ++it)
+	{
+		Logger::debug(it->first + "=" + it->second);
+	}
 	std::string output = _executeCgiScript(scriptPath);
+
+	// If CGI is being processed asynchronously, return empty response
 	if (output.empty()) {
-		_handleCgiError(response);
-		return response;
+		return Response();
 	}
 
 	_parseCgiOutput(output, response);
 	return response;
 }
+
 bool CgiHandler::_validateScript(const std::string& scriptPath, Response& response)
 {
 	if (access(scriptPath.c_str(), F_OK) != 0) {
@@ -55,8 +66,8 @@ bool CgiHandler::_validateScript(const std::string& scriptPath, Response& respon
 		return false;
 	}
 
-	// Verify execute permissions
-	if (access(scriptPath.c_str(), X_OK) != 0) {
+	// Verify read and execute permissions
+	if (access(scriptPath.c_str(), R_OK | X_OK) != 0) {
 		HttpStatus::buildResponse(response, 403);
 		return false;
 	}
@@ -80,19 +91,16 @@ std::string CgiHandler::_resolveScriptPath() const
 	std::string path = _request.getReqPath();
 	std::string locPath = _location.getPath();
 
+	// Remove location prefix from path
 	if (path.find(locPath) == 0) {
 		path = path.substr(locPath.length());
 	}
 
 	// Handle trailing slashes
 	if (base[base.length() - 1] == '/') {
-		return (path[0] == '/')
-			? base + path.substr(1)
-			: base + path;
+		return (path[0] == '/') ? base + path.substr(1) : base + path;
 	} else {
-		return (path[0] != '/')
-			? base + "/" + path
-			: base + path;
+		return (path[0] == '/') ? base + path : base + "/" + path;
 	}
 }
 
@@ -109,10 +117,16 @@ void CgiHandler::_initEnv()
 	_env["SERVER_PORT"] = _intToString(_config.getServerPort());
 	_env["PATH_INFO"] = _request.getReqPath();
 	_env["PATH_TRANSLATED"] = _resolveScriptPath();
+	_env["REMOTE_ADDR"] = _client.getClientAddress();
+	_env["REQUEST_URI"] = _request.getReqPath();
+	_env["DOCUMENT_ROOT"] = _location.getRoot().empty() ?
+							_config.getServerRoot() : _location.getRoot();
+
 	// Set CONTENT_LENGTH based on actual body size (after dechunking)
 	std::ostringstream contentLength;
 	contentLength << _request.getReqBody().size();
 	_env["CONTENT_LENGTH"] = contentLength.str();
+
 	std::string contentType = _request.getReqHeaderKey("Content-Type");
 	if (!contentType.empty()) {
 		_env["CONTENT_TYPE"] = contentType;
@@ -125,16 +139,11 @@ void CgiHandler::_initEnv()
 		Logger::debug("Set HTTP_COOKIE: " + cookies);
 	}
 
-	// Handle query string cookie setting (like your friend's PHP)
-	std::string queryString = _request.getReqQueryString();
-	if (!queryString.empty()) {
-		_env["QUERY_STRING"] = queryString;
-		// You could also pre-process query params for cookie setting here
-	}
-
 	// Add all headers as HTTP_* variables
 	const std::map<std::string, std::string>& headers = _request.getReqHeaders();
-	for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it) {
+	for (std::map<std::string, std::string>::const_iterator it = headers.begin();
+		it != headers.end(); ++it)
+	{
 		std::string env_var = "HTTP_" + it->first;
 		std::replace(env_var.begin(), env_var.end(), '-', '_');
 		std::transform(env_var.begin(), env_var.end(), env_var.begin(), ::toupper);
@@ -219,6 +228,11 @@ void CgiHandler::_childProcess(int pipeIn[2], int pipeOut[2],
 		perror("dup2 stdout failed");
 		exit(EXIT_FAILURE);
 	}
+	if (dup2(pipeOut[1], STDERR_FILENO) < 0) {
+		perror("dup2 stderr failed");
+		exit(EXIT_FAILURE);
+	}
+	close(pipeOut[1]); // Close the original FD after duplication
 
 	char** env = _createEnvArray();
 	std::map<std::string, std::string> cgiMap = _location.getCgis();
@@ -253,49 +267,10 @@ void CgiHandler::_childProcess(int pipeIn[2], int pipeOut[2],
 	exit(EXIT_FAILURE);
 }
 
-void CgiHandler::_parentProcess(int pipeIn[2], int pipeOut[2],
-							pid_t pid, std::string& output)
-{
-	close(pipeIn[0]);
-	close(pipeOut[1]);
-
-	const std::string& body = _request.getReqBody();
-	if (!body.empty()) {
-		ssize_t bytesWritten = write(pipeIn[1], body.c_str(), body.size());
-		if (bytesWritten < 0) {
-			int err = errno;
-			Logger::error("write to CGI failed: " + std::string(strerror(err)));
-		}
-	}
-	close(pipeIn[1]);
-
-	char buffer[4096];
-	ssize_t bytesRead;
-	while ((bytesRead = read(pipeOut[0], buffer, sizeof(buffer) - 1)) > 0) {
-		buffer[bytesRead] = '\0';
-		output.append(buffer, bytesRead);
-	}
-	close(pipeOut[0]);
-
-	int status;
-	waitpid(pid, &status, 0);
-	if (WIFEXITED(status)) {
-		if (WEXITSTATUS(status) != EXIT_SUCCESS) {
-			Logger::error("CGI script exited with status: " +
-						_intToString(WEXITSTATUS(status)));
-			output.clear();
-		}
-	} else {
-		Logger::error("CGI script did not exit normally");
-		output.clear();
-	}
-}
-
 std::string CgiHandler::_executeCgiScript(const std::string& scriptPath)
 {
 	int pipeIn[2], pipeOut[2];
 	pid_t pid;
-	std::string output;
 
 	if (!_setupPipes(pipeIn, pipeOut)) {
 		return "";
@@ -303,35 +278,26 @@ std::string CgiHandler::_executeCgiScript(const std::string& scriptPath)
 
 	pid = fork();
 	if (pid < 0) {
-		int err = errno;
-		Logger::error("fork failed: " + std::string(strerror(err)));
 		close(pipeIn[0]); close(pipeIn[1]);
 		close(pipeOut[0]); close(pipeOut[1]);
 		return "";
 	}
 
 	if (pid == 0) {
+		// Child process
 		_childProcess(pipeIn, pipeOut, scriptPath);
-	} else {
-		_parentProcess(pipeIn, pipeOut, pid, output);
-
-		// Add timeout handling
-		int status;
-		int result = waitpid(pid, &status, WNOHANG);
-		if (result == 0)
-		{
-			// Child still running, implement timeout
-			sleep(30); // 30 second timeout
-			result = waitpid(pid, &status, WNOHANG);
-			if (result == 0) {
-				kill(pid, SIGTERM);
-				waitpid(pid, &status, 0);
-				Logger::error("CGI script timed out");
-				output.clear();
-			}
-		}
+		exit(EXIT_FAILURE);  // Should not reach here
 	}
-	return output;
+
+	// Parent process
+	close(pipeIn[0]);  // Close unused read end
+	close(pipeOut[1]); // Close unused write end
+
+	// Add to CGI manager
+	g_cgi_manager.addProcess(pid, pipeIn[1], pipeOut[0],
+							_request.getReqBody(), &_client);
+
+	return "";  // Return empty, output will come later
 }
 
 static std::string trim(const std::string& str)

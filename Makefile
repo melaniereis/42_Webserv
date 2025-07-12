@@ -50,6 +50,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/RequestHandlerUtils.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
 			  $(CGI_PATH)/CgiHandler.cpp \
+			  $(CGI_PATH)/CgiManager.cpp \
               $(UTILS_PATH)/Logger.cpp \
 			  $(SESSION_PATH)/SessionManager.cpp \
               ##$(UTILS_PATH)/Utils.cpp \

@@ -28,6 +28,7 @@ class Server
 		const std::vector<int>& getServerFds() const;
 		void removeClient(int fd);
 		bool setupSocketForListen(const std::string& ip, int port);
+		ClientManager getClientManager() const;
 
 	private:
 		Server(const Server&);
@@ -45,5 +46,5 @@ class Server
 
 		std::vector<int> serverFds;
 		ServerConfig config;
-		ClientManager clientManager;
+		ClientManager _clientManager;
 };

@@ -52,7 +52,7 @@ int ClientManager::acceptNewClient(int serverFd, const ServerConfig &config)
 		return -1;
 	}
 
-	Client* client = new Client(clientFd, config);
+	Client* client = new Client(clientFd, clientAddr, config);
 	_clients[clientFd] = client;
 
 	Logger::info("Client connected: " + intToString(clientFd));
@@ -104,4 +104,13 @@ void ClientManager::removeClient(int fd)
 		close(fd);
 		Logger::info("Client disconnected: " + intToString(fd));
 	}
+}
+
+Client *ClientManager::getClient(int fd) const
+{
+	std::map<int, Client *>::const_iterator it = _clients.find(fd);
+	if (it != _clients.end()) {
+		return it->second;
+	}
+	return NULL;
 }

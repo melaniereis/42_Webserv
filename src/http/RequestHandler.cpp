@@ -48,7 +48,7 @@ const LocationConfig *findMatchingLocation(const Request &request, const ServerC
 	return NULL;
 }
 
-Response RequestHandler::handle(const Request &request, const ServerConfig &config)
+Response RequestHandler::handle(const Request &request, const ServerConfig &config, Client& client)
 {
 	// Add cookie display route
 	if (request.getReqPath() == "/cookies") {
@@ -61,6 +61,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 		LocationConfig inheritedLocation = location->inheritFromServer(config);
 		// Use inheritedLocation which has server defaults applied
 	}
+
 	// Check if CGI request
 	if (location)
 	{
@@ -74,7 +75,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 			{
 				try
 				{
-					CgiHandler cgi(request, config, *location);
+					CgiHandler cgi(request, config, *location, client);
 					return cgi.execute();
 				}
 				catch (const std::exception &e)

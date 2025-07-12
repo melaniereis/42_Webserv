@@ -1,5 +1,13 @@
-#!/opt/homebrew/bin/php-cgi
+#!/usr/bin/php
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+// Disable output buffering
+@ini_set('output_buffering', 'Off');
+@ini_set('implicit_flush', 1);
+@ob_implicit_flush(true);
+while (@ob_end_flush());
+
 header("Content-Type: text/html; charset=UTF-8");
 
 $cookieName = 'visit_count';

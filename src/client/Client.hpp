@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 17:01:17 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/13 22:44:25 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/07/12 10:47:24 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,12 @@
 #include "../http/RequestHandler.hpp"
 #include "../utils/Logger.hpp"
 
+class Client;
+
 class Client
 {
 	public:
-		Client(int fd, const ServerConfig &config);
+		Client(int fd, const struct sockaddr_in& addr, const ServerConfig &config);
 		~Client();
 
 
@@ -36,13 +38,20 @@ class Client
 		bool handleClientResponse();
 		void closeClient();
 
+		void setCgiOutput(const std::string& output);
+		bool isCgiProcessing() const;
+		void setCgiProcessing(bool state);
+		int getFd() const;
+		const std::string& getClientAddress() const;
+
 	private:
 		int _fd;
 		bool _closed;
 		std::string _readBuffer;
 		std::string _writeBuffer;
-
-		std::string _index;
+		bool _cgi_processing;
+		std::string _cgi_output;
+		std::string _clientAddress;
 
 		Request *_request;
 		Response _response;
