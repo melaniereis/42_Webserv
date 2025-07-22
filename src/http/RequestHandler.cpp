@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/22 15:15:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/22 17:34:55 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,13 +168,13 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	Response response;
 
 	std::string contentType = request.getReqHeaderKey("Content-Type");
-	
-	std::cout << "content type >" << contentType << std::endl;
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
 	if (contentType == "application/x-www-form-urlencoded")
 		return handleFormPost(request, config);
+	if (request.getReqBody().empty())
+		return HttpStatus::buildResponse(response, 400);
 	return handleBinaryPost(request, config);
 }
 
