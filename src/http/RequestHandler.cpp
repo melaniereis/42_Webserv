@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/11 22:41:01 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/22 15:15:46 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,19 +160,22 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 // ============
 // POST METHOD
 // ============
+	// if (contentType == "application/octet-stream")
+	// return HttpStatus::buildResponse(response, 415);
+
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
 	Response response;
 
 	std::string contentType = request.getReqHeaderKey("Content-Type");
 	
+	std::cout << "content type >" << contentType << std::endl;
+
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
 	if (contentType == "application/x-www-form-urlencoded")
 		return handleFormPost(request, config);
-	if (contentType == "application/octet-stream")
-		return handleBinaryPost(request, config);
-	return HttpStatus::buildResponse(response, 415);
+	return handleBinaryPost(request, config);
 }
 
 Response RequestHandler::handleMultipartPost(const Request &request, const ServerConfig &config)
