@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/01 19:05:38 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/23 17:32:11 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,3 +172,37 @@ bool isDirectory(const std::string &path)
 		return S_ISDIR(s.st_mode);
 	return false;
 }
+
+std::string normalizeReqPath(const std::string &path)
+{
+	if (path.empty())
+		return path;
+
+	std::string normalized = path;
+	
+	while (normalized.length() > 1 && normalized[normalized.length() - 1] == '/')
+		normalized.erase(normalized.length() - 1);
+	
+	return normalized;
+}
+
+std::string generateAutoindexPage(const std::string &dirPath, const std::string &reqPath)
+{
+	DIR *dir = opendir(dirPath.c_str());
+	if (!dir)
+		return "<html><body><h1>Forbidden</h1></body></html>";
+
+	std::string html = "<html><body><h1>Index of " + reqPath + "</h1><ul>";
+
+	struct dirent *entry;
+	while ((entry = readdir(dir)) != NULL)
+	{
+		std::string name(entry->d_name);
+		html += "<li><a href=\"" + reqPath + name + "\">" + name + "</a></li>";
+	}
+	closedir(dir);
+
+	html += "</ul></body></html>";
+	return html;
+}
+

@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/01 19:07:13 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/23 17:32:07 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,3 +68,7 @@ void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::v
 void parseContentDisposition(const std::string &line, MultipartPart &part);
 
 bool isDirectory(const std::string &path);
+
+std::string normalizeReqPath(const std::string &path);
+
+std::string generateAutoindexPage(const std::string &dirPath, const std::string &reqPath);

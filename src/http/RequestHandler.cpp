@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/22 17:34:55 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/07/23 17:35:09 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,8 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::vector<std::string> locationIndex = config.getLocations().at(locationPrefix).getIndexes();
 	std::map<int, std::string> locationRedirects = config.getLocations().at(locationPrefix).getRedirects();
 
+	reqPath = normalizeReqPath(reqPath);
+
 	if (!locationRedirects.empty())
 	{
 		int code = locationRedirects.begin()->first;
@@ -117,7 +119,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 		response.setHeader("Location", link);
 		return response;
 	}
-		
+	
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
@@ -137,15 +139,22 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 
 	std::string fullPath;
 
-	if (!locationIndex.empty())
+	if (!locationIndex.empty() && reqPath.empty())
 		fullPath = rootDir + locationRootDir + reqPath + "/" + locationIndex.at(0);
 	else
 		fullPath = rootDir + locationRootDir + reqPath;
+	
+	std::cout << "Full path-> " << fullPath << std::endl;
 	
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
 		return HttpStatus::buildResponse(response, 404);
+
+	if (isDirectory(fullPath))
+	{
+		return HttpStatus::buildResponse(response, 403);
+	}
 
 	std::ostringstream ss;
 	ss << file.rdbuf();
@@ -168,6 +177,8 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	Response response;
 
 	std::string contentType = request.getReqHeaderKey("Content-Type");
+
+	std::cout << "content type-> " << contentType << std::endl;
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);
