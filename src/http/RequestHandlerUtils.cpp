@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/23 17:32:11 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/04 12:32:25 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ std::string getMimeType(const std::string &extension)
 {
 	if (endsWith(extension, ".html"))
 		return "text/html";
+	if (endsWith(extension, ".txt"))
+		return "text/plain";
 	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg"))
 		return "image/jpeg";
 	if (endsWith(extension, ".css"))
@@ -186,23 +188,64 @@ std::string normalizeReqPath(const std::string &path)
 	return normalized;
 }
 
-std::string generateAutoindexPage(const std::string &dirPath, const std::string &reqPath)
+Response &handleRedirectLocation(Response &response, std::map<int, std::string> &locationRedirects)
+{
+	int code = locationRedirects.begin()->first;
+	std::string link = locationRedirects.begin()->second;
+
+	std::cout << code << std::endl;
+	response.setStatus(code, "Redirect");
+	response.setHeader("Location", link);
+	return response;
+}
+
+Response generateAutoIndexPage(Response &response, const std::string &dirPath, const std::string &reqPath)
 {
 	DIR *dir = opendir(dirPath.c_str());
 	if (!dir)
-		return "<html><body><h1>Forbidden</h1></body></html>";
+		return HttpStatus::buildResponse(response, 403);
 
-	std::string html = "<html><body><h1>Index of " + reqPath + "</h1><ul>";
+	std::string html = "<html><head><title>Index of " + reqPath + "</title></head><body>";
+	html += "<h1>Index of " + reqPath + "</h1><ul>";
 
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		std::string name(entry->d_name);
-		html += "<li><a href=\"" + reqPath + name + "\">" + name + "</a></li>";
-	}
-	closedir(dir);
+		if (name == ".")
+			continue;
 
+		std::string fullEntryPath = dirPath;
+		if (fullEntryPath[fullEntryPath.size() - 1] != '/')
+			fullEntryPath += "/";
+		fullEntryPath += name;
+
+		// Check if entry is a directory
+		struct stat st;
+		bool isDir = false;
+		if (stat(fullEntryPath.c_str(), &st) == 0)
+			isDir = S_ISDIR(st.st_mode);
+
+		// Make sure reqPath ends with a '/'
+		std::string linkPath = reqPath;
+		if (linkPath.empty() || linkPath[linkPath.size() - 1] != '/')
+			linkPath += "/";
+		linkPath += name;
+
+		if (isDir)
+		{
+			linkPath += "/";
+			name += "/";
+		}
+
+		html += "<li><a href=\"" + linkPath + "\">" + name + "</a></li>";
+	}
+
+	closedir(dir);
 	html += "</ul></body></html>";
-	return html;
+	response.setStatus(200, "OK");
+	response.setHeader("Content-Type", "text/html");
+	response.setBody(html);
+	return response;
 }
 

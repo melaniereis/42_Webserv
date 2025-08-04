@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/23 17:35:09 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/04 12:54:02 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,15 +110,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	reqPath = normalizeReqPath(reqPath);
 
 	if (!locationRedirects.empty())
-	{
-		int code = locationRedirects.begin()->first;
-		std::string link = locationRedirects.begin()->second;
-
-		std::cout << code << std::endl;
-		response.setStatus(code, "Redirect");
-		response.setHeader("Location", link);
-		return response;
-	}
+		return handleRedirectLocation(response, locationRedirects);
 	
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
@@ -131,9 +123,6 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 		reqPath = "/" + indexFile;
 	}
 
-	if (reqPath.find("..") != std::string::npos)
-		return HttpStatus::buildResponse(response, 403);
-
 	if (locationPrefix != "/")
 		reqPath = reqPath.substr(locationPrefix.length());
 
@@ -144,17 +133,13 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	else
 		fullPath = rootDir + locationRootDir + reqPath;
 	
-	std::cout << "Full path-> " << fullPath << std::endl;
-	
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
 		return HttpStatus::buildResponse(response, 404);
 
 	if (isDirectory(fullPath))
-	{
-		return HttpStatus::buildResponse(response, 403);
-	}
+		return generateAutoIndexPage(response, fullPath, reqPath);
 
 	std::ostringstream ss;
 	ss << file.rdbuf();
