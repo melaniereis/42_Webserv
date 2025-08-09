@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/04 12:54:02 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/09 22:51:13 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::vector<std::string> indexes = config.getServerIndexes();
 	std::string locationPrefix = extractLocationPrefix(request, config);
 	std::string locationRootDir = config.getLocations().at(locationPrefix).getRoot();
+	bool locationAutoIndex = config.getLocations().at(locationPrefix).isAutoIndex();
 	std::vector<std::string> locationIndex = config.getLocations().at(locationPrefix).getIndexes();
 	std::map<int, std::string> locationRedirects = config.getLocations().at(locationPrefix).getRedirects();
 
@@ -138,13 +139,16 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	if (!file)
 		return HttpStatus::buildResponse(response, 404);
 
-	if (isDirectory(fullPath))
-		return generateAutoIndexPage(response, fullPath, reqPath);
+	if ((isDirectory(fullPath) && locationAutoIndex == 1))
+		// || isDirectory && rootAutoIndex == 1
+		return generateAutoIndexPage(response, fullPath, locationPrefix);
+	else if (isDirectory(fullPath) && locationAutoIndex == 0)
+		return HttpStatus::buildResponse(response, 403);
 
 	std::ostringstream ss;
 	ss << file.rdbuf();
 
-	std::string contentType = getMimeType(reqPath);
+	std::string contentType = getMimeType(fullPath);
 	response.setStatus(200, "OK");
 	response.setBody(ss.str());
 	response.setHeader("Content-Type", contentType);

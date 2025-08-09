@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/04 12:32:25 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/09 22:39:24 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,15 +207,16 @@ Response generateAutoIndexPage(Response &response, const std::string &dirPath, c
 
 	std::string html = "<html><head><title>Index of " + reqPath + "</title></head><body>";
 	html += "<h1>Index of " + reqPath + "</h1><ul>";
-
+	
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		std::string name(entry->d_name);
 		if (name == ".")
-			continue;
-
+		continue;
+		
 		std::string fullEntryPath = dirPath;
+
 		if (fullEntryPath[fullEntryPath.size() - 1] != '/')
 			fullEntryPath += "/";
 		fullEntryPath += name;
@@ -237,7 +238,7 @@ Response generateAutoIndexPage(Response &response, const std::string &dirPath, c
 			linkPath += "/";
 			name += "/";
 		}
-
+		std::cout << "linkPath -> " << linkPath << std::endl;
 		html += "<li><a href=\"" + linkPath + "\">" + name + "</a></li>";
 	}
 
