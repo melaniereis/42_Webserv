@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/12 10:52:45 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 13:03:03 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,13 +132,6 @@ void CgiHandler::_initEnv()
 		_env["CONTENT_TYPE"] = contentType;
 	}
 
-	// Enhanced cookie handling
-	std::string cookies = getCookies();
-	if (!cookies.empty()) {
-		_env["HTTP_COOKIE"] = cookies;
-		Logger::debug("Set HTTP_COOKIE: " + cookies);
-	}
-
 	// Add all headers as HTTP_* variables
 	const std::map<std::string, std::string>& headers = _request.getReqHeaders();
 	for (std::map<std::string, std::string>::const_iterator it = headers.begin();
@@ -159,8 +152,10 @@ char** CgiHandler::_createEnvArray() const
 		it != _env.end(); ++it)
 	{
 		std::string envVar = it->first + "=" + it->second;
-		env[i] = new char[envVar.length() + 1];
-		std::strcpy(env[i], envVar.c_str());
+		// Allocate memory and copy the string
+		env[i] = new char[envVar.size() + 1];
+		std::strncpy(env[i], envVar.c_str(), envVar.size());
+		env[i][envVar.size()] = '\0';  // Ensure null-termination
 		i++;
 	}
 	env[i] = NULL;
@@ -369,21 +364,4 @@ std::string CgiHandler::_intToString(int value) const
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
-}
-
-// Enhanced getCookies method:
-std::string CgiHandler::getCookies() {
-	std::string cookies;
-	const std::map<std::string, std::string>& cookieMap = _request.getCookies();
-
-	for (std::map<std::string, std::string>::const_iterator it = cookieMap.begin();
-		it != cookieMap.end(); ++it) {
-		if (!cookies.empty()) {
-			cookies += "; ";
-		}
-		cookies += it->first + "=" + it->second;
-	}
-
-	Logger::debug("Formatted cookies for CGI: " + cookies);
-	return cookies;
 }

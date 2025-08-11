@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/05 17:34:46 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/09 21:55:05 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:30:43 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,5 +34,4 @@ private:
 	std::string _statusMessage;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
-	std::vector<std::string> _cookies;
 };

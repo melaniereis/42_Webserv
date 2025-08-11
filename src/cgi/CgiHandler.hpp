@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:28:41 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/12 10:51:03 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:30:01 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ class CgiHandler
 		~CgiHandler();
 
 		Response execute();
-		std::string getCookies();
 
 	private:
 		Request _request;

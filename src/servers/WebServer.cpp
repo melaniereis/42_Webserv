@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/12 10:45:24 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 11:55:11 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,6 @@ void WebServer::runEventLoop()
 {
 	Logger::info("All servers started, waiting for connections...");
 
-	time_t lastCleanup = time(NULL);
 	while (true)
 	{
 		std::vector<struct pollfd> allFds = pollFds;
@@ -127,11 +126,6 @@ void WebServer::runEventLoop()
 			if (idx < pollFds.size() - 1)
 				pollFds[idx] = pollFds.back();
 			pollFds.pop_back();
-		}
-		time_t now = time(NULL);
-		if (now - lastCleanup > 600) {
-			SessionManager::getInstance().cleanupSessions();
-			lastCleanup = now;
 		}
 	}
 }

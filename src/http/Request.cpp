@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:25:55 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/09 21:57:18 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:02:43 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,6 @@ Request::Request(const std::string &rawRequest) : _isChunked(false)
 		}
 	}
 
-	_parseCookies();
-	// After headers are parsed, check for chunked encoding
 	_processTransferEncoding();
 
 	// Getting the body
@@ -173,48 +171,4 @@ const std::string Request::normalizePath(const std::string &path)
 		}
 	}
 	return result.empty() ? "/" : result;
-}
-
-static std::string trim(const std::string& s) {
-	size_t start = s.find_first_not_of(" ");
-	size_t end = s.find_last_not_of(" ");
-	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
-}
-
-void Request::_parseCookies() {
-	// Case-insensitive search for Cookie header
-	std::string cookieHeader;
-	for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
-		it != _headers.end(); ++it)
-	{
-		std::string headerName = it->first;
-		std::transform(headerName.begin(), headerName.end(), headerName.begin(), ::tolower);
-
-		if (headerName == "cookie") {
-			cookieHeader = it->second;
-			break;
-		}
-	}
-
-	if (cookieHeader.empty()) return;
-
-	size_t start = 0;
-	while (start < cookieHeader.length()) {
-		size_t end = cookieHeader.find(';', start);
-		if (end == std::string::npos) end = cookieHeader.length();
-
-		std::string cookiePair = cookieHeader.substr(start, end - start);
-		size_t eqPos = cookiePair.find('=');
-
-		if (eqPos != std::string::npos) {
-			std::string name = trim(cookiePair.substr(0, eqPos));
-			std::string value = trim(cookiePair.substr(eqPos + 1));
-
-			if (!name.empty()) {
-				_cookies[name] = value;
-				Logger::debug("Found cookie: " + name + "=" + value);
-			}
-		}
-		start = end + 1;
-	}
 }

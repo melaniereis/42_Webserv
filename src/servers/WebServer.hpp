@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/24 17:14:02 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/08 16:22:43 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:01:44 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 #include "../config/ConfigParser.hpp"
 #include "../utils/Logger.hpp"
 #include "../client/ClientManager.hpp"
-#include "../session/SessionManager.hpp"
 
 class WebServer
 {
