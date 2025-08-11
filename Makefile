@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/08/11 13:35:34 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/08/11 16:30:41 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,11 +37,11 @@ CGI_PATH = $(SRC_PATH)/cgi
 
 SRCS        = $(SRC_PATH)/main.cpp \
               $(CONFIG_PATH)/ServerConfig.cpp \
-			  $(CONFIG_PATH)/LocationConfig.cpp \
-			  $(CONFIG_PATH)/ConfigParser.cpp \
-			  $(CONFIG_PATH)/ListenConfig.cpp \
+              $(CONFIG_PATH)/LocationConfig.cpp \
+              $(CONFIG_PATH)/ConfigParser.cpp \
+              $(CONFIG_PATH)/ListenConfig.cpp \
               $(SERVER_PATH)/Server.cpp \
-			  $(SERVER_PATH)/WebServer.cpp \
+              $(SERVER_PATH)/WebServer.cpp \
               $(CLIENT_PATH)/Client.cpp \
               $(CLIENT_PATH)/ClientManager.cpp \
               $(HTTP_PATH)/Request.cpp \
@@ -49,7 +49,7 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/RequestHandler.cpp \
               $(HTTP_PATH)/RequestHandlerUtils.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
-			  $(CGI_PATH)/CgiHandler.cpp \
+              $(CGI_PATH)/CgiHandler.cpp \
               $(UTILS_PATH)/Logger.cpp \
 
 INCLUDES    = -Isrc/server
@@ -92,9 +92,11 @@ get_log:
 #                                   TESTING                                    #
 #==============================================================================#
 
-
 test: $(NAME)
 	clear ; ./$(NAME) config/valid/miguel.conf
+
+eval : $(NAME)
+	clear; ./$(NAME) config/eval.conf
 
 val: $(NAME)
 	clear ; valgrind $(V_ARGS) ./$(NAME) config/valid/miguel.conf

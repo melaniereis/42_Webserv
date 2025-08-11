@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 14:40:57 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:57:05 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,9 +198,8 @@ Response &handleRedirectLocation(Response &response, std::map<int, std::string> 
 	response.setHeader("Location", link);
 	return response;
 }
-
 Response generateAutoIndexPage(const ServerConfig &config, Response &response, 
-	const std::string &dirPath, const std::string &reqPath)
+    const std::string &dirPath, const std::string &reqPath)
 {
 	DIR *dir = opendir(dirPath.c_str());
 	if (!dir)
@@ -208,30 +207,43 @@ Response generateAutoIndexPage(const ServerConfig &config, Response &response,
 
 	std::string html = "<html><head><title>Index of " + reqPath + "</title></head><body>";
 	html += "<h1>Index of " + reqPath + "</h1><ul>";
-	
+
+	// std::cout << "dirPath-> " << dirPath << std::endl;
+	// std::cout << "reqPath-> " << reqPath << std::endl;
+
 	struct dirent *entry;
 	while ((entry = readdir(dir)) != NULL)
 	{
 		std::string name(entry->d_name);
 		if (name == ".")
-		continue;
-		
-		std::string fullEntryPath = dirPath;
+			continue;
 
+		std::string fullEntryPath = dirPath;
 		if (fullEntryPath[fullEntryPath.size() - 1] != '/')
 			fullEntryPath += "/";
 		fullEntryPath += name;
 
-		// Check if entry is a directory
 		struct stat st;
 		bool isDir = false;
 		if (stat(fullEntryPath.c_str(), &st) == 0)
 			isDir = S_ISDIR(st.st_mode);
 
-		// Make sure reqPath ends with a '/'
+		// Build correct HTTP path even if we're in a subdirectory
+		std::string relativePath = dirPath.substr(std::string("./pages").size()); // strip ./pages
+		if (relativePath.empty())
+			relativePath = "/";
+		else if (relativePath[0] != '/')
+			relativePath = "/" + relativePath;
+
 		std::string linkPath = reqPath;
 		if (linkPath.empty() || linkPath[linkPath.size() - 1] != '/')
 			linkPath += "/";
+		if (relativePath.size() > 1)
+		{
+			linkPath += relativePath.substr(1);
+			if (linkPath[linkPath.size() - 1] != '/')
+				linkPath += "/";
+		}
 		linkPath += name;
 
 		if (isDir)
@@ -239,7 +251,8 @@ Response generateAutoIndexPage(const ServerConfig &config, Response &response,
 			linkPath += "/";
 			name += "/";
 		}
-		std::cout << "linkPath -> " << linkPath << std::endl;
+
+		// std::cout << "linkPath -> " << linkPath << std::endl;
 		html += "<li><a href=\"" + linkPath + "\">" + name + "</a></li>";
 	}
 

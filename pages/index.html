@@ -25,9 +25,9 @@
 		</header>
 
 		<section class="hero">
-			<h1>High Performance <span>HTTP Server</span></h1>
-			<p>A modern, scalable web server implementation developed at 42 Porto by Melanie Reis & Miguel
-				Meireles. Built from scratch in C++98 with support for HTTP/1.1 protocol, CGI, and advanced features.
+			<h1><span>HTTP Server</span></h1>
+			<p>A replication of the Nginx web server, developed at 42 Porto by Melanie Reis & Miguel Meireles.
+				Built from scratch in C++98 with support for the HTTP/1.1 protocol, CGI, and advanced features.
 			</p>
 
 			<div class="tech-grid">
@@ -49,6 +49,43 @@
 				</div>
 			</div>
 		</section>
+
+		<h2 class="section-title">Core Features</h2>
+		<div class="features-grid">
+			
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>File Management
+				</h3>
+				<div class="divider-small"></div>
+				<!-- <p>Supports file uploads through POST requests and directory listings. Clients can download or delete
+					files through native HTTP methods.</p> -->
+				<a href="#" class="btn">Upload File</a>
+			</div>
+
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-redo"></i></div>Redirection
+				</h3>
+				<div class="divider-small"></div>
+				<!-- <p>Configurable 301 and 302 redirects to route traffic between endpoints or external URLs with proper
+					HTTP status codes.</p> -->
+				<a href="#" class="btn">Test Redirects</a>
+			</div>
+
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-file-code"></i></div>CGI Execution
+				</h3>
+				<div class="divider-small"></div>
+				<!-- <p>Execute Python, PHP, and Bash scripts through Common Gateway Interface with proper environment
+					variables and directory handling.</p> -->
+				<a href="http://localhost:8080/cgi-bin/test.pl?name=" class="btn">Test CGI</a>
+			</div>
+
+		</div>
+
+		
 
 		<div class="divider"></div>
 
@@ -97,126 +134,17 @@
 			</div>
 		</div>
 
-		<div class="divider"></div>
-
-		<h2 class="section-title">Core Features</h2>
-		<div class="features-grid">
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-network-wired"></i></div>Non-blocking Architecture
-				</h3>
-				<div class="divider-small"></div>
-				<p>Uses efficient I/O multiplexing with poll() to handle multiple clients simultaneously without
-					blocking operations. Ensures high availability under heavy load.</p>
-				<a href="#" class="btn">Learn More</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-cogs"></i></div>HTTP/1.1 Compliance
-				</h3>
-				<div class="divider-small"></div>
-				<p>Implements the HTTP/1.1 specification with support for GET, POST, DELETE methods and accurate status
-					codes. Compatible with all standard browsers.</p>
-				<a href="#" class="btn">Test Methods</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-file-code"></i></div>CGI Execution
-				</h3>
-				<div class="divider-small"></div>
-				<p>Execute Python, PHP, and Bash scripts through Common Gateway Interface with proper environment
-					variables and directory handling.</p>
-				<a href="http://localhost:8080/cgi-bin/test.pl?name=" class="btn">Run Scripts</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-sliders-h"></i></div>Configurable Server
-				</h3>
-				<div class="divider-small"></div>
-				<p>Flexible configuration system with server blocks, ports, error pages, client body limits, and
-					route-specific rules inspired by NGINX.</p>
-				<a href="#" class="btn">Configure Server</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>File Management
-				</h3>
-				<div class="divider-small"></div>
-				<p>Supports file uploads through POST requests and directory listings. Clients can download or delete
-					files through native HTTP methods.</p>
-				<a href="#" class="btn">Upload Files</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-exclamation-triangle"></i></div>Error Handling
-				</h3>
-				<div class="divider-small"></div>
-				<p>Custom error pages with accurate HTTP status codes. Robust error recovery ensures the server remains
-					operational under all conditions.</p>
-				<a href="#" class="btn">View Errors</a>
-			</div>
-		</div>
-
-		<div class="divider"></div>
-
-		<h2 class="section-title">Advanced Features</h2>
-		<div class="features-grid">
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-cookie-bite"></i></div>Session Management
-				</h3>
-				<div class="divider-small"></div>
-				<p>Cookie-based session handling with user authentication and private content. Maintains stateful
-					interactions across multiple requests.</p>
-				<a href="#" class="btn">Manage Sessions</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-tachometer-alt"></i></div>Performance Optimization
-				</h3>
-				<div class="divider-small"></div>
-				<p>Memory-efficient C++98 implementation with careful resource management. Handles thousands of
-					concurrent connections with minimal overhead.</p>
-				<a href="#" class="btn">View Metrics</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-redo"></i></div>Redirection System
-				</h3>
-				<div class="divider-small"></div>
-				<p>Configurable 301 and 302 redirects to route traffic between endpoints or external URLs with proper
-					HTTP status codes.</p>
-				<a href="#" class="btn">Test Redirects</a>
-			</div>
-
-			<div class="feature-card">
-				<h3>
-					<div class="icon"><i class="fas fa-folder-open"></i></div>Directory Management
-				</h3>
-				<div class="divider-small"></div>
-				<p>Automatically generate directory indexes when no index file is present. Configurable directory
-					listing options.</p>
-				<a href="#" class="btn">Browse Directories</a>
-			</div>
-		</div>
-
 		<footer>
 			<div class="footer-content">
 				<div class="footer-logo">WEBSERV</div>
-				<p>A high-performance HTTP server implementation developed at 42 Porto</p>
+				<p>An HTTP server implementation developed at 42 Porto</p>
 				<div class="copyright">
 					© 2025 Developed with passion by meferraz & jmeirele. All rights reserved.
 				</div>
 			</div>
 		</footer>
 	</div>
+		
 
 	<script src="script.js"></script>
 </body>
