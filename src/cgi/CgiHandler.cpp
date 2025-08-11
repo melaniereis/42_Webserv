@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/24 16:48:12 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 14:43:03 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,13 +48,13 @@ bool CgiHandler::_validateScript(const std::string& scriptPath,
 	if (access(scriptPath.c_str(), F_OK) != 0) {
 		int err = errno;
 		Logger::error("Script not found: " + scriptPath + " - " + strerror(err));
-		HttpStatus::buildResponse(response, 404);
+		HttpStatus::buildResponse(_config,response, 404);
 		return false;
 	}
 	if (access(scriptPath.c_str(), X_OK) != 0) {
 		int err = errno;
 		Logger::error("Script not executable: " + scriptPath + " - " + strerror(err));
-		HttpStatus::buildResponse(response, 403);
+		HttpStatus::buildResponse(_config,response, 403);
 		return false;
 	}
 	return true;
@@ -63,7 +63,7 @@ bool CgiHandler::_validateScript(const std::string& scriptPath,
 void CgiHandler::_handleCgiError(Response& response)
 {
 	Logger::error("CGI execution failed");
-	HttpStatus::buildResponse(response, 500);
+	HttpStatus::buildResponse(_config,response, 500);
 }
 
 std::string CgiHandler::_resolveScriptPath() const

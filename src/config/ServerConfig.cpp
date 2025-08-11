@@ -3,18 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/25 16:18:51 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 14:47:02 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ServerConfig.hpp"
 
 ServerConfig::ServerConfig() : _root("./pages"),
-							   _notFound("./pages/404.html"),
-							   _clientMaxBodySize(1048576) // 1 MB
+							   _clientMaxBodySize(1048576)
 {
 	_indexes.push_back("./pages/index.html");
 }
@@ -23,7 +22,11 @@ ServerConfig::~ServerConfig() {}
 
 const std::string &ServerConfig::getServerRoot() const { return _root; }
 const std::vector<std::string> &ServerConfig::getServerIndexes() const { return _indexes; }
-std::string ServerConfig::getServerNotFound() const { return _notFound; }
+size_t ServerConfig::getClientMaxBodySize() const { return _clientMaxBodySize; }
+const std::map<std::string, ListenConfig> &ServerConfig::getListens() const { return _listens; }
+const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const { return _locations; }
+const std::map<int, std::string> &ServerConfig::getErrorPage() const { return _errorPage; }
+
 std::string ServerConfig::getServerHost() const
 {
 	return _listens.empty() ? "0.0.0.0" : _listens.begin()->second.getIp();
@@ -111,10 +114,9 @@ void ServerConfig::setIndex(const std::vector<std::string> &index)
 	_indexes = index;
 }
 
-void ServerConfig::setNotFound(const std::string &path)
+void ServerConfig::setErrorPage(int code, const std::string &path)
 {
-	_validatePath(path);
-	_notFound = path;
+	_errorPage[code] = path;
 }
 
 void ServerConfig::setHost(const std::string &host)
@@ -177,17 +179,3 @@ void ServerConfig::setClientMaxBodySize(size_t size)
 	_clientMaxBodySize = size;
 }
 
-size_t ServerConfig::getClientMaxBodySize() const
-{
-	return _clientMaxBodySize;
-}
-
-const std::map<std::string, ListenConfig> &ServerConfig::getListens() const
-{
-	return _listens;
-}
-
-const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const
-{
-	return _locations;
-}

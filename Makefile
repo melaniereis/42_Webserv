@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/07/06 02:18:23 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/08/11 13:35:34 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ NAME        = webserv
 #                                FLAGS & COMMANDS                              #
 #==============================================================================#
 
-CPP         = c++
+CPP         = g++
 CPPFLAGS    = -Wall -Wextra -Werror -g -std=c++98
 RM          = rm -fr
 MKDIR       = mkdir -p
@@ -51,7 +51,6 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
 			  $(CGI_PATH)/CgiHandler.cpp \
               $(UTILS_PATH)/Logger.cpp \
-              ##$(UTILS_PATH)/Utils.cpp \
 
 INCLUDES    = -Isrc/server
 OBJS        = $(SRCS:%.cpp=$(BUILD_PATH)/%.o)

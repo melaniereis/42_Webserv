@@ -116,3 +116,6 @@ void Client::closeClient()
 	}
 	_closed = true;
 }
+
+int Client::getClientFd() const { return _fd; }
+bool Client::isClientClosed() const { return _closed; }

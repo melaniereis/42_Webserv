@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/04 12:22:15 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:15:28 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,6 @@ bool isDirectory(const std::string &path);
 
 std::string normalizeReqPath(const std::string &path);
 
-Response generateAutoIndexPage(Response &response, const std::string &dirPath, const std::string &reqPath);
+Response generateAutoIndexPage(const ServerConfig &config, Response &response, const std::string &dirPath, const std::string &reqPath);
 
 Response &handleRedirectLocation(Response &response, std::map<int, std::string> &locationRedirects);

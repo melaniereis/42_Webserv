@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/06 02:47:28 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 12:59:52 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ int ClientManager::acceptNewClient(int serverFd, const ServerConfig &config)
 
 	Client* client = new Client(clientFd, config);
 	_clients[clientFd] = client;
-
+	
 	Logger::info("Client connected: " + intToString(clientFd));
 	return clientFd;
 }
@@ -67,6 +67,7 @@ bool ClientManager::handleClientIO(int fd, short revents)
 	}
 
 	Client* client = _clients[fd];
+	
 	bool keepConnection = true;
 
 	// Handle POLLIN (data available to read)

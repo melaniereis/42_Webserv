@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/25 16:19:16 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 13:27:47 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,9 +318,11 @@ void ConfigParser::_handleErrorPage(const std::string& args,
 	int code;
 	std::string path;
 	ss >> code >> path;
+	if (code < 100 || code > 599)
+		_throwError(lineNum, "Invalid error code: must be between 100 and 599");
 	if (ss.fail() || !ss.eof())
 		_throwError(lineNum, "Invalid error_page syntax");
-	cfg.setNotFound(path);
+	cfg.setErrorPage(code, path);
 }
 
 void ConfigParser::_handleClientMaxBodySize(const std::string& args,

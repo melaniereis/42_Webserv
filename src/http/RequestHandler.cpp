@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/09 22:51:13 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 14:40:15 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 				catch (const std::exception &e)
 				{
 					Response errorResponse;
-					return HttpStatus::buildResponse(errorResponse, 500);
+					return HttpStatus::buildResponse(config, errorResponse, 500);
 				}
 			}
 		}
@@ -87,7 +87,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 	else
 	{
 		Response response;
-		return HttpStatus::buildResponse(response, 405);
+		return HttpStatus::buildResponse(config, response, 405);
 	}
 }
 
@@ -96,7 +96,6 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 // ============
 Response RequestHandler::handleGetMethod(const Request &request, const ServerConfig &config)
 {
-	// config.getServerNotFound();
 	Response response;
 
 	std::string reqPath = request.getReqPath();
@@ -120,7 +119,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	{
 		std::string indexFile = resolveMultipleIndexes(rootDir, indexes);
 		if (indexFile.empty())
-			return HttpStatus::buildResponse(response, 403);
+			return HttpStatus::buildResponse(config,response, 403);
 		reqPath = "/" + indexFile;
 	}
 
@@ -137,13 +136,13 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
-		return HttpStatus::buildResponse(response, 404);
+		return HttpStatus::buildResponse(config,response, 404);
 
 	if ((isDirectory(fullPath) && locationAutoIndex == 1))
 		// || isDirectory && rootAutoIndex == 1
-		return generateAutoIndexPage(response, fullPath, locationPrefix);
+		return generateAutoIndexPage(config, response, fullPath, locationPrefix);
 	else if (isDirectory(fullPath) && locationAutoIndex == 0)
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config, response, 403);
 
 	std::ostringstream ss;
 	ss << file.rdbuf();
@@ -159,7 +158,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 // POST METHOD
 // ============
 	// if (contentType == "application/octet-stream")
-	// return HttpStatus::buildResponse(response, 415);
+	// return HttpStatus::buildResponse(config,response, 415);
 
 Response RequestHandler::handlePostMethod(const Request &request, const ServerConfig &config)
 {
@@ -174,7 +173,7 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	if (contentType == "application/x-www-form-urlencoded")
 		return handleFormPost(request, config);
 	if (request.getReqBody().empty())
-		return HttpStatus::buildResponse(response, 400);
+		return HttpStatus::buildResponse(config,response, 400);
 	return handleBinaryPost(request, config);
 }
 
@@ -191,7 +190,7 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
 	if (reqPath.find("..") != std::string::npos)
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config,response, 403);
 	
 	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
 	
@@ -213,7 +212,7 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 			
 			std::ofstream out(fullPath.c_str(), std::ios::binary);
 			if (!out)
-				return HttpStatus::buildResponse(response, 500);
+				return HttpStatus::buildResponse(config,response, 500);
 
 			out.write(it->content.data(), it->content.size());
 			out.close();
@@ -224,7 +223,7 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 			std::cout << "Value->" << std::string(it->content.begin(), it->content.end()) << "\n\n";
 		}
 	}
-	return HttpStatus::buildResponse(response, 200);
+	return HttpStatus::buildResponse(config,response, 200);
 }
 
 std::vector<MultipartPart> parseMultiparts(const Request &request)
@@ -306,7 +305,7 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 	std::string body = request.getReqBody();
 
 	if (reqPath.find("..") != std::string::npos)
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config,response, 403);
 
 	std::map<std::string, std::string> clientData;
 	size_t start = 0;
@@ -335,7 +334,7 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 		it++;
 	}
 
-	return HttpStatus::buildResponse(response, 200);
+	return HttpStatus::buildResponse(config,response, 200);
 }
 
 Response RequestHandler::handleBinaryPost(const Request &request, const ServerConfig &config)
@@ -352,7 +351,7 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 	
 	if (reqPath.find("..") != std::string::npos)
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config,response, 403);
 	
 	std::string fileName = extractFilenameFromPath(reqPath);
 	std::string updatedFileName = generateTimestampFilename(fileName);
@@ -361,12 +360,12 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
 	
 	if (!out)
-		return HttpStatus::buildResponse(response, 500);
+		return HttpStatus::buildResponse(config,response, 500);
 
 	out.write(body.c_str(), body.size());
 	out.close();
 
-	return HttpStatus::buildResponse(response, 200);
+	return HttpStatus::buildResponse(config,response, 200);
 }
 
 // ============
@@ -389,23 +388,23 @@ Response RequestHandler::handleDeleteMethod(const Request &request, const Server
 		reqPath = reqPath.substr(locationPrefix.length());
 
 	if (reqPath.find("..") != std::string::npos)
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config,response, 403);
 
 	std::string fullPath = rootDir + locationRootDir + reqPath;
 
 	std::ifstream file(fullPath.c_str());
 	if (!file)
-		return HttpStatus::buildResponse(response, 404);
+		return HttpStatus::buildResponse(config,response, 404);
 
 	file.close();
 
 	// Verify if it is a directory
 	if (isDirectory(fullPath))
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config,response, 403);
 
 	// Actually try to remove the file
 	if (std::remove(fullPath.c_str()) != 0)
-		return HttpStatus::buildResponse(response, 500);
+		return HttpStatus::buildResponse(config,response, 500);
 
-	return HttpStatus::buildResponse(response, 200);
+	return HttpStatus::buildResponse(config,response, 200);
 }

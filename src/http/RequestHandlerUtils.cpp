@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/09 22:39:24 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 14:40:57 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,11 +199,12 @@ Response &handleRedirectLocation(Response &response, std::map<int, std::string> 
 	return response;
 }
 
-Response generateAutoIndexPage(Response &response, const std::string &dirPath, const std::string &reqPath)
+Response generateAutoIndexPage(const ServerConfig &config, Response &response, 
+	const std::string &dirPath, const std::string &reqPath)
 {
 	DIR *dir = opendir(dirPath.c_str());
 	if (!dir)
-		return HttpStatus::buildResponse(response, 403);
+		return HttpStatus::buildResponse(config, response, 403);
 
 	std::string html = "<html><head><title>Index of " + reqPath + "</title></head><body>";
 	html += "<h1>Index of " + reqPath + "</h1><ul>";

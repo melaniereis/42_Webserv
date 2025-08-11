@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/12 18:06:02 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/12 20:33:54 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:17:15 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,40 @@ std::string HttpStatus::generateHtmlBody(int code)
 	return html.str();
 }
 
-Response HttpStatus::buildResponse(Response &response, int code)
+Response HttpStatus::buildResponse(const ServerConfig &config, Response &response, int code)
 {
+	const std::map<int, std::string>& errorPage = config.getErrorPage();
+	std::string rootDir = config.getServerRoot();
+
+	std::map<int, std::string>::const_iterator it = errorPage.find(code);
+	if (it != errorPage.end())
+	{
+		// File path for this error code
+		const std::string& filePath = rootDir + "/" + it->second;
+
+		// Try to read file content
+		std::ifstream file(filePath.c_str());
+		if (file) {
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			std::string content = buffer.str();
+
+			std::string contentType = getMimeType(filePath);
+			response.setHeader("Content-Type", contentType);
+			response.setBody(content);
+
+			response.setStatus(code, getMessage(code));
+			return response;
+		} else {
+			Logger::warn("Error page file not found or inaccessible: " + filePath);
+		}
+	}
+
+	// Generate simple HTML body if no custom error page
 	response.setStatus(code, getMessage(code));
 	response.setHeader("Content-Type", "text/html");
 	response.setBody(generateHtmlBody(code));
+
 	return response;
 }
+
