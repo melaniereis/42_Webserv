@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/11 16:16:52 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:19:39 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ class Server
 		void removeClient(int fd);
 		bool setupSocketForListen(const std::string& ip, int port);
 		ClientManager getClientManager() const;
+
+		void cleanup();
 
 	private:
 		Server(const Server&);

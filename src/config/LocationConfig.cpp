@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationConfig.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:28:01 by meferraz          #+#    #+#             */
-/*   Updated: 2025/07/11 16:54:53 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:03:28 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,7 @@ LocationConfig::LocationConfig() :
 	_path(""),
 	_root(""),
 	_autoindex(false)
-{
-	// Initialize all containers as empty
-}
+{}
 
 LocationConfig::~LocationConfig() {}
 
@@ -35,7 +33,7 @@ void LocationConfig::_validatePath(const std::string& path) const
 
 void LocationConfig::_validateMethod(const std::string& method) const
 {
-	const std::string validMethods[] = {"GET", "POST", "DELETE", "PUT", "HEAD"};
+	const std::string validMethods[] = {"GET", "POST", "DELETE"};
 	const int count = sizeof(validMethods)/sizeof(validMethods[0]);
 
 	for (int i = 0; i < count; i++) {
@@ -106,7 +104,7 @@ void LocationConfig::addAllowedMethod(const std::string& m)
 		it != _allowed_methods.end(); ++it)
 	{
 		if (*it == m) {
-			return; // Method already exists
+			return;
 		}
 	}
 	_allowed_methods.push_back(m);
@@ -140,7 +138,6 @@ void LocationConfig::setIndexes(const std::vector<std::string>& indexes)
 	_indexes = indexes;
 }
 
-// Getters remain the same as before
 const std::string& LocationConfig::getPath() const { return _path; }
 const std::string& LocationConfig::getRoot() const { return _root; }
 const std::vector<std::string>& LocationConfig::getIndexes() const { return _indexes; }

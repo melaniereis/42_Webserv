@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 21:19:42 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 15:12:39 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:16:04 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,20 +29,9 @@ Client::~Client()
 	}
 }
 
-int Client::getFd() const
-{
-	return _fd;
-}
-
-const std::string& Client::getClientAddress() const
-{
-	return _clientAddress;
-}
-
-bool Client::isClientClosed() const
-{
-	return _closed;
-}
+int Client::getFd() const { return _fd; }
+const std::string& Client::getClientAddress() const { return _clientAddress; }
+bool Client::isClientClosed() const { return _closed; }
 
 bool Client::_hasCompleteRequest() const
 {
@@ -86,7 +75,7 @@ bool Client::handleClientRequest()
 
 			if (contentLength > _config.getClientMaxBodySize()) {
 				Response resp;
-				HttpStatus::buildResponse(resp, 413);
+				HttpStatus::buildResponse(_config, resp, 413);
 				_writeBuffer = resp.toString();
 				return true;
 			}
@@ -131,3 +120,4 @@ void Client::closeClient()
 	}
 	_closed = true;
 }
+

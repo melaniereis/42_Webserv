@@ -352,7 +352,7 @@ header {
 }
 
 .team-name {
-	font-size: 1.8rem;
+	font-size: 1.6rem;
 	margin-bottom: 0.5rem;
 	background: linear-gradient(to right, var(--light), var(--accent));
 	-webkit-background-clip: text;
@@ -388,6 +388,7 @@ header {
 
 .team-links {
 	display: flex;
+	align-items: baseline;
 	justify-content: center;
 	gap: 1.5rem;
 	margin-top: 1.5rem;

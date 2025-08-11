@@ -3,25 +3,35 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/24 17:14:02 by meferraz          #+#    #+#             */
-/*   Updated: 2025/08/11 15:08:28 by meferraz         ###   ########.fr       */
+/*   Created: 2025/06/24 17:15:20 by meferraz          #+#    #+#             */
+/*   Updated: 2025/08/11 17:24:45 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServer.hpp"
 
+
+bool WebServer::_stopFlag = false;
+
 WebServer::WebServer(const std::string& configPath) : configPath(configPath)
-{
-	parseConfig();
-	setupServers();
-	initPollStructures();
-}
+{}
 
 WebServer::~WebServer()
 {
 	cleanup();
+}
+
+void WebServer::run()
+{
+	Logger::info("WebServer starting...");
+	signal(SIGINT, handleSigInt);
+	signal(SIGQUIT, handleSigInt);
+	parseConfig();
+	setupServers();
+	initPollStructures();
+	runEventLoop();
 }
 
 void WebServer::parseConfig()
@@ -65,15 +75,9 @@ void WebServer::initPollStructures()
 	}
 }
 
-void WebServer::run()
-{
-	Logger::info("WebServer starting...");
-	runEventLoop();
-}
-
 void WebServer::runEventLoop()
 {
-	while (true) {
+	while (!_stopFlag) {
 		// SINGLE POLL CALL - evaluation requirement
 		int ready = poll(pollFds.data(), pollFds.size(), -1);
 
@@ -150,10 +154,22 @@ void WebServer::handlePollEvents(std::vector<struct pollfd>& newConnections,
 
 void WebServer::cleanup()
 {
-	for (size_t i = 0; i < servers.size(); ++i) {
+	for (size_t i = 0; i < pollFds.size(); ++i)
+	{
+		if (pollFds[i].fd >= 0)
+			close(pollFds[i].fd);
+	}
+
+	for (size_t i = 0; i < servers.size(); ++i)
+	{
+		servers[i]->cleanup();
 		delete servers[i];
 	}
+
+	pollFds.clear();
 	servers.clear();
+	serverFdsSet.clear();
+	fdToServerIndex.clear();
 }
 
 std::string WebServer::intToString(int value)
@@ -161,4 +177,11 @@ std::string WebServer::intToString(int value)
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
+}
+
+void WebServer::handleSigInt(int signum)
+{
+	(void)signum;
+	Logger::info("Received SIGINT, shutting down ...");
+	_stopFlag = true;
 }

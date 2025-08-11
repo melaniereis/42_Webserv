@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 15:53:23 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:20:08 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientManager.hpp"
+
 static std::string intToString(int value)
 {
 	std::ostringstream oss;
@@ -54,7 +55,7 @@ int ClientManager::acceptNewClient(int serverFd, const ServerConfig &config)
 
 	Client* client = new Client(clientFd, clientAddr, config);
 	_clients[clientFd] = client;
-
+	
 	Logger::info("Client connected: " + intToString(clientFd));
 	return clientFd;
 }
@@ -66,6 +67,7 @@ bool ClientManager::handleClientIO(int fd, short revents)
 	}
 
 	Client* client = _clients[fd];
+	
 	bool keepConnection = true;
 
 	// Handle POLLIN (data available to read)
@@ -113,4 +115,15 @@ Client *ClientManager::getClient(int fd) const
 		return it->second;
 	}
 	return NULL;
+}
+
+void ClientManager::cleanup()
+{
+	for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		delete it->second;
+		close(it->first);
+	}
+	_clients.clear();
+	Logger::info("All clients cleaned up.");
 }

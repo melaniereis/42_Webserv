@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/07/08 16:21:18 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:19:03 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,4 +191,16 @@ std::string Server::intToString(int value) const
 	return oss.str();
 }
 
-ClientManager Server::getClientManager() const { return _clientManager; }
+void Server::cleanup()
+{
+	for (std::vector<int>::iterator it = serverFds.begin(); it != serverFds.end(); ++it)
+	{
+		if (*it >= 0)
+		{
+			close(*it);
+			Logger::info("Closed socket FD: " + intToString(*it));
+		}
+	}
+	serverFds.clear();
+	_clientManager.cleanup();
+}

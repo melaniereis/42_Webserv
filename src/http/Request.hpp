@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:20:12 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 12:30:07 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:05:35 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@
 
 class Request
 {
-public:
-	Request(const std::string &rawRequest);
+	public:
+		Request(const std::string &rawRequest);
 
 	const std::string &getReqMethod() const;
 	const std::string &getReqPath() const;

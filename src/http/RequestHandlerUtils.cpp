@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/06/26 20:39:18 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:57:05 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ std::string getMimeType(const std::string &extension)
 {
 	if (endsWith(extension, ".html"))
 		return "text/html";
+	if (endsWith(extension, ".txt"))
+		return "text/plain";
 	if (endsWith(extension, ".jpg") || endsWith(extension, ".jpeg"))
 		return "image/jpeg";
 	if (endsWith(extension, ".css"))
@@ -121,8 +123,6 @@ bool isMethodAllowed(const Request &request, const ServerConfig &config, const s
 
 	std::string locationPrefix = extractLocationPrefix(request, config);
 
-	std::cout << locationPrefix << std::endl;
-
 	std::map<std::string, LocationConfig>::const_iterator it = locations.find(locationPrefix);
 
 	if (it == locations.end())
@@ -152,13 +152,115 @@ void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::v
 void parseContentDisposition(const std::string &line, MultipartPart &part)
 {
 	size_t namePos = line.find("name=\"");
-	if (namePos != std::string::npos) {
+	if (namePos != std::string::npos)
+	{
 		size_t nameEnd = line.find("\"", namePos + 6);
 		part.name = line.substr(namePos + 6, nameEnd - (namePos + 6));
 	}
+	
 	size_t filePos = line.find("filename=\"");
-	if (filePos != std::string::npos) {
+	if (filePos != std::string::npos)
+	{
 		size_t fileEnd = line.find("\"", filePos + 10);
 		part.fileName = line.substr(filePos + 10, fileEnd - (filePos + 10));
 	}
 }
+
+bool isDirectory(const std::string &path)
+{
+	struct stat s;
+
+	if (stat(path.c_str(), &s) == 0)
+		return S_ISDIR(s.st_mode);
+	return false;
+}
+
+std::string normalizeReqPath(const std::string &path)
+{
+	if (path.empty())
+		return path;
+
+	std::string normalized = path;
+	
+	while (normalized.length() > 1 && normalized[normalized.length() - 1] == '/')
+		normalized.erase(normalized.length() - 1);
+	
+	return normalized;
+}
+
+Response &handleRedirectLocation(Response &response, std::map<int, std::string> &locationRedirects)
+{
+	int code = locationRedirects.begin()->first;
+	std::string link = locationRedirects.begin()->second;
+
+	std::cout << code << std::endl;
+	response.setStatus(code, "Redirect");
+	response.setHeader("Location", link);
+	return response;
+}
+Response generateAutoIndexPage(const ServerConfig &config, Response &response, 
+    const std::string &dirPath, const std::string &reqPath)
+{
+	DIR *dir = opendir(dirPath.c_str());
+	if (!dir)
+		return HttpStatus::buildResponse(config, response, 403);
+
+	std::string html = "<html><head><title>Index of " + reqPath + "</title></head><body>";
+	html += "<h1>Index of " + reqPath + "</h1><ul>";
+
+	// std::cout << "dirPath-> " << dirPath << std::endl;
+	// std::cout << "reqPath-> " << reqPath << std::endl;
+
+	struct dirent *entry;
+	while ((entry = readdir(dir)) != NULL)
+	{
+		std::string name(entry->d_name);
+		if (name == ".")
+			continue;
+
+		std::string fullEntryPath = dirPath;
+		if (fullEntryPath[fullEntryPath.size() - 1] != '/')
+			fullEntryPath += "/";
+		fullEntryPath += name;
+
+		struct stat st;
+		bool isDir = false;
+		if (stat(fullEntryPath.c_str(), &st) == 0)
+			isDir = S_ISDIR(st.st_mode);
+
+		// Build correct HTTP path even if we're in a subdirectory
+		std::string relativePath = dirPath.substr(std::string("./pages").size()); // strip ./pages
+		if (relativePath.empty())
+			relativePath = "/";
+		else if (relativePath[0] != '/')
+			relativePath = "/" + relativePath;
+
+		std::string linkPath = reqPath;
+		if (linkPath.empty() || linkPath[linkPath.size() - 1] != '/')
+			linkPath += "/";
+		if (relativePath.size() > 1)
+		{
+			linkPath += relativePath.substr(1);
+			if (linkPath[linkPath.size() - 1] != '/')
+				linkPath += "/";
+		}
+		linkPath += name;
+
+		if (isDir)
+		{
+			linkPath += "/";
+			name += "/";
+		}
+
+		// std::cout << "linkPath -> " << linkPath << std::endl;
+		html += "<li><a href=\"" + linkPath + "\">" + name + "</a></li>";
+	}
+
+	closedir(dir);
+	html += "</ul></body></html>";
+	response.setStatus(200, "OK");
+	response.setHeader("Content-Type", "text/html");
+	response.setBody(html);
+	return response;
+}
+

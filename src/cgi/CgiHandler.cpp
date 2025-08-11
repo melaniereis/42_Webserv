@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/08/11 16:42:38 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 17:16:29 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ Response CgiHandler::execute()
 	Logger::info("Executing CGI script: " + scriptPath);
 
 	if (!_validateScript(scriptPath)) {
-		HttpStatus::buildResponse(response, 404);
+		HttpStatus::buildResponse(_config, response, 404);
 		return response;
 	}
 
@@ -41,7 +41,7 @@ Response CgiHandler::execute()
 
 
 	if (output.empty()) {
-		HttpStatus::buildResponse(response, 500);
+		HttpStatus::buildResponse(_config, response, 500);
 		return response;
 	}
 
