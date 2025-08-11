@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:42:37 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 14:47:02 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:49:59 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ size_t ServerConfig::getClientMaxBodySize() const { return _clientMaxBodySize; }
 const std::map<std::string, ListenConfig> &ServerConfig::getListens() const { return _listens; }
 const std::map<std::string, LocationConfig> &ServerConfig::getLocations() const { return _locations; }
 const std::map<int, std::string> &ServerConfig::getErrorPage() const { return _errorPage; }
+bool ServerConfig::getServerAutoIndex() const { return _serverAutoIndex; }
 
 std::string ServerConfig::getServerHost() const
 {
@@ -119,6 +120,11 @@ void ServerConfig::setErrorPage(int code, const std::string &path)
 	_errorPage[code] = path;
 }
 
+void ServerConfig::setServerAutoIndex(bool flag)
+{
+	_serverAutoIndex = flag;
+}
+
 void ServerConfig::setHost(const std::string &host)
 {
 	if (host.empty())
@@ -142,6 +148,15 @@ void ServerConfig::setPort(unsigned int port)
 		ListenConfig &listen = _listens.begin()->second;
 		listen = ListenConfig(listen.getIp() + ":" + _intToString(port));
 	}
+}
+
+void ServerConfig::setClientMaxBodySize(size_t size)
+{
+	if (size > 100 * 1024 * 1024)
+	{
+		throw std::runtime_error("Client max body size too large (max 100MB)");
+	}
+	_clientMaxBodySize = size;
 }
 
 void ServerConfig::addLocation(const LocationConfig &loc)
@@ -169,13 +184,4 @@ void ServerConfig::addListen(const std::string &token)
 	}
 }
 
-void ServerConfig::setClientMaxBodySize(size_t size)
-{
-	// Set a reasonable maximum (100MB)
-	if (size > 100 * 1024 * 1024)
-	{
-		throw std::runtime_error("Client max body size too large (max 100MB)");
-	}
-	_clientMaxBodySize = size;
-}
 

@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 14:40:15 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:04:07 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	bool locationAutoIndex = config.getLocations().at(locationPrefix).isAutoIndex();
 	std::vector<std::string> locationIndex = config.getLocations().at(locationPrefix).getIndexes();
 	std::map<int, std::string> locationRedirects = config.getLocations().at(locationPrefix).getRedirects();
+	bool serverAutoIndex = config.getServerAutoIndex();
 
 	reqPath = normalizeReqPath(reqPath);
 
@@ -138,8 +139,8 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 	if (!file)
 		return HttpStatus::buildResponse(config,response, 404);
 
-	if ((isDirectory(fullPath) && locationAutoIndex == 1))
-		// || isDirectory && rootAutoIndex == 1
+	if ((isDirectory(fullPath) && locationAutoIndex == 1)
+		|| (isDirectory(fullPath) && serverAutoIndex == true))
 		return generateAutoIndexPage(config, response, fullPath, locationPrefix);
 	else if (isDirectory(fullPath) && locationAutoIndex == 0)
 		return HttpStatus::buildResponse(config, response, 403);
@@ -165,8 +166,6 @@ Response RequestHandler::handlePostMethod(const Request &request, const ServerCo
 	Response response;
 
 	std::string contentType = request.getReqHeaderKey("Content-Type");
-
-	std::cout << "content type-> " << contentType << std::endl;
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 		return handleMultipartPost(request, config);

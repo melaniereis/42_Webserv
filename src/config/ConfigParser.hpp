@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 15:51:54 by meferraz          #+#    #+#             */
-/*   Updated: 2025/06/13 22:02:58 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:28:12 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,8 @@ class ConfigParser
 		void _handleRoot(const std::string& args, ServerConfig& cfg, int lineNum);
 		void _handleIndex(const std::string& args, ServerConfig& cfg, int lineNum);
 		void _handleErrorPage(const std::string& args, ServerConfig& cfg, int lineNum);
-		void _handleClientMaxBodySize(const std::string& args,
-									ServerConfig& cfg, int lineNum);
+		void _handleClientMaxBodySize(const std::string& args, ServerConfig& cfg, int lineNum);
+		void _handleServerAutoIndex(const std::string &args, ServerConfig &cfg, int lineNum);
 
 		// Location directive handlers
 		void _handleLocRoot(const std::string& args, LocationConfig& loc, int lineNum);

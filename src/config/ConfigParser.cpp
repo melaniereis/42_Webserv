@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/08/11 13:27:47 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:42:01 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ void ConfigParser::_initHandlers()
 	_serverHandlers["error_page"] = &ConfigParser::_handleErrorPage;
 	_serverHandlers["client_max_body_size"] =
 		&ConfigParser::_handleClientMaxBodySize;
+	_serverHandlers["autoindex"] = &ConfigParser::_handleServerAutoIndex;
 
 	_locationHandlers["root"] = &ConfigParser::_handleLocRoot;
 	_locationHandlers["index"] = &ConfigParser::_handleLocIndex;
@@ -323,6 +324,17 @@ void ConfigParser::_handleErrorPage(const std::string& args,
 	if (ss.fail() || !ss.eof())
 		_throwError(lineNum, "Invalid error_page syntax");
 	cfg.setErrorPage(code, path);
+}
+
+void ConfigParser::_handleServerAutoIndex(const std::string &args, 
+									ServerConfig &cfg, int lineNum)
+{
+	if (args == "on")
+		cfg.setServerAutoIndex(true);
+	else if (args == "off")
+		cfg.setServerAutoIndex(false);
+	else
+		_throwError(lineNum, "Invalid autoindex value in server");
 }
 
 void ConfigParser::_handleClientMaxBodySize(const std::string& args,

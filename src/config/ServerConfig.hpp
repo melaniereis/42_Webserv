@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:39:26 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 14:46:56 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:49:44 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class ServerConfig
 		size_t getClientMaxBodySize() const;
 		const std::map<std::string, LocationConfig>& getLocations() const;
 		const std::map<int, std::string> &getErrorPage() const;
+		bool getServerAutoIndex() const;
 
 		// Setters with validation
 		void addListen(const std::string& token);
@@ -43,6 +44,7 @@ class ServerConfig
 		void setPort(unsigned int port);
 		void setIndex(const std::vector<std::string>& index);
 		void setErrorPage(int code, const std::string& path);
+		void setServerAutoIndex(bool flag);
 		void setClientMaxBodySize(size_t size);
 		void addLocation(const LocationConfig& loc);
 
@@ -54,6 +56,7 @@ class ServerConfig
 		size_t _clientMaxBodySize;
 		std::map<std::string, LocationConfig> _locations;
 		std::map<int, std::string> _errorPage;
+		bool _serverAutoIndex;
 
 		std::string _intToString(int v) const;
 		void _validatePort(unsigned int port) const;
