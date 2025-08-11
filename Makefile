@@ -6,7 +6,7 @@
 #    By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/08/11 11:50:05 by meferraz         ###   ########.fr        #
+#    Updated: 2025/08/11 15:24:12 by meferraz         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -50,7 +50,6 @@ SRCS        = $(SRC_PATH)/main.cpp \
               $(HTTP_PATH)/RequestHandlerUtils.cpp \
               $(HTTP_PATH)/HttpStatus.cpp \
 			  $(CGI_PATH)/CgiHandler.cpp \
-			  $(CGI_PATH)/CgiManager.cpp \
               $(UTILS_PATH)/Logger.cpp \
 
 INCLUDES    = -Isrc/server

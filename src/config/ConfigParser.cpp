@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 16:50:07 by meferraz          #+#    #+#             */
-/*   Updated: 2025/08/11 11:38:49 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:11:58 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -426,11 +426,17 @@ void ConfigParser::_handleCgi(const std::string& args,
 	std::string ext, cgiPath;
 	ss >> ext >> cgiPath;
 
+	// ONLY ALLOW PHP
+	if (ext != ".php") {
+		_throwError(lineNum, "Only PHP CGI is supported: use '.php'");
+	}
+
 	if (ext.empty() || ext[0] != '.')
 		_throwError(lineNum, "Invalid CGI extension (must start with '.')");
 
 	loc.addCgi(ext, cgiPath);
 }
+
 
 void ConfigParser::_validateServerBlock(const ServerConfig& config, int lineNum)
 {

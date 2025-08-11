@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 11:52:18 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 16:03:19 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,8 @@ const LocationConfig *findMatchingLocation(const Request &request, const ServerC
 	return NULL;
 }
 
-Response RequestHandler::handle(const Request &request, const ServerConfig &config, Client& client)
+Response RequestHandler::handle(const Request &request, const ServerConfig &config)
 {
-
 	// First find matching location
 	const LocationConfig *location = findMatchingLocation(request, config);
 	if (location) {
@@ -70,7 +69,8 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 			{
 				try
 				{
-					CgiHandler cgi(request, config, *location, client);
+					// REMOVE Client parameter - now synchronous!
+					CgiHandler cgi(request, config, *location);
 					return cgi.execute();
 				}
 				catch (const std::exception &e)
@@ -82,7 +82,7 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 		}
 	}
 
-	// Handle standard methods
+	// Handle standard methods...
 	if (request.getReqMethod() == "GET" && isMethodAllowed(request, config, "GET"))
 		return handleGetMethod(request, config);
 	else if (request.getReqMethod() == "POST" && isMethodAllowed(request, config, "POST"))
@@ -348,4 +348,3 @@ Response RequestHandler::handleDeleteMethod(const Request &request)
 	Response res;
 	return res;
 }
-

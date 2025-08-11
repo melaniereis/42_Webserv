@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:19:04 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 11:52:38 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/11 15:10:26 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,11 @@
 #include "../config/ServerConfig.hpp"
 #include "HttpStatus.hpp"
 #include "../cgi/CgiHandler.hpp"
-#include "../client/Client.hpp"
-
-class Client;
 
 class RequestHandler
 {
 	public:
-		static Response handle(const Request &request, const ServerConfig &config, Client& client);
+		static Response handle(const Request &request, const ServerConfig &config);
 		static Response handleGetMethod(const Request &request, const ServerConfig &config);
 		static Response handlePostMethod(const Request &request, const ServerConfig &config);
 		static Response handleDeleteMethod(const Request &request);
@@ -44,26 +41,14 @@ struct MultipartPart
 	std::string contentType;
 };
 
-// Multipurpose Internet Mail Extensions =>  MIME
+// Helper functions
 std::string getMimeType(const std::string &extension);
 bool endsWith(const std::string &str, const std::string &suffix);
-
-// Handling multiple indexes of server indexes
 std::string resolveMultipleIndexes(const std::string &rootDir, const std::vector<std::string> &indexes);
-
-// Generate unique filename for binary post
 std::string generateTimestampFilename(std::string &fileName);
-
-// Validating the location and the allowed methods on the specific location
 bool isMethodAllowed(const Request &request, const ServerConfig &config, const std::string &method);
-
 std::string extractLocationPrefix(const Request &request, const ServerConfig &config);
-
 std::string extractFilenameFromPath(const std::string &path);
-
 std::vector<MultipartPart> parseMultiparts(const Request &request);
-
 void finalizePart(std::vector<MultipartPart> &parts, MultipartPart &part, std::vector<char> &buffer);
 void parseContentDisposition(const std::string &line, MultipartPart &part);
-
-

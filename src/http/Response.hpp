@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/06/05 17:34:46 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 12:30:43 by meferraz         ###   ########.fr       */
+/*   Created: 2025/06/05 17:38:56 by jmeirele          #+#    #+#             */
+/*   Updated: 2025/08/11 15:09:01 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,22 +16,19 @@
 
 class Response
 {
-public:
-	Response();
+	public:
+		Response();
 
-	void setStatus(int code, const std::string &message);
-	void setHeader(const std::string &key, const std::string &value);
-	void setBody(const std::string &body);
-	void setCookie(const std::string& name, const std::string& value);
-    void setCookie(const std::string& name, const std::string& value,
-                  const std::string& path, int maxAge);
-	std::string toString() const;
+		void setStatus(int code, const std::string &message);
+		void setHeader(const std::string &key, const std::string &value);
+		void setBody(const std::string &body);
 
-	int getStatusCode() const;
+		std::string toString() const;
+		int getStatusCode() const;
 
-private:
-	int _statusCode;
-	std::string _statusMessage;
-	std::map<std::string, std::string> _headers;
-	std::string _body;
+	private:
+		int _statusCode;
+		std::string _statusMessage;
+		std::map<std::string, std::string> _headers;
+		std::string _body;
 };
