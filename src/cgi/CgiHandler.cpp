@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/16 11:33:32 by meferraz          #+#    #+#             */
-/*   Updated: 2025/08/11 17:16:29 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:56:53 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@ CgiHandler::CgiHandler(const Request &request,
 					const ServerConfig &config,
 					const LocationConfig &location)
 	: _request(request), _config(config), _location(location)
-{}
+{
+	Logger::info("CgiHandler created");
+}
 
 CgiHandler::~CgiHandler() {}
 
@@ -36,9 +38,6 @@ Response CgiHandler::execute()
 
 	// Execute CGI synchronously - blocks until complete
 	std::string output = _executeCgiSync(scriptPath);
-
-	Logger::info("CGI raw output: [" + output + "]"); // Add this line
-
 
 	if (output.empty()) {
 		HttpStatus::buildResponse(_config, response, 500);
@@ -213,9 +212,7 @@ void CgiHandler::_execScript(const std::string& scriptPath, char** env)
 	};
 
 	std::cout << "Executing CGI script: " << absScriptPath << std::endl;
-	for (int i = 0; env[i]; ++i) {
-	Logger::info(std::string("CGI ENV: ") + env[i]);
-}
+
 	execve(interpreter.c_str(), argv, env);
 	_exit(EXIT_FAILURE); // Should not reach here
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 21:19:42 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 15:40:13 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:57:37 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ bool Client::handleClientRequest()
 	{
 		size_t lineEnd = _readBuffer.find("\r\n", clPos);
 		size_t contentLength = std::atoi(
-			_readBuffer.substr(clPos + strlen("Content-Length:"), lineEnd - (clPos + strlen("Content-Length:"))).c_str()
+			_readBuffer.substr(clPos + 15, lineEnd - clPos - 15).c_str()
 		);
 		if (contentLength > _config.getClientMaxBodySize())
 		{
@@ -71,16 +71,13 @@ bool Client::handleClientRequest()
 		}
 	}
 
-	// 2. Read incoming data
+	// 2. Now read incoming data
 	char buffer[8192];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer), 0);
-	if (bytesRead <= 0) {
-		_closed = true;
-		return false;
-	}
+	if (bytesRead <= 0) { _closed = true; return false; }
 	_readBuffer.append(buffer, bytesRead);
 
-	// 3. When headers+body are complete, parse and handle
+	// 3. Only when you’ve detected full headers and body, parse request
 	if (_hasCompleteRequest())
 	{
 		_request = new Request(_readBuffer);
@@ -90,9 +87,9 @@ bool Client::handleClientRequest()
 		_request = NULL;
 		_readBuffer.clear();
 	}
-
 	return true;
 }
+
 
 bool Client::handleClientResponse()
 {
