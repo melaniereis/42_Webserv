@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandlerUtils.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 16:57:05 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 13:57:28 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ std::string generateTimestampFilename(std::string &fileName)
 {
 	time_t now = time(NULL);
 	int randomNum = rand() % 9000 + 1000;
-	
+
 	std::stringstream ss;
-	
+
 	if (fileName.empty())
 		ss << "upload_" << now << "_" << randomNum << ".bin";
 	else
@@ -26,7 +26,7 @@ std::string generateTimestampFilename(std::string &fileName)
 		size_t dotPos = fileName.find_last_of('.');
 		std::string namePart;
 		std::string extPart;
-	
+
 		if (dotPos == std::string::npos)
 		{
 			namePart = fileName;
@@ -157,7 +157,7 @@ void parseContentDisposition(const std::string &line, MultipartPart &part)
 		size_t nameEnd = line.find("\"", namePos + 6);
 		part.name = line.substr(namePos + 6, nameEnd - (namePos + 6));
 	}
-	
+
 	size_t filePos = line.find("filename=\"");
 	if (filePos != std::string::npos)
 	{
@@ -181,10 +181,10 @@ std::string normalizeReqPath(const std::string &path)
 		return path;
 
 	std::string normalized = path;
-	
+
 	while (normalized.length() > 1 && normalized[normalized.length() - 1] == '/')
 		normalized.erase(normalized.length() - 1);
-	
+
 	return normalized;
 }
 
@@ -193,12 +193,12 @@ Response &handleRedirectLocation(Response &response, std::map<int, std::string> 
 	int code = locationRedirects.begin()->first;
 	std::string link = locationRedirects.begin()->second;
 
-	std::cout << code << std::endl;
-	response.setStatus(code, "Redirect");
+	//std::cout << code << std::endl;
+	response.setStatus(code, HttpStatus::getMessage(code));
 	response.setHeader("Location", link);
 	return response;
 }
-Response generateAutoIndexPage(const ServerConfig &config, Response &response, 
+Response generateAutoIndexPage(const ServerConfig &config, Response &response,
     const std::string &dirPath, const std::string &reqPath)
 {
 	DIR *dir = opendir(dirPath.c_str());

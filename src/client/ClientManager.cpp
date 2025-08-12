@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 20:55:24 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 17:20:08 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 13:22:57 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,32 +30,27 @@ int ClientManager::acceptNewClient(int serverFd, const ServerConfig &config)
 	int clientFd = accept(serverFd, (struct sockaddr*)&clientAddr, &clientAddrSize);
 
 	if (clientFd < 0) {
-		int err = errno;
-		if (err != EAGAIN && err != EWOULDBLOCK) {
-			Logger::error(std::string("accept() failed: ") + strerror(err));
-		}
+		Logger::error("accept() failed.");
 		return -1;
 	}
 
 	// Set clientFd non-blocking
 	int flags = fcntl(clientFd, F_GETFL, 0);
 	if (flags < 0) {
-		int err = errno;
-		Logger::error(std::string("fcntl(F_GETFL) failed: ") + strerror(err));
+		Logger::error("fcntl(F_GETFL) failed.");
 		close(clientFd);
 		return -1;
 	}
 
 	if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) < 0) {
-		int err = errno;
-		Logger::error(std::string("fcntl(F_SETFL) failed: ") + strerror(err));
+		Logger::error("fcntl(F_SETFL) failed.");
 		close(clientFd);
 		return -1;
 	}
 
 	Client* client = new Client(clientFd, clientAddr, config);
 	_clients[clientFd] = client;
-	
+
 	Logger::info("Client connected: " + intToString(clientFd));
 	return clientFd;
 }
@@ -67,7 +62,7 @@ bool ClientManager::handleClientIO(int fd, short revents)
 	}
 
 	Client* client = _clients[fd];
-	
+
 	bool keepConnection = true;
 
 	// Handle POLLIN (data available to read)
