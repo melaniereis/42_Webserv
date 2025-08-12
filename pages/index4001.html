@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Webserv | 42 Porto</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<div class="container">
+		<header>
+			<div class="logo">
+				<div class="logo-icon">
+					<i class="fas fa-server"></i>
+				</div>
+				<div class="logo-text">WEBSERV</div>
+			</div>
+			<a href="https://github.com/m3irel3s/42_Webserv" class="github-button">
+				<i class="fab fa-github"></i>
+				View Source Code
+			</a>
+		</header>
+
+		<section class="hero">
+			<h1><span>HTTP Server from 4001</span></h1>
+			<p>A replication of the Nginx web server, developed at 42 Porto by Melanie Reis & Miguel Meireles.
+				Built from scratch in C++98 with support for the HTTP/1.1 protocol, CGI, and advanced features.
+			</p>
+
+			<div class="tech-grid">
+				<div class="tech-item">
+					<i class="fab fa-cuttlefish"></i>
+					<span>C++ 98</span>
+				</div>
+				<div class="tech-item">
+					<i class="fas fa-bolt"></i>
+					<span>Multiplexed I/O</span>
+				</div>
+				<div class="tech-item">
+					<i class="fas fa-code"></i>
+					<span>CGI Support</span>
+				</div>
+			</div>
+		</section>
+
+		<h2 class="section-title">Core Features</h2>
+		<div class="features-grid">
+			
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>File Management
+				</h3>
+				<div class="divider-small"></div>
+				<!-- <p>Supports file uploads through POST requests and directory listings. Clients can download or delete
+					files through native HTTP methods.</p> -->
+				<a href="#" class="btn">Upload File</a>
+			</div>
+
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-redo"></i></div>Redirection
+				</h3>
+				<div class="divider-small"></div>
+				<!-- <p>Configurable 301 and 302 redirects to route traffic between endpoints or external URLs with proper
+					HTTP status codes.</p> -->
+				<a href="#" class="btn">Test Redirects</a>
+			</div>
+
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-file-code"></i></div>CGI Execution
+				</h3>
+				<div class="divider-small"></div>
+				<!-- <p>Execute Python, PHP, and Bash scripts through Common Gateway Interface with proper environment
+					variables and directory handling.</p> -->
+				<a href="http://localhost:8080/cgi-bin/test.pl?name=" class="btn">Test CGI</a>
+			</div>
+
+		</div>
+
+		
+
+		<div class="divider"></div>
+
+		<h2 class="section-title">The Developers</h2>
+		<div class="team-section">
+			<div class="team-card">
+				<div class="team-avatar">
+					<img src="https://media.licdn.com/dms/image/v2/D4D03AQFXD8HRfeZ5-A/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1731450016442?e=1755129600&v=beta&t=D9aBo3JlvX6eNt1SMbSuZbgGpSjuZjdL1x18QBCHevU"
+						alt="M" class="team-avatar">
+				</div>
+				<h3 class="team-name">Melanie Reis</h3>
+				<div class="team-role">Core Developer</div>
+				<p>Former Nurse turning into a Web Developer with a passion for innovation and problem-solving.</p>
+				<div class="team-links">
+					<a href="mailto:meferraz@student.42porto.com" class="team-link">
+						<i class="fas fa-envelope"></i>
+					</a>
+					<a href="https://github.com/melaniereis" class="team-link">
+						<i class="fab fa-github"></i>
+					</a>
+					<a href="https://www.linkedin.com/in/melanie-ferraz-reis-622229a5/" class="team-link">
+						<i class="fab fa-linkedin-in"></i>
+					</a>
+				</div>
+			</div>
+
+			<div class="team-card">
+				<div class="team-avatar">
+					<img src="https://media.licdn.com/dms/image/v2/D4E03AQF9mOc8Nl9dFw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1710857876576?e=1755129600&v=beta&t=bcUaikvAIekMKQ5ZVTPAuHCpycuGrGeY_4HPmMKvv6U"
+						alt="M" class="team-avatar">
+				</div>
+				<h3 class="team-name">Miguel Meireles</h3>
+				<div class="team-role">Core Developer</div>
+				<p>Web Developer with a deep passion for coding and a strong commitment to excellence.</p>
+				<div class="team-links">
+					<a href="mailto:jmeirele@student.42porto.com" class="team-link">
+						<i class="fas fa-envelope"></i>
+					</a>
+					<a href="https://github.com/m3irel3s" class="team-link">
+						<i class="fab fa-github"></i>
+					</a>
+					<a href="https://www.linkedin.com/in/miguelmeireles25/" class="team-link">
+						<i class="fab fa-linkedin-in"></i>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<footer>
+			<div class="footer-content">
+				<div class="footer-logo">WEBSERV</div>
+				<p>An HTTP server implementation developed at 42 Porto</p>
+				<div class="copyright">
+					© 2025 Developed with passion by meferraz & jmeirele. All rights reserved.
+				</div>
+			</div>
+		</footer>
+	</div>
+		
+
+	<script src="script.js"></script>
+</body>
+
+</html>
