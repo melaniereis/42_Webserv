@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 14:04:05 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:53:04 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,10 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 {
 	// First find matching location
 	const LocationConfig *location = findMatchingLocation(request, config);
+	LocationConfig inheritedLocation;
 	if (location) {
-		LocationConfig inheritedLocation = location->inheritFromServer(config);
-		// Use inheritedLocation which has server defaults applied
+		inheritedLocation = location->inheritFromServer(config);
+		location = &inheritedLocation; // <--- Use the inherited location!
 	}
 
 	// Check if CGI request
@@ -67,16 +68,22 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 			std::string ext = path.substr(dotPos);
 			if (cgis.find(ext) != cgis.end())
 			{
-				// Build full filesystem path to the script
-				std::string scriptPath = location->getRoot() + request.getReqPath();
-				// 1. If the script file doesn’t exist, return 500
-				struct stat st;
-				if (stat(scriptPath.c_str(), &st) != 0 || !S_ISREG(st.st_mode))
+				std::string locationPrefix = "/cgi-bin/"; // Ideally, get this dynamically
+				if (request.getReqPath().find(locationPrefix) == 0)
 				{
-					Response res;
-					return HttpStatus::buildResponse(config, res, 500);
-				}
+					std::string scriptRelPath = request.getReqPath().substr(locationPrefix.length());
+					std::string scriptPath = location->getRoot();
+					if (!scriptPath.empty() && scriptPath[scriptPath.size() - 1] != '/')
+						scriptPath += "/";
+					scriptPath += scriptRelPath;
 
+					struct stat st;
+					if (stat(scriptPath.c_str(), &st) != 0 || !S_ISREG(st.st_mode))
+					{
+						Response res;
+						return HttpStatus::buildResponse(config, res, 500);
+					}
+				}
 				try
 				{
 					CgiHandler cgi(request, config, *location);
