@@ -6,7 +6,7 @@
 /*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 21:19:42 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 16:50:19 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:57:37 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ bool Client::handleClientRequest()
 		_response = RequestHandler::handle(*_request, _config);
 		_writeBuffer = _response.toString();
 		delete _request;
-		_request = nullptr;
+		_request = NULL;
 		_readBuffer.clear();
 	}
 	return true;

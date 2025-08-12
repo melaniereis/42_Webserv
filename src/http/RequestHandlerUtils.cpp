@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandlerUtils.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 13:57:28 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/12 15:37:23 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,17 +188,41 @@ std::string normalizeReqPath(const std::string &path)
 	return normalized;
 }
 
+#include <sstream>
+
 Response &handleRedirectLocation(Response &response, std::map<int, std::string> &locationRedirects)
 {
 	int code = locationRedirects.begin()->first;
 	std::string link = locationRedirects.begin()->second;
 
-	//std::cout << code << std::endl;
-	response.setStatus(code, HttpStatus::getMessage(code));
+	// Convert code to string
+	std::stringstream ss;
+	ss << code;
+	std::string codeStr = ss.str();
+
+	// Set status and headers
+	response.setStatus(code, "Redirect");
 	response.setHeader("Location", link);
+
+	// HTML body
+	std::string body = "<html><head><title>" + codeStr + " Redirect</title></head>"
+						"<body><h1>" + codeStr + " Redirect</h1>"
+						"<p>Redirecting to <a href=\"" + link + "\">" + link + "</a></p>"
+						"</body></html>";
+
+	std::stringstream len;
+	len << body.size();
+
+	response.setHeader("Content-Type", "text/html");
+	response.setHeader("Content-Length", len.str());
+	response.setBody(body);
+
 	return response;
 }
-Response generateAutoIndexPage(const ServerConfig &config, Response &response,
+
+
+
+Response generateAutoIndexPage(const ServerConfig &config, Response &response, 
     const std::string &dirPath, const std::string &reqPath)
 {
 	DIR *dir = opendir(dirPath.c_str());

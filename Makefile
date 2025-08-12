@@ -6,7 +6,7 @@
 #    By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/06/02 13:15:43 by jmeirele          #+#    #+#              #
-#    Updated: 2025/08/11 17:02:29 by jmeirele         ###   ########.fr        #
+#    Updated: 2025/08/12 15:38:34 by jmeirele         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -93,14 +93,8 @@ get_log:
 #                                   TESTING                                    #
 #==============================================================================#
 
-test: $(NAME)
-	clear ; ./$(NAME) config/valid/miguel.conf
-
 eval : $(NAME)
-	clear; ./$(NAME) config/eval.conf
-
-val: $(NAME)
-	clear ; valgrind $(V_ARGS) ./$(NAME) config/valid/miguel.conf
+	clear; ./$(NAME) config/valid/eval.conf
 
 #==============================================================================#
 #                                CLEANING RULES                                #

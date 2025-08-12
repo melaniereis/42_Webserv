@@ -1,0 +1,6 @@
+curl -X POST -H "Content-Type: plain/text" \ --data "my body is higher than 10" http://localhost:4000/upload
+
+curl -i -H "Host: example.com" http://localhost:4000/
+
+curl -iL http://localhost:4000/youtube
+
