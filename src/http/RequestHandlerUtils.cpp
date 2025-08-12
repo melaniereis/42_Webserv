@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 15:37:23 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:35:08 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ std::string getMimeType(const std::string &extension)
 		return "image/png";
 	if (endsWith(extension, ".gif"))
 		return "image/gif";
+
 	return "application/octet-stream";
 }
 
@@ -219,8 +220,6 @@ Response &handleRedirectLocation(Response &response, std::map<int, std::string> 
 
 	return response;
 }
-
-
 
 Response generateAutoIndexPage(const ServerConfig &config, Response &response, 
     const std::string &dirPath, const std::string &reqPath)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandler.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
+/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 14:04:05 by meferraz         ###   ########.fr       */
+/*   Updated: 2025/08/12 16:52:21 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -342,8 +342,8 @@ Response RequestHandler::handleFormPost(const Request &request, const ServerConf
 
 	while (it != clientData.end())
 	{
-		std::cout << "key->" << it->first << std::endl;
-		std::cout << "Value->" << it->second << std::endl;
+		std::cout << it->first << ": ";
+		std::cout << it->second << std::endl;
 		it++;
 	}
 

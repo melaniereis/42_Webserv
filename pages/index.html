@@ -54,9 +54,25 @@
 					<div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>File Management
 				</h3>
 				<div class="divider-small"></div>
-				<!-- <p>Supports file uploads through POST requests and directory listings. Clients can download or delete
-					files through native HTTP methods.</p> -->
-				<a href="#" class="btn">Upload File</a>
+
+				<form id="uploadForm" method="POST" enctype="multipart/form-data">
+					<input type="file" id="fileInput" name="file" accept="image/*" required style="display:none" />
+					<button type="button" class="btn" id="uploadBtn">Upload File</button>
+				</form>
+			</div>
+
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-user"></i></div>Name Submission
+				</h3>
+				<div class="divider-small"></div>
+
+				<form id="nameForm" method="POST" action="http://localhost:4000/upload" enctype="application/x-www-form-urlencoded" style="display: flex; flex-direction: row; gap: 10px; max-width: 300px; padding-bottom: 20px;">
+					<input type="text" name="name" placeholder="First Name" required style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;" />
+					<input type="text" name="lastname" placeholder="Last Name" required style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;" />
+				</form>
+				<button type="submit" form="nameForm" class="btn">Submit</button>
+
 			</div>
 
 			<div class="feature-card">
@@ -64,9 +80,7 @@
 					<div class="icon"><i class="fas fa-redo"></i></div>Redirection
 				</h3>
 				<div class="divider-small"></div>
-				<!-- <p>Configurable 301 and 302 redirects to route traffic between endpoints or external URLs with proper
-					HTTP status codes.</p> -->
-				<a href="#" class="btn">Test Redirects</a>
+				<a href="http://localhost:4000/example" class="btn">Redirect to example.com</a>
 			</div>
 
 			<div class="feature-card">
@@ -74,14 +88,19 @@
 					<div class="icon"><i class="fas fa-file-code"></i></div>CGI Execution
 				</h3>
 				<div class="divider-small"></div>
-				<!-- <p>Execute Python, PHP, and Bash scripts through Common Gateway Interface with proper environment
-					variables and directory handling.</p> -->
-				<a href="http://localhost:8080/cgi-bin/test.pl?name=" class="btn">Test CGI</a>
+				<a href="http://localhost:4000/cgi-bin/test.php" class="btn">Test CGI</a>
 			</div>
 
-		</div>
+			<div class="feature-card">
+				<h3>
+					<div class="icon"><i class="fas fa-list"></i></div>Project navigation throw autoindex
+				</h3>
+				<div class="divider-small"></div>
+				<a href="http://localhost:4000/list/" class="btn">Autoindex</a>
+			</div>
 
-		
+
+		</div>
 
 		<div class="divider"></div>
 
@@ -143,6 +162,7 @@
 		
 
 	<script src="script.js"></script>
+
 </body>
 
 </html>

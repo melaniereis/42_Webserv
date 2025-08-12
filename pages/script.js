@@ -63,3 +63,20 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	});
 });
+
+const uploadBtn = document.getElementById('uploadBtn');
+	const fileInput = document.getElementById('fileInput');
+	const form = document.getElementById('uploadForm');
+
+	uploadBtn.addEventListener('click', () => {
+		fileInput.click();
+	});
+
+	fileInput.addEventListener('change', () => {
+		if(fileInput.files.length > 0){
+		const file = fileInput.files[0];
+		// Build the action URL dynamically: upload/filename
+		form.action = `http://localhost:4000/upload/${encodeURIComponent(file.name)}`;
+		form.submit();
+		}
+});
