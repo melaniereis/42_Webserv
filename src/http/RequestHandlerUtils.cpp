@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/25 17:29:28 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/12 15:05:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 15:37:23 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ std::string generateTimestampFilename(std::string &fileName)
 {
 	time_t now = time(NULL);
 	int randomNum = rand() % 9000 + 1000;
-	
+
 	std::stringstream ss;
-	
+
 	if (fileName.empty())
 		ss << "upload_" << now << "_" << randomNum << ".bin";
 	else
@@ -26,7 +26,7 @@ std::string generateTimestampFilename(std::string &fileName)
 		size_t dotPos = fileName.find_last_of('.');
 		std::string namePart;
 		std::string extPart;
-	
+
 		if (dotPos == std::string::npos)
 		{
 			namePart = fileName;
@@ -157,7 +157,7 @@ void parseContentDisposition(const std::string &line, MultipartPart &part)
 		size_t nameEnd = line.find("\"", namePos + 6);
 		part.name = line.substr(namePos + 6, nameEnd - (namePos + 6));
 	}
-	
+
 	size_t filePos = line.find("filename=\"");
 	if (filePos != std::string::npos)
 	{
@@ -181,10 +181,10 @@ std::string normalizeReqPath(const std::string &path)
 		return path;
 
 	std::string normalized = path;
-	
+
 	while (normalized.length() > 1 && normalized[normalized.length() - 1] == '/')
 		normalized.erase(normalized.length() - 1);
-	
+
 	return normalized;
 }
 

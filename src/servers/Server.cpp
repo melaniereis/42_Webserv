@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/03 19:30:10 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 17:19:03 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 13:19:00 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ int Server::createSocket() const
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd < 0)
-		Logger::error("socket() failed: " + std::string(strerror(errno)));
+		Logger::error("socket() failed.");
 	else
 		Logger::info("Created socket FD: " + intToString(fd));
 	return fd;
@@ -100,7 +100,7 @@ bool Server::setSocketOptions(int fd) const
 	int opt = 1;
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
 	{
-		Logger::error("setsockopt() failed: " + std::string(strerror(errno)));
+		Logger::error("setsockopt() failed.");
 		return false;
 	}
 	return true;
@@ -124,8 +124,7 @@ bool Server::bindSocket(int fd, const std::string& ip, int port) const
 	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 	{
 		std::ostringstream oss;
-		oss << "bind() failed for " << ip << ":" << port
-			<< " - " << strerror(errno);
+		oss << "bind() failed for " << ip << ":" << port;
 		Logger::error(oss.str());
 		return false;
 	}
@@ -137,12 +136,12 @@ bool Server::makeSocketNonBlocking(int fd) const
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags < 0)
 	{
-		Logger::error("fcntl(F_GETFL) failed: " + std::string(strerror(errno)));
+		Logger::error("fcntl(F_GETFL) failed.");
 		return false;
 	}
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
 	{
-		Logger::error("fcntl(F_SETFL) failed: " + std::string(strerror(errno)));
+		Logger::error("fcntl(F_SETFL) failed.");
 		return false;
 	}
 	return true;
@@ -152,7 +151,7 @@ bool Server::startListening(int fd) const
 {
 	if (listen(fd, SOMAXCONN) < 0)
 	{
-		Logger::error("listen() failed: " + std::string(strerror(errno)));
+		Logger::error("listen() failed.");
 		return false;
 	}
 	Logger::info("Listening on FD: " + intToString(fd));

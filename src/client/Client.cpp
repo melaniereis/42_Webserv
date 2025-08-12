@@ -6,7 +6,7 @@
 /*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/04 21:19:42 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 17:16:04 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 15:40:13 by jmeirele         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,43 +53,42 @@ bool Client::_hasCompleteRequest() const
 
 bool Client::handleClientRequest()
 {
+	// 1. Early body-size check before reading more data
+	size_t clPos = _readBuffer.find("Content-Length:");
+	if (clPos != std::string::npos)
+	{
+		size_t lineEnd = _readBuffer.find("\r\n", clPos);
+		size_t contentLength = std::atoi(
+			_readBuffer.substr(clPos + strlen("Content-Length:"), lineEnd - (clPos + strlen("Content-Length:"))).c_str()
+		);
+		if (contentLength > _config.getClientMaxBodySize())
+		{
+			Response resp;
+			HttpStatus::buildResponse(_config, resp, 413);
+			_writeBuffer = resp.toString();
+			_readBuffer.clear();
+			return true;  // schedule send of 413 immediately
+		}
+	}
+
+	// 2. Read incoming data
 	char buffer[8192];
 	ssize_t bytesRead = recv(_fd, buffer, sizeof(buffer), 0);
-
-	// NO ERRNO CHECKING - evaluation requirement
 	if (bytesRead <= 0) {
 		_closed = true;
 		return false;
 	}
-
 	_readBuffer.append(buffer, bytesRead);
 
-	// Check if we have complete request
-	if (_hasCompleteRequest()) {
-		// Check body size limit
-		size_t clPos = _readBuffer.find("Content-Length:");
-		if (clPos != std::string::npos) {
-			size_t lineEnd = _readBuffer.find("\r\n", clPos);
-			std::string clStr = _readBuffer.substr(clPos + 15, lineEnd - (clPos + 15));
-			size_t contentLength = std::atoi(clStr.c_str());
-
-			if (contentLength > _config.getClientMaxBodySize()) {
-				Response resp;
-				HttpStatus::buildResponse(_config, resp, 413);
-				_writeBuffer = resp.toString();
-				return true;
-			}
-		}
-
+	// 3. When headers+body are complete, parse and handle
+	if (_hasCompleteRequest())
+	{
 		_request = new Request(_readBuffer);
-
-		// Handle request (including CGI synchronously)
 		_response = RequestHandler::handle(*_request, _config);
 		_writeBuffer = _response.toString();
-
-		_readBuffer.clear();
 		delete _request;
 		_request = NULL;
+		_readBuffer.clear();
 	}
 
 	return true;

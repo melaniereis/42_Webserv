@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestHandler.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmeirele <jmeirele@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: meferraz <meferraz@student.42porto.pt>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/09 18:31:25 by jmeirele          #+#    #+#             */
-/*   Updated: 2025/08/11 17:05:46 by jmeirele         ###   ########.fr       */
+/*   Updated: 2025/08/12 14:04:05 by meferraz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,18 @@ Response RequestHandler::handle(const Request &request, const ServerConfig &conf
 			std::string ext = path.substr(dotPos);
 			if (cgis.find(ext) != cgis.end())
 			{
+				// Build full filesystem path to the script
+				std::string scriptPath = location->getRoot() + request.getReqPath();
+				// 1. If the script file doesn’t exist, return 500
+				struct stat st;
+				if (stat(scriptPath.c_str(), &st) != 0 || !S_ISREG(st.st_mode))
+				{
+					Response res;
+					return HttpStatus::buildResponse(config, res, 500);
+				}
+
 				try
 				{
-					// REMOVE Client parameter - now synchronous!
 					CgiHandler cgi(request, config, *location);
 					return cgi.execute();
 				}
@@ -117,7 +126,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 
 	if (!locationRedirects.empty())
 		return handleRedirectLocation(response, locationRedirects);
-	
+
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
 
@@ -138,7 +147,7 @@ Response RequestHandler::handleGetMethod(const Request &request, const ServerCon
 		fullPath = rootDir + locationRootDir + reqPath + "/" + locationIndex.at(0);
 	else
 		fullPath = rootDir + locationRootDir + reqPath;
-	
+
 	std::ifstream file(fullPath.c_str());
 
 	if (!file)
@@ -195,7 +204,7 @@ Response RequestHandler::handleMultipartPost(const Request &request, const Serve
 
 	if (reqPath.find("..") != std::string::npos)
 		return HttpStatus::buildResponse(config,response, 403);
-	
+
 	std::vector<MultipartPart> parsedParts = parseMultiparts(request);
 
 	// for (std::vector<MultipartPart>::iterator it = parsedParts.begin(); it != parsedParts.end(); it++)
@@ -353,10 +362,10 @@ Response RequestHandler::handleBinaryPost(const Request &request, const ServerCo
 
 	if (locationRootDir[0] == '.')
 		locationRootDir.erase(0, locationRootDir.find_first_not_of("."));
-	
+
 	if (reqPath.find("..") != std::string::npos)
 		return HttpStatus::buildResponse(config,response, 403);
-	
+
 	std::string fileName = extractFilenameFromPath(reqPath);
 	std::string updatedFileName = generateTimestampFilename(fileName);
 
