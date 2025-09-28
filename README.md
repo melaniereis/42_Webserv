@@ -30,8 +30,6 @@ The server is inspired by **Nginx** and implements core web server functionality
 - ✅ **GET** - Retrieve resources
 - ✅ **POST** - Submit data to server
 - ✅ **DELETE** - Remove resources
-- ✅ **HEAD** - Retrieve headers only
-- ✅ **PUT** - Upload/update resources
 
 ### Advanced Features
 - 🐍 **CGI Support** - Execute PHP, Python, and other CGI scripts
